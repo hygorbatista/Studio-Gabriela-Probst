@@ -1,0 +1,122 @@
+export const site = {
+  name: "Gabriela Probst",
+  whatsappNumber: "5548998402796",
+  phoneDisplay: "(48) 99840-2796",
+  // "Vi o seu site" mostra para a Gabriela, na própria conversa, que a cliente veio do site.
+  whatsappMessage: "Olá, Gabriela! Vi o seu site e gostaria de agendar um horário.",
+  instagramUrl: "https://www.instagram.com/gabyprobst.nails/",
+  instagramHandle: "@gabyprobst.nails",
+  hours: "Segunda a sexta. Sábado a combinar.",
+  // Horário de referência: ela é flexível e combina com a cliente.
+  opens: "08:00",
+  closes: "19:00",
+  address: "Centro Comercial Ventura, R. Nossa Sra. dos Navegantes, Serraria, São José - SC, 88115-400",
+  street: "R. Nossa Sra. dos Navegantes",
+  building: "Centro Comercial Ventura",
+  neighborhood: "Serraria",
+  city: "São José",
+  state: "SC",
+  postalCode: "88115-400",
+} as const;
+
+export function whatsappLink(message: string) {
+  return `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
+
+export function bookingLink(serviceName: string) {
+  return whatsappLink(`Olá, Gabriela! Vi o seu site e gostaria de agendar: ${serviceName}.`);
+}
+
+export const whatsappUrl = whatsappLink(site.whatsappMessage);
+
+export const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`;
+
+export type Photo = { src: string; alt: string; width: number; height: number };
+
+function photo(file: string, alt: string, width = 1200, height = 1600): Photo {
+  return { src: `/images/${file}`, alt, width, height };
+}
+
+const photos = {
+  red: photo("foto-unha-7.jpeg", "Unhas quadradas vermelhas com acabamento brilhante"),
+  nude: photo("modelo-unha-3.jpeg", "Unhas amendoadas em tom nude rosado"),
+  pink: photo("modelo-unha-1.jpeg", "Unhas amendoadas em rosa pink brilhante"),
+  milky: photo("modelo-unha-2.jpeg", "Unhas curtas em tom leitoso", 1600, 1600),
+  pinkFrench: photo("modelo-unha-5.jpeg", "Francesinha rosa pink em unhas amendoadas"),
+  blueFrench: photo("modelo-unha-4.jpeg", "Francesinha azul clara com detalhes dourados"),
+  pedicure: photo("foto-unha-pes-1.jpeg", "Pedicure em tom leitoso", 828, 1472),
+  lightPink: photo("foto-unha-6.jpeg", "Unhas amendoadas em rosa claro brilhante"),
+  pinkClose: photo("modelo-unha-1.2.jpeg", "Unhas amendoadas rosa pink de perto"),
+  gabriela: photo("foto_gabriela.jpeg", "Gabriela Probst no studio", 1086, 1448),
+};
+
+// Ordem em colunas: o painel k do topo mostra os itens k, k+3 e k+6.
+export const heroPhotos: Photo[] = [
+  photos.red,
+  photos.nude,
+  photos.pink,
+  photos.milky,
+  photos.blueFrench,
+  photos.lightPink,
+  photos.pinkFrench,
+  photos.pedicure,
+  photos.pinkClose,
+];
+
+export const servicesPhoto: Photo = photos.red;
+
+export const aboutPhoto: Photo = photos.gabriela;
+
+export const gallery: Photo[] = [
+  photos.milky,
+  photos.pinkFrench,
+  photos.blueFrench,
+  photos.pedicure,
+  photos.lightPink,
+  photos.pinkClose,
+];
+
+export const pillars = [
+  {
+    title: "Acabamento",
+    text: "Cutilagem precisa e acabamento limpo, a assinatura do trabalho.",
+  },
+  {
+    title: "Naturalidade",
+    text: "Unhas bonitas que parecem suas, sem exagero.",
+  },
+  {
+    title: "Cuidado",
+    text: "Um atendimento por vez, com calma, para você sair se sentindo realizada, linda e cuidada.",
+  },
+];
+
+export const training = [
+  { year: "2020", title: "Curso de manicure tradicional" },
+  { year: "2021", title: "Curso de nail designer" },
+  { year: "2024", title: "Especialização em nail designer e decoração" },
+];
+
+export const serviceGroups = [
+  {
+    title: "Fibra e gel",
+    items: [
+      { name: "Aplicação de fibra de vidro", price: 180, duration: "3 h" },
+      { name: "Manutenção de fibra", price: 100, duration: "2 h 30" },
+      { name: "Blindagem", price: 80, duration: "1 h 30" },
+      { name: "Esmaltação em gel", price: 85, duration: "1 h 30" },
+      { name: "Banho de gel", price: 90, duration: "até 2 h" },
+    ],
+  },
+  {
+    title: "Tradicional",
+    items: [
+      { name: "Manicure", price: 30, duration: "1 h" },
+      { name: "Pedicure", price: 35, duration: "até 1 h" },
+    ],
+  },
+];
+
+export function formatPrice(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
