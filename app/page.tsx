@@ -62,7 +62,7 @@ function HeaderBar({ compact = false }: { compact?: boolean }) {
     <div
       className={`${container} flex items-center justify-between ${compact ? "py-3" : "py-5"}`}
     >
-      <a href="#" className="py-1 leading-none">
+      <a href="#" className="whitespace-nowrap py-1 leading-none">
         <span className="block font-serif text-lg sm:text-xl">{site.name}</span>
         <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.25em] text-white/70">
           Nail Studio
@@ -84,7 +84,7 @@ function HeaderBar({ compact = false }: { compact?: boolean }) {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-11 items-center justify-center border border-primary bg-primary px-4 text-xs font-semibold uppercase tracking-[0.15em] transition-colors hover:border-primary-hover hover:bg-primary-hover active:bg-primary-hover lg:px-5 lg:tracking-[0.2em]"
+          className="inline-flex h-11 items-center justify-center border border-primary bg-primary px-3 text-xs font-semibold uppercase tracking-widest transition-colors hover:border-primary-hover hover:bg-primary-hover active:bg-primary-hover min-[360px]:px-4 min-[360px]:tracking-[0.15em] lg:px-5 lg:tracking-[0.2em]"
         >
           Agendar
         </a>
@@ -146,13 +146,17 @@ export default function Home() {
         <HeroFade
           className={`${container} mt-auto pb-[calc(3.5rem+env(safe-area-inset-bottom)+2rem)] pt-28 md:pb-14 md:pt-32`}
         >
-          <Reveal delay={0.5} y={16}>
-            <p className={`${eyebrow} text-white/80`}>
-              <span className="hidden md:inline">Nail Studio · </span>
-              Serraria, São José
-            </p>
-          </Reveal>
-          <h1 className="mt-4 max-w-4xl font-serif text-[clamp(2.25rem,11.5vw,2.75rem)] leading-[1.18] tracking-[-0.01em] md:mt-5 [text-shadow:0_2px_30px_rgba(0,0,0,0.6)] md:text-[72px] md:leading-20 md:tracking-[-0.02em] lg:text-[88px] lg:leading-24">
+          {/* A linha pequena faz parte do h1: é ela que diz ao Google o que é e onde fica.
+              No celular fica curta para caber em uma linha e não empurrar os botões. */}
+          <h1 className="max-w-4xl font-serif text-[clamp(2.25rem,11.5vw,2.75rem)] leading-[1.18] tracking-[-0.01em] [text-shadow:0_2px_30px_rgba(0,0,0,0.6)] md:text-[72px] md:leading-20 md:tracking-[-0.02em] lg:text-[88px] lg:leading-24">
+            <Reveal delay={0.5} y={16} as="span" className="mb-4 block md:mb-5">
+              <span className={`${eyebrow} block font-sans leading-normal text-white/80 text-shadow-none`}>
+                <span className="hidden md:inline">Manicure e </span>
+                nail designer ·{" "}
+                <span className="hidden md:inline">Serraria, </span>
+                São José<span className="hidden md:inline"> - SC</span>
+              </span>
+            </Reveal>{" "}
             <LineReveal immediate delay={0.6}>
               Acabamento impecável.
             </LineReveal>
@@ -190,7 +194,7 @@ export default function Home() {
               <span className={`${eyebrow} mb-1 block text-white/50`}>
                 Horário
               </span>
-              Segunda a sexta · sábado a combinar
+              Seg. a sex., 8h às 19h · sábado a combinar
             </span>
             <a
               href={mapsUrl}
@@ -219,6 +223,8 @@ export default function Home() {
       </section>
 
       <section className={`${container} py-16 md:py-20`}>
+        {/* Título só para leitores de tela e buscadores: mantém a ordem h1 > h2 > h3. */}
+        <h2 className="sr-only">O atendimento</h2>
         <ul className="grid gap-12 md:grid-cols-3 md:gap-10">
           {pillars.map((pillar, index) => (
             <li key={pillar.title}>
@@ -227,7 +233,7 @@ export default function Home() {
                 <p className="font-serif text-sm italic text-primary">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <h2 className="mt-3 font-serif text-2xl">{pillar.title}</h2>
+                <h3 className="mt-3 font-serif text-2xl">{pillar.title}</h3>
                 <p className="mt-3 text-base leading-7 text-muted-foreground">
                   {pillar.text}
                 </p>
@@ -252,8 +258,9 @@ export default function Home() {
             </h2>
             <Reveal delay={0.15}>
               <p className="mt-5 max-w-md text-base leading-7 text-white/70">
-                Do tradicional à fibra de vidro, de R$ 30 a R$ 180. Os valores
-                são fixos: não mudam por tamanho, comprimento ou decoração.
+                Manicure, pedicure, alongamento em fibra de vidro, blindagem e
+                gel, de R$ 30 a R$ 180. Os valores são fixos: não mudam por
+                tamanho, comprimento ou decoração.
               </p>
             </Reveal>
             <Reveal delay={0.25} className="mt-6 hidden max-w-md lg:block">

@@ -26,9 +26,12 @@ export function Reveal({
   className,
   delay = 0,
   y = 20,
-}: WithChildren & { delay?: number; y?: number }) {
+  as = "div",
+}: WithChildren & { delay?: number; y?: number; as?: "div" | "span" }) {
+  // "span" permite usar dentro de títulos (h1, h2), onde div não é HTML válido.
+  const Component = as === "span" ? motion.span : motion.div;
   return (
-    <motion.div
+    <Component
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -36,7 +39,7 @@ export function Reveal({
       transition={{ duration: 0.7, ease, delay }}
     >
       {children}
-    </motion.div>
+    </Component>
   );
 }
 
@@ -69,9 +72,10 @@ export function ClipReveal({
   delay = 0,
 }: WithChildren & { delay?: number }) {
   const reduce = useReducedMotion();
+  // overflow-hidden: o clip-path só esconde visualmente; sem ele, a imagem ampliada alarga a página no celular.
   return (
     <motion.div
-      className={className}
+      className={`overflow-hidden ${className ?? ""}`}
       initial={reduce ? false : { clipPath: "inset(100% 0% 0% 0%)" }}
       whileInView={{ clipPath: "inset(0% 0% 0% 0%)" }}
       viewport={inView}
