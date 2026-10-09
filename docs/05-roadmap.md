@@ -2,29 +2,44 @@
 
 Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase termina com uma entrega que pode ser mostrada a ela.
 
-## Fase 0: Fundação
+| Fase | Status |
+| --- | --- |
+| 0. Fundação | ✅ concluída, com RLS e migrações movidos para a Fase 2 |
+| 1. Landing page | ✅ publicada em 2026-10-07 |
+| 2. Agenda, clientes e serviços | ⏳ próxima |
+| 3. Financeiro | ⬜ |
+| 4. Relatórios | ⬜ |
+| 5. Futuro | ⬜ não comprometido |
 
-- Criar projeto no Supabase e configurar variáveis de ambiente.
-- Deploy contínuo na Vercel a partir do GitHub.
-- Estrutura do projeto, Tailwind, lint e convenções ([06-convencoes.md](06-convencoes.md)).
-- Autenticação da Gabriela (login) e RLS.
-- Migração inicial e carga dos 7 serviços.
+## Fase 0: Fundação ✅
 
-**Entrega:** projeto no ar (página simples) com login funcionando.
+- ✅ Projeto no Supabase (região São Paulo) e variáveis de ambiente.
+- ✅ Deploy contínuo na Vercel a partir do GitHub: cada push na `main` publica.
+- ✅ Estrutura do projeto, Tailwind, lint e convenções ([06-convencoes.md](06-convencoes.md)).
+- ✅ Login da Gabriela (Supabase Auth) e proxy que protege `/painel`.
+- ➡️ RLS, migração inicial e carga dos serviços: movidos para a Fase 2, quando as tabelas forem criadas.
 
-## Fase 1: Landing page
+## Fase 1: Landing page ✅
 
-- Design mobile first com a identidade do studio.
-- Serviços e preços vindos do banco, fotos, endereço e botão de WhatsApp.
-- SEO básico e domínio (se houver).
+Publicada em **https://studio-gabriela-probst.vercel.app**.
 
-**Entrega:** site público para divulgar no Instagram.
+Entregue:
+- Design system aplicado ([07-design-system.md](07-design-system.md)) e posicionamento da marca ([08-posicionamento-marca.md](08-posicionamento-marca.md)).
+- Topo em tela cheia com fotos trocando, serviços e valores com agendamento por serviço, sobre e formação, galeria, contato e menu no celular.
+- WhatsApp sempre visível: botão no topo, barra fixa no celular e botão flutuante no computador.
+- Animações ao rolar, respeitando quem desativa animações no aparelho.
+- SEO: título, descrição, dados de negócio local (JSON-LD), sitemap, robots, favicon e imagem de compartilhamento.
 
-**Precisa da Gabriela:** fotos, endereço, Instagram, logo e cores.
+Ficou para depois:
+- **Perguntas frequentes:** aguardando as respostas da Gabriela ([09-questionario-faq.md](09-questionario-faq.md)).
+- **Preços vindos do banco (LP-07):** hoje ficam em `lib/site.ts`. Passam para o banco na Fase 2, quando existir o cadastro de serviços.
+- **Domínio próprio:** opcional, decisão de custo.
+- **Perfil no Google (Google Meu Negócio):** fora deste projeto, por decisão do Hygor.
 
-## Fase 2: Agenda, clientes e serviços
+## Fase 2: Agenda, clientes e serviços ⏳
 
-- Cadastro e edição de serviços.
+- Tabelas, RLS e migrações versionadas ([04-modelo-dados.md](04-modelo-dados.md)).
+- Cadastro e edição de serviços, que passam a alimentar a landing page.
 - Cadastro, busca e histórico de clientes.
 - Agenda diária e semanal, com criação, remarcação, cancelamento e conflito de horário.
 - Mensagem de WhatsApp pronta (confirmação e lembrete).
@@ -58,7 +73,8 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 
 | Item | Risco | Mitigação |
 | --- | --- | --- |
-| Conteúdo da landing page | Fotos e textos atrasam a Fase 1 | Começar com placeholders |
+| Plano Hobby da Vercel | Os termos restringem uso comercial | Avaliar o plano Pro ou outra hospedagem antes de crescer |
 | Limites dos planos gratuitos | Supabase pausa projetos inativos | Uso diário pelo painel mantém ativo; fazer backup |
+| Cadastro público no Supabase | Qualquer pessoa criaria conta pelo `/login` | Manter *Allow new users to sign up* desligado |
 | Next.js 16 | Mudanças em relação ao que é conhecido | Ler a documentação em `node_modules/next/dist/docs/` antes de implementar |
 | Pendências do roteiro | Respostas em aberto em [01-respostas-descoberta.md](01-respostas-descoberta.md) | Resolver antes da fase correspondente |

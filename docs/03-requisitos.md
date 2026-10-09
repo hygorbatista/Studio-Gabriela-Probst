@@ -4,15 +4,16 @@ Legenda: **MVP** = entra na primeira versão de cada módulo. **Futuro** = fora 
 
 ## Landing page (pública)
 
-| ID | Requisito | Fase |
-| --- | --- | --- |
-| LP-01 | Apresentação do studio (quem é a Gabriela) | MVP |
-| LP-02 | Lista de serviços com preço e duração | MVP |
-| LP-03 | Galeria de fotos dos trabalhos | MVP |
-| LP-04 | Endereço e como chegar (link para o mapa) | MVP |
-| LP-05 | Botão de WhatsApp com mensagem inicial pronta | MVP |
-| LP-06 | Layout responsivo, rápido, com SEO básico | MVP |
-| LP-07 | Preços da página vêm dos serviços cadastrados no painel | MVP |
+| ID | Requisito | Fase | Status |
+| --- | --- | --- | --- |
+| LP-01 | Apresentação do studio (quem é a Gabriela) | MVP | ✅ |
+| LP-02 | Lista de serviços com preço e duração | MVP | ✅ |
+| LP-03 | Galeria de fotos dos trabalhos | MVP | ✅ |
+| LP-04 | Endereço e como chegar (link para o mapa) | MVP | ✅ |
+| LP-05 | Botão de WhatsApp com mensagem inicial pronta | MVP | ✅ também por serviço |
+| LP-06 | Layout responsivo, rápido, com SEO básico | MVP | ✅ |
+| LP-07 | Preços da página vêm dos serviços cadastrados no painel | MVP | ⏳ Fase 2, hoje em `lib/site.ts` |
+| LP-08 | Perguntas frequentes | MVP | ⏳ aguardando respostas da Gabriela |
 
 ## Autenticação
 

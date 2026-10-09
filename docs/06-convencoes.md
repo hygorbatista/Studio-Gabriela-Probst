@@ -5,7 +5,7 @@
 - `main` é sempre estável e é o que vai para produção.
 - Trabalho em branches curtas: `feat/agenda-semanal`, `fix/conflito-horario`, `docs/roadmap`.
 - Entrega por Pull Request, mesmo trabalhando sozinho: serve de histórico e de revisão.
-- Commits pequenos, no estilo Conventional Commits, em português ou inglês (escolher um e manter):
+- Commits pequenos, no estilo Conventional Commits, **em português**:
   `feat: lista de serviços na landing page`, `fix: ...`, `docs: ...`, `chore: ...`.
 
 ## Tarefas
