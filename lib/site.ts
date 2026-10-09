@@ -117,6 +117,42 @@ export const serviceGroups = [
   },
 ];
 
+// Só respostas confirmadas pela Gabriela (docs/01). As novas vêm do docs/09-questionario-faq.md.
+export const faq = [
+  {
+    question: "Como faço para agendar?",
+    answer: `Pelo WhatsApp ${site.phoneDisplay}. Você escolhe o serviço e combina o melhor dia e horário.`,
+  },
+  {
+    question: "Os valores mudam conforme o tamanho ou a decoração?",
+    answer:
+      "Não. Os valores são fixos: não mudam por tamanho, comprimento ou decoração.",
+  },
+  {
+    question: "Qual é o horário de atendimento?",
+    answer:
+      "Segunda a sexta, com horário flexível para combinar com você. Sábado a combinar.",
+  },
+  {
+    question: "Onde fica o studio? Tem estacionamento?",
+    answer: `No ${site.building}, ${site.street}, ${site.neighborhood}, ${site.city} - ${site.state}. O local tem estacionamento.`,
+  },
+  {
+    question: "Quais formas de pagamento são aceitas?",
+    answer:
+      "Pix, dinheiro, débito e crédito. No cartão, o pagamento é por aproximação.",
+  },
+  {
+    question: "E se eu precisar cancelar ou me atrasar?",
+    answer:
+      "Cancelamentos são feitos com 24 horas de antecedência. A tolerância de atraso é de 15 minutos.",
+  },
+  {
+    question: "Você atende a domicílio?",
+    answer: "Não. O atendimento é feito só no studio, uma cliente por vez.",
+  },
+];
+
 export function formatPrice(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }

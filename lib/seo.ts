@@ -1,4 +1,11 @@
-import { aboutPhoto, gallery, mapsUrl, serviceGroups, site } from "@/lib/site";
+import {
+  aboutPhoto,
+  faq,
+  gallery,
+  mapsUrl,
+  serviceGroups,
+  site,
+} from "@/lib/site";
 
 // Sem domínio próprio ainda: na Vercel usa o endereço de produção do projeto.
 // Quando houver domínio, basta definir NEXT_PUBLIC_SITE_URL.
@@ -71,4 +78,14 @@ export const localBusinessJsonLd = {
       })),
     })),
   },
+};
+
+export const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
 };
