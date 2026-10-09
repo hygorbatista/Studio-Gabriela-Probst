@@ -2,19 +2,27 @@
 
 import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
-import { deleteService, type DeleteServiceState } from './actions'
 
-export function DeleteServiceButton({ id, name }: { id: string; name: string }) {
-  const [state, action, pending] = useActionState<DeleteServiceState>(
-    deleteService.bind(null, id),
-    null
-  )
+export type DeleteState = { message: string } | null
+
+// Botão de excluir com confirmação. A action já vem com o id (bind) e devolve
+// uma mensagem quando o banco recusa, por exemplo, por haver histórico.
+export function DeleteButton({
+  action,
+  label,
+  confirmText,
+}: {
+  action: () => Promise<DeleteState>
+  label: string
+  confirmText: string
+}) {
+  const [state, formAction, pending] = useActionState<DeleteState>(action, null)
 
   return (
     <form
-      action={action}
+      action={formAction}
       onSubmit={(e) => {
-        if (!confirm(`Excluir "${name}"? Não dá para desfazer.`)) e.preventDefault()
+        if (!confirm(confirmText)) e.preventDefault()
       }}
     >
       {state?.message && (
@@ -23,7 +31,7 @@ export function DeleteServiceButton({ id, name }: { id: string; name: string }) 
         </p>
       )}
       <Button type="submit" variant="link" disabled={pending} className="w-full text-destructive">
-        {pending ? 'Excluindo...' : 'Excluir serviço'}
+        {pending ? 'Excluindo...' : label}
       </Button>
     </form>
   )
