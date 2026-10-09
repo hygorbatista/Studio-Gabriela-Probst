@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { PageHeader } from '../../page-header'
-import { BackLink } from '../back-link'
+import { BackLink } from '../../back-link'
 import { categoriesOf, listAllServices } from '../data'
 import { ServiceForm } from '../service-form'
 
@@ -9,7 +9,7 @@ export const metadata = { title: 'Novo serviço' }
 export default function NovoServicoPage() {
   return (
     <>
-      <BackLink />
+      <BackLink href="/painel/servicos" label="Serviços" />
       <PageHeader title="Novo serviço" />
       <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
         <NewServiceForm />

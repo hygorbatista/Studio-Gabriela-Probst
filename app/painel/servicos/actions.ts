@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { SERVICES_TAG } from '@/lib/services'
+import type { DeleteState } from '../delete-button'
 
 // Aceita "180", "180,50", "R$ 1.234,50".
 function parsePrice(raw: unknown) {
@@ -77,11 +78,9 @@ export async function saveService(
   redirect('/painel/servicos')
 }
 
-export type DeleteServiceState = { message: string } | null
-
 // Só exclui serviço que nunca foi usado. Com atendimentos, o banco recusa
 // (on delete restrict, erro 23001) e o caminho é desativar.
-export async function deleteService(id: string): Promise<DeleteServiceState> {
+export async function deleteService(id: string): Promise<DeleteState> {
   const { supabase } = await requireUser()
   if (!idSchema.safeParse(id).success) return { message: 'Serviço inválido.' }
 

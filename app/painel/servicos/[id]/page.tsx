@@ -2,9 +2,9 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '../../page-header'
-import { setServiceActive } from '../actions'
-import { BackLink } from '../back-link'
-import { DeleteServiceButton } from '../delete-service-button'
+import { deleteService, setServiceActive } from '../actions'
+import { BackLink } from '../../back-link'
+import { DeleteButton } from '../../delete-button'
 import { categoriesOf, listAllServices } from '../data'
 import { ServiceForm } from '../service-form'
 
@@ -13,7 +13,7 @@ export const metadata = { title: 'Editar serviço' }
 export default function EditarServicoPage({ params }: PageProps<'/painel/servicos/[id]'>) {
   return (
     <>
-      <BackLink />
+      <BackLink href="/painel/servicos" label="Serviços" />
       <PageHeader title="Editar serviço" />
       <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
         <EditService params={params} />
@@ -58,7 +58,11 @@ async function EditService({ params }: Pick<PageProps<'/painel/servicos/[id]'>, 
           </>
         )}
         <div className="mt-6">
-          <DeleteServiceButton id={service.id} name={service.name} />
+          <DeleteButton
+            action={deleteService.bind(null, service.id)}
+            label="Excluir serviço"
+            confirmText={`Excluir "${service.name}"? Não dá para desfazer.`}
+          />
         </div>
       </section>
     </div>

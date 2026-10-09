@@ -6,9 +6,9 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 | --- | --- |
 | 0. Fundação | ✅ concluída, com RLS e migrações movidos para a Fase 2 |
 | 1. Landing page | ✅ publicada em 2026-10-07 |
-| 2. Agenda, clientes e serviços | ⏳ em andamento: banco e serviços prontos |
-| 3. Financeiro | ⬜ |
-| 4. Relatórios | ⬜ |
+| 2. Uso diário (clientes, agenda, resumo do mês) | ⏳ em andamento: base pronta, clientes em curso |
+| 3. Despesas | ⬜ |
+| 4. Refinamentos | ⬜ |
 | 5. Futuro | ⬜ não comprometido |
 
 ## Fase 0: Fundação ✅
@@ -36,32 +36,28 @@ Ficou para depois:
 - **Domínio próprio:** opcional, decisão de custo.
 - **Perfil no Google (Google Meu Negócio):** fora deste projeto, por decisão do Hygor.
 
-## Fase 2: Agenda, clientes e serviços ⏳
+## Fase 2: Uso diário ⏳
 
-- ✅ Tabelas, RLS e migrações versionadas ([04-modelo-dados.md](04-modelo-dados.md)).
-- ✅ Estrutura do painel (shadcn/ui ajustado, navegação Agenda · Clientes · Serviços).
-- ✅ Cadastro, edição, desativação e exclusão de serviços, que alimentam a landing page.
-- Cadastro, busca e histórico de clientes.
-- Agenda diária e semanal, com criação, remarcação, cancelamento e conflito de horário.
+Reordenada em 2026-10-09 para os números chegarem cedo: a prioridade nº 2 da Gabriela é "relatórios e números", e eles dependem de atendimentos registrados.
+
+- ✅ **2.0 Base:** tabelas, RLS e migrações ([04-modelo-dados.md](04-modelo-dados.md)), estrutura do painel e cadastro de serviços ligado à landing page.
+- ⏳ **2.1 Clientes:** cadastro, busca e atalho para o WhatsApp.
+- **2.2 Agenda essencial:** agenda do dia, marcar atendimento, concluir com valor e forma de pagamento, cancelar e faltou. **A Gabriela larga o papel aqui.**
+- **2.3 Resumo do mês:** quanto entrou, atendimentos contra a meta de 30 e faturamento contra a meta de R$ 3.600.
+
+## Fase 3: Despesas
+
+- Despesas avulsas e recorrentes (aluguel, MEI, materiais).
+- Resumo mensal completo: entrou, saiu, **sobrou**.
+
+**Depende de:** a Gabriela informar os valores das despesas.
+
+## Fase 4: Refinamentos
+
+- Agenda semanal e remarcação.
 - Mensagem de WhatsApp pronta (confirmação e lembrete).
-- Aviso de clientes "sumidas".
-
-**Entrega:** a Gabriela larga a agenda de papel.
-
-## Fase 3: Financeiro
-
-- Registro de pagamento ao concluir o atendimento.
-- Despesas avulsas e recorrentes.
-- Resumo mensal: entrou, saiu, sobrou, com a meta.
-
-**Entrega:** o caderno deixa de ser necessário. Os valores das despesas são preenchidos depois, na medida em que ela tiver.
-
-## Fase 4: Relatórios
-
-- Faturamento por mês, serviços mais vendidos, melhores clientes.
-- Progresso das metas.
-
-**Entrega:** painel inicial com os números do mês.
+- Histórico da cliente e aviso de clientes "sumidas".
+- Melhores clientes e serviços mais vendidos.
 
 ## Fase 5: Futuro (não comprometido)
 
