@@ -93,10 +93,10 @@ erDiagram
 
 ## Decisões
 
-- **Intervalo entre atendimentos:** valor único em `settings`, começando em 15 minutos (2026-10-09).
+- **Intervalo entre atendimentos:** valor único em `settings`, 15 minutos, confirmado (2026-10-09).
 - **Cliente "sumida":** 45 dias sem atendimento, ajustável em `settings`.
 
 ## Pendências
 
 - Definir a lista final de categorias de despesa (Fase 3).
-- Confirmar com a Gabriela os 15 minutos de intervalo e os 45 dias.
+- Confirmar com a Gabriela os 45 dias para cliente "sumida".

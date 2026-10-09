@@ -47,14 +47,8 @@ export async function getLocalBusinessJsonLd() {
     },
     areaServed: { "@type": "City", name: `${site.city} - ${site.state}` },
     hasMap: mapsUrl,
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: site.opens,
-        closes: site.closes,
-      },
-    ],
+    // Sem openingHoursSpecification: o horário é flexível e combinado com cada
+    // cliente. Um horário fixo faria o Google mostrar "Fechado" fora dele.
     priceRange: `R$ ${Math.min(...prices)} - R$ ${Math.max(...prices)}`,
     currenciesAccepted: "BRL",
     paymentAccepted: "Pix, dinheiro, cartão de débito, cartão de crédito",

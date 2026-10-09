@@ -6,10 +6,8 @@ export const site = {
   whatsappMessage: "Olá, Gabriela! Vi o seu site e gostaria de agendar um horário.",
   instagramUrl: "https://www.instagram.com/gabyprobst.nails/",
   instagramHandle: "@gabyprobst.nails",
-  hours: "Segunda a sexta. Sábado a combinar.",
-  // Horário de referência: ela é flexível e combina com a cliente.
-  opens: "08:00",
-  closes: "19:00",
+  // Sem horário fixo: ela combina com cada cliente, inclusive mais tarde.
+  hours: "Segunda a sexta, horário flexível. Sábado com agendamento.",
   address: "Centro Comercial Ventura, R. Nossa Sra. dos Navegantes, Serraria, São José - SC, 88115-400",
   street: "R. Nossa Sra. dos Navegantes",
   building: "Centro Comercial Ventura",
@@ -111,7 +109,7 @@ export const faq = [
   {
     question: "Qual é o horário de atendimento?",
     answer:
-      "Segunda a sexta, com horário flexível para combinar com você. Sábado a combinar.",
+      "Segunda a sexta, com horário flexível: se precisar de um horário mais tarde, é só combinar. Sábado não tem horário fixo, atende com agendamento.",
   },
   {
     question: "Onde fica o studio? Tem estacionamento?",

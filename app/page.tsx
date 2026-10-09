@@ -202,7 +202,7 @@ export default async function Home() {
               <span className={`${eyebrow} mb-1 block text-white/50`}>
                 Horário
               </span>
-              Seg. a sex., 8h às 19h · sábado a combinar
+              Seg. a sex., horário flexível · sábado com agendamento
             </span>
             <a
               href={mapsUrl}
