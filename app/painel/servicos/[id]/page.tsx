@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '../../page-header'
 import { setServiceActive } from '../actions'
 import { BackLink } from '../back-link'
+import { DeleteServiceButton } from '../delete-service-button'
 import { categoriesOf, listAllServices } from '../data'
 import { ServiceForm } from '../service-form'
 
@@ -56,6 +57,9 @@ async function EditService({ params }: Pick<PageProps<'/painel/servicos/[id]'>, 
             </form>
           </>
         )}
+        <div className="mt-6">
+          <DeleteServiceButton id={service.id} name={service.name} />
+        </div>
       </section>
     </div>
   )

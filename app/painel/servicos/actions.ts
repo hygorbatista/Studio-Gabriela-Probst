@@ -77,6 +77,27 @@ export async function saveService(
   redirect('/painel/servicos')
 }
 
+export type DeleteServiceState = { message: string } | null
+
+// Só exclui serviço que nunca foi usado. Com atendimentos, o banco recusa
+// (on delete restrict, erro 23001) e o caminho é desativar.
+export async function deleteService(id: string): Promise<DeleteServiceState> {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success) return { message: 'Serviço inválido.' }
+
+  const { error } = await supabase.from('services').delete().eq('id', id)
+  if (error?.code === '23001' || error?.code === '23503') {
+    return {
+      message:
+        'Este serviço já tem atendimentos e não pode ser excluído, para não apagar o histórico. Use "Desativar".',
+    }
+  }
+  if (error) return { message: 'Não foi possível excluir. Tente de novo.' }
+
+  updateTag(SERVICES_TAG)
+  redirect('/painel/servicos')
+}
+
 // Desativar esconde o serviço do site e da agenda, sem apagar o histórico.
 export async function setServiceActive(id: string, active: boolean) {
   const { supabase } = await requireUser()
