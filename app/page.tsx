@@ -3,7 +3,9 @@ import { HeroSlideshow } from "@/components/hero-slideshow";
 import { InstagramIcon, MapPinIcon, WhatsAppIcon } from "@/components/icons";
 import { MobileMenu } from "@/components/mobile-menu";
 import { StructuredData } from "@/components/structured-data";
+import { formatDuration, formatPrice } from "@/lib/format";
 import { faqJsonLd } from "@/lib/seo";
+import { getActiveServices, groupByCategory } from "@/lib/services";
 import {
   ClipReveal,
   DrawLine,
@@ -18,12 +20,10 @@ import {
   aboutPhoto,
   bookingLink,
   faq,
-  formatPrice,
   gallery,
   heroPhotos,
   mapsUrl,
   pillars,
-  serviceGroups,
   servicesPhoto,
   site,
   training,
@@ -125,7 +125,11 @@ function Marquee() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  // Em cache: a página continua estática e é refeita quando o painel altera um serviço.
+  const services = await getActiveServices();
+  const prices = services.map((service) => service.price);
+
   return (
     <main className="flex flex-1 flex-col">
       <ScrollProgress />
@@ -263,8 +267,9 @@ export default function Home() {
             <Reveal delay={0.15}>
               <p className="mt-5 max-w-md text-base leading-7 text-white/70">
                 Manicure, pedicure, alongamento em fibra de vidro, blindagem e
-                gel, de R$ 30 a R$ 180. Os valores são fixos: não mudam por
-                tamanho, comprimento ou decoração.
+                gel, de R$ {Math.min(...prices)} a R$ {Math.max(...prices)}. Os
+                valores são fixos: não mudam por tamanho, comprimento ou
+                decoração.
               </p>
             </Reveal>
             <Reveal delay={0.25} className="mt-6 hidden max-w-md lg:block">
@@ -281,7 +286,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col gap-12">
-            {serviceGroups.map((group) => (
+            {groupByCategory(services).map((group) => (
               <div key={group.title}>
                 <Reveal>
                   <p className={`${eyebrow} text-white/50`}>{group.title}</p>
@@ -289,7 +294,7 @@ export default function Home() {
                 <DrawLine className="mt-4 bg-white/15" />
                 <ul>
                   {group.items.map((service, index) => (
-                    <li key={service.name} className="border-b border-white/15">
+                    <li key={service.id} className="border-b border-white/15">
                       <Reveal delay={index * 0.06} y={16}>
                         {/* A linha inteira é o link: área de toque grande no celular. */}
                         <a
@@ -304,7 +309,10 @@ export default function Home() {
                               {service.name}
                             </p>
                             <p className="mt-1 text-sm text-white/60">
-                              {service.duration}
+                              {formatDuration(
+                                service.duration_minutes,
+                                service.duration_up_to
+                              )}
                             </p>
                           </div>
                           <p className="font-serif text-xl transition-colors duration-500 group-hover:text-accent md:text-2xl">

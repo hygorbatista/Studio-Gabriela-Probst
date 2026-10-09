@@ -12,8 +12,8 @@ Legenda: **MVP** = entra na primeira versão de cada módulo. **Futuro** = fora 
 | LP-04 | Endereço e como chegar (link para o mapa) | MVP | ✅ |
 | LP-05 | Botão de WhatsApp com mensagem inicial pronta | MVP | ✅ também por serviço |
 | LP-06 | Layout responsivo, rápido, com SEO básico | MVP | ✅ |
-| LP-07 | Preços da página vêm dos serviços cadastrados no painel | MVP | ⏳ Fase 2, hoje em `lib/site.ts` |
-| LP-08 | Perguntas frequentes | MVP | ⏳ aguardando respostas da Gabriela |
+| LP-07 | Preços da página vêm dos serviços cadastrados no painel | MVP | ✅ |
+| LP-08 | Perguntas frequentes | MVP | ✅ só respostas confirmadas; o resto aguarda o questionário |
 
 ## Autenticação
 
