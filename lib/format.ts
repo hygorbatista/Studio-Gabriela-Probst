@@ -34,3 +34,19 @@ export const statusLabels: Record<string, string> = {
   cancelled: 'Cancelado',
   no_show: 'Faltou',
 }
+
+// Aceita "180", "180,50", "R$ 1.234,50". Vazio vira undefined.
+export function parseMoney(raw: unknown) {
+  let text = String(raw ?? '').replace(/[^\d,.]/g, '')
+  if (text.includes(',')) text = text.replace(/\./g, '').replace(',', '.')
+  return text === '' ? undefined : Number(text)
+}
+
+export const paymentMethods = {
+  pix: 'Pix',
+  cash: 'Dinheiro',
+  debit: 'Débito',
+  credit: 'Crédito',
+} as const
+
+export type PaymentMethod = keyof typeof paymentMethods

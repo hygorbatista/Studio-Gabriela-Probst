@@ -36,7 +36,9 @@ function NavBar({ pathname }: { pathname: string }) {
       <ul className="mx-auto grid max-w-2xl grid-cols-3">
         {items.map(({ href, label, icon: Icon }) => {
           const active =
-            href === '/painel' ? pathname === href : pathname.startsWith(href)
+            href === '/painel'
+              ? pathname === href || pathname.startsWith('/painel/agenda')
+              : pathname.startsWith(href)
           return (
             <li key={href}>
               <Link

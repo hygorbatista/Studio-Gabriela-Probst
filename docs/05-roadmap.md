@@ -6,7 +6,7 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 | --- | --- |
 | 0. Fundação | ✅ concluída, com RLS e migrações movidos para a Fase 2 |
 | 1. Landing page | ✅ publicada em 2026-10-07 |
-| 2. Uso diário (clientes, agenda, resumo do mês) | ⏳ em andamento: base pronta, clientes em curso |
+| 2. Uso diário (clientes, agenda, resumo do mês) | ⏳ em andamento: base e clientes prontos, agenda em curso |
 | 3. Despesas | ⬜ |
 | 4. Refinamentos | ⬜ |
 | 5. Futuro | ⬜ não comprometido |
@@ -41,8 +41,8 @@ Ficou para depois:
 Reordenada em 2026-10-09 para os números chegarem cedo: a prioridade nº 2 da Gabriela é "relatórios e números", e eles dependem de atendimentos registrados.
 
 - ✅ **2.0 Base:** tabelas, RLS e migrações ([04-modelo-dados.md](04-modelo-dados.md)), estrutura do painel e cadastro de serviços ligado à landing page.
-- ⏳ **2.1 Clientes:** cadastro, busca e atalho para o WhatsApp.
-- **2.2 Agenda essencial:** agenda do dia, marcar atendimento, concluir com valor e forma de pagamento, cancelar e faltou. **A Gabriela larga o papel aqui.**
+- ✅ **2.1 Clientes:** cadastro, busca, WhatsApp, aniversário e resumo calculado (gasto, favoritos).
+- ⏳ **2.2 Agenda essencial:** agenda do dia, marcar atendimento, concluir com valor e forma de pagamento, cancelar e faltou. **A Gabriela larga o papel aqui.**
 - **2.3 Resumo do mês:** quanto entrou, atendimentos contra a meta de 30 e faturamento contra a meta de R$ 3.600.
 
 ## Fase 3: Despesas

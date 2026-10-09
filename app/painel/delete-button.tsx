@@ -1,12 +1,11 @@
 'use client'
 
-import { useActionState } from 'react'
-import { Button } from '@/components/ui/button'
+import { ActionButton, type ActionState } from './action-button'
 
-export type DeleteState = { message: string } | null
+export type DeleteState = ActionState
 
-// Botão de excluir com confirmação. A action já vem com o id (bind) e devolve
-// uma mensagem quando o banco recusa, por exemplo, por haver histórico.
+// Excluir com confirmação. A action devolve uma mensagem quando o banco recusa,
+// por exemplo, por haver histórico.
 export function DeleteButton({
   action,
   label,
@@ -16,23 +15,14 @@ export function DeleteButton({
   label: string
   confirmText: string
 }) {
-  const [state, formAction, pending] = useActionState<DeleteState>(action, null)
-
   return (
-    <form
-      action={formAction}
-      onSubmit={(e) => {
-        if (!confirm(confirmText)) e.preventDefault()
-      }}
-    >
-      {state?.message && (
-        <p role="alert" className="mb-4 text-base text-destructive">
-          {state.message}
-        </p>
-      )}
-      <Button type="submit" variant="link" disabled={pending} className="w-full text-destructive">
-        {pending ? 'Excluindo...' : label}
-      </Button>
-    </form>
+    <ActionButton
+      action={action}
+      label={label}
+      pendingLabel="Excluindo..."
+      confirmText={confirmText}
+      variant="link"
+      className="w-full text-destructive"
+    />
   )
 }
