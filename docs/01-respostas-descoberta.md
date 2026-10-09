@@ -93,6 +93,9 @@ Nada no sistema que ela rejeite de jeito nenhum.
 - **Prioridade:** o site/landing page vem **primeiro**, como a Gabriela indicou.
 - **Valores financeiros** (despesas fixas e outros): não são prioridade agora. O sistema é construído antes e os dados entram depois.
 - **WhatsApp:** sem API no início. O sistema gera a mensagem pronta (link `wa.me`) e ela envia manualmente, mantendo o custo zero.
+- **Intervalo entre clientes:** 15 minutos (confirmado em 2026-10-09).
+- **Horário:** segunda a sexta, **sem horário fixo**. Se a cliente precisar de um horário mais tarde, ela combina. O site e os dados para o Google não informam horário de abertura e fechamento (2026-10-09).
+- **Sábado:** não tem horário base. Atende se a cliente marcar (2026-10-09).
 
 ## 11. Pontos ainda em aberto
 
@@ -102,9 +105,9 @@ Itens ambíguos ou sem resposta, para confirmar com a Gabriela (os pontos 1, 4 e
 2. **"Entrega de clientes":** o que significa aqui? Talvez "que o site traga clientes". Confirmar.
 3. **Meta de atendimentos:** hoje são cerca de 6 por semana (~24 por mês) e a meta é 30 por mês, a R$ 120 em média. O ticket médio de R$ 120 é só uma média de referência para a meta, ou ela espera que algum serviço custe isso?
 4. **Valores das despesas fixas:** aluguel, MEI e materiais. Sem eles, "quanto sobrou" não dá para calcular.
-5. **Intervalo entre clientes:** quantos minutos?
+5. ~~**Intervalo entre clientes:** quantos minutos?~~ 15 minutos (seção 10).
 6. **Lembretes:** como ela manda hoje e com quanta antecedência?
-7. **Sábado:** quais regras valem para o "a combinar"? Pode agendar normalmente ou é sempre exceção?
+7. ~~**Sábado:** quais regras valem para o "a combinar"?~~ Sem horário base, atende com agendamento (seção 10).
 8. **Landing page:** endereço do studio, Instagram, logo/cores, domínio e fotos dos trabalhos.
 9. **Regra do cartão:** o pagamento por aproximação precisa aparecer no sistema, ou é só uma observação dela?
 

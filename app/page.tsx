@@ -2,6 +2,10 @@ import Image from "next/image";
 import { HeroSlideshow } from "@/components/hero-slideshow";
 import { InstagramIcon, MapPinIcon, WhatsAppIcon } from "@/components/icons";
 import { MobileMenu } from "@/components/mobile-menu";
+import { StructuredData } from "@/components/structured-data";
+import { formatDuration, formatPrice } from "@/lib/format";
+import { faqJsonLd } from "@/lib/seo";
+import { getActiveServices, groupByCategory } from "@/lib/services";
 import {
   ClipReveal,
   DrawLine,
@@ -15,12 +19,11 @@ import {
 import {
   aboutPhoto,
   bookingLink,
-  formatPrice,
+  faq,
   gallery,
   heroPhotos,
   mapsUrl,
   pillars,
-  serviceGroups,
   servicesPhoto,
   site,
   training,
@@ -43,6 +46,7 @@ const navLinks = [
   { href: "#servicos", label: "Serviços" },
   { href: "#sobre", label: "Sobre" },
   { href: "#trabalhos", label: "Trabalhos" },
+  { href: "#duvidas", label: "Dúvidas" },
   { href: "#contato", label: "Contato" },
 ];
 
@@ -121,7 +125,11 @@ function Marquee() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  // Em cache: a página continua estática e é refeita quando o painel altera um serviço.
+  const services = await getActiveServices();
+  const prices = services.map((service) => service.price);
+
   return (
     <main className="flex flex-1 flex-col">
       <ScrollProgress />
@@ -194,7 +202,7 @@ export default function Home() {
               <span className={`${eyebrow} mb-1 block text-white/50`}>
                 Horário
               </span>
-              Seg. a sex., 8h às 19h · sábado a combinar
+              Seg. a sex., horário flexível · sábado com agendamento
             </span>
             <a
               href={mapsUrl}
@@ -259,8 +267,9 @@ export default function Home() {
             <Reveal delay={0.15}>
               <p className="mt-5 max-w-md text-base leading-7 text-white/70">
                 Manicure, pedicure, alongamento em fibra de vidro, blindagem e
-                gel, de R$ 30 a R$ 180. Os valores são fixos: não mudam por
-                tamanho, comprimento ou decoração.
+                gel, de R$ {Math.min(...prices)} a R$ {Math.max(...prices)}. Os
+                valores são fixos: não mudam por tamanho, comprimento ou
+                decoração.
               </p>
             </Reveal>
             <Reveal delay={0.25} className="mt-6 hidden max-w-md lg:block">
@@ -277,7 +286,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col gap-12">
-            {serviceGroups.map((group) => (
+            {groupByCategory(services).map((group) => (
               <div key={group.title}>
                 <Reveal>
                   <p className={`${eyebrow} text-white/50`}>{group.title}</p>
@@ -285,7 +294,7 @@ export default function Home() {
                 <DrawLine className="mt-4 bg-white/15" />
                 <ul>
                   {group.items.map((service, index) => (
-                    <li key={service.name} className="border-b border-white/15">
+                    <li key={service.id} className="border-b border-white/15">
                       <Reveal delay={index * 0.06} y={16}>
                         {/* A linha inteira é o link: área de toque grande no celular. */}
                         <a
@@ -300,7 +309,10 @@ export default function Home() {
                               {service.name}
                             </p>
                             <p className="mt-1 text-sm text-white/60">
-                              {service.duration}
+                              {formatDuration(
+                                service.duration_minutes,
+                                service.duration_up_to
+                              )}
                             </p>
                           </div>
                           <p className="font-serif text-xl transition-colors duration-500 group-hover:text-accent md:text-2xl">
@@ -383,7 +395,7 @@ export default function Home() {
             <p className={`${eyebrow} text-primary`}>Trabalhos</p>
           </Reveal>
           <h2 className={`mt-3 ${h2}`}>
-            <LineReveal>Alguns resultados</LineReveal>
+            <LineReveal>Unhas feitas no studio</LineReveal>
           </h2>
           <ul className="mt-10 columns-2 gap-3 md:columns-3 md:gap-6">
             {gallery.map((photo, index) => (
@@ -420,6 +432,45 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="duvidas" className={`${container} ${section}`}>
+        <StructuredData data={faqJsonLd} />
+        <div className="grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20">
+          <div>
+            <Reveal>
+              <p className={`${eyebrow} text-primary`}>Dúvidas</p>
+            </Reveal>
+            <h2 className={`mt-3 ${h2}`}>
+              <LineReveal>Perguntas frequentes</LineReveal>
+            </h2>
+          </div>
+          <div>
+            <DrawLine className="bg-border" />
+            <ul>
+              {faq.map((item, index) => (
+                <li key={item.question} className="border-b border-border">
+                  <Reveal delay={index * 0.05} y={12}>
+                    <details className="group">
+                      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-serif text-xl md:text-2xl [&::-webkit-details-marker]:hidden">
+                        {item.question}
+                        <span
+                          aria-hidden
+                          className="shrink-0 font-sans text-2xl leading-none text-primary transition-transform duration-300 group-open:rotate-45"
+                        >
+                          +
+                        </span>
+                      </summary>
+                      <p className="max-w-2xl pb-6 text-base leading-7 text-muted-foreground">
+                        {item.answer}
+                      </p>
+                    </details>
+                  </Reveal>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section id="contato" className={`bg-primary-deep text-white ${section}`}>
         <div className={container}>
           <Reveal>
@@ -440,7 +491,7 @@ export default function Home() {
                 href: whatsappUrl,
                 label: "WhatsApp",
                 title: site.phoneDisplay,
-                text: "Segunda a sexta. Sábado a combinar.",
+                text: site.hours,
               },
               {
                 href: site.instagramUrl,
@@ -451,8 +502,8 @@ export default function Home() {
               {
                 href: mapsUrl,
                 label: "Endereço",
-                title: "Centro Comercial Ventura",
-                text: "Serraria, São José - SC. Com estacionamento.",
+                title: site.building,
+                text: `${site.street}, ${site.neighborhood}, ${site.city} - ${site.state}. Com estacionamento.`,
               },
             ].map((card, index) => (
               <li key={card.label} className="bg-primary-deep">
@@ -495,7 +546,7 @@ export default function Home() {
       <footer
         className={`${container} flex flex-col gap-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-10 text-sm text-muted-foreground md:flex-row md:justify-between md:gap-10 md:pb-10`}
       >
-        <p>{site.name} · Nail Studio</p>
+        <p>{site.name} · Nail designer em São José - SC</p>
         <p>{site.address}</p>
       </footer>
 

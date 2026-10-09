@@ -6,10 +6,8 @@ export const site = {
   whatsappMessage: "Olá, Gabriela! Vi o seu site e gostaria de agendar um horário.",
   instagramUrl: "https://www.instagram.com/gabyprobst.nails/",
   instagramHandle: "@gabyprobst.nails",
-  hours: "Segunda a sexta. Sábado a combinar.",
-  // Horário de referência: ela é flexível e combina com a cliente.
-  opens: "08:00",
-  closes: "19:00",
+  // Sem horário fixo: ela combina com cada cliente, inclusive mais tarde.
+  hours: "Segunda a sexta, horário flexível. Sábado com agendamento.",
   address: "Centro Comercial Ventura, R. Nossa Sra. dos Navegantes, Serraria, São José - SC, 88115-400",
   street: "R. Nossa Sra. dos Navegantes",
   building: "Centro Comercial Ventura",
@@ -97,26 +95,38 @@ export const training = [
   { year: "2024", title: "Especialização em nail designer e decoração" },
 ];
 
-export const serviceGroups = [
+// Só respostas confirmadas pela Gabriela (docs/01). As novas vêm do docs/09-questionario-faq.md.
+export const faq = [
   {
-    title: "Fibra e gel",
-    items: [
-      { name: "Aplicação de fibra de vidro", price: 180, duration: "3 h" },
-      { name: "Manutenção de fibra", price: 100, duration: "2 h 30" },
-      { name: "Blindagem", price: 80, duration: "1 h 30" },
-      { name: "Esmaltação em gel", price: 85, duration: "1 h 30" },
-      { name: "Banho de gel", price: 90, duration: "até 2 h" },
-    ],
+    question: "Como faço para agendar?",
+    answer: `Pelo WhatsApp ${site.phoneDisplay}. Você escolhe o serviço e combina o melhor dia e horário.`,
   },
   {
-    title: "Tradicional",
-    items: [
-      { name: "Manicure", price: 30, duration: "1 h" },
-      { name: "Pedicure", price: 35, duration: "até 1 h" },
-    ],
+    question: "Os valores mudam conforme o tamanho ou a decoração?",
+    answer:
+      "Não. Os valores são fixos: não mudam por tamanho, comprimento ou decoração.",
+  },
+  {
+    question: "Qual é o horário de atendimento?",
+    answer:
+      "Segunda a sexta, com horário flexível: se precisar de um horário mais tarde, é só combinar. Sábado não tem horário fixo, atende com agendamento.",
+  },
+  {
+    question: "Onde fica o studio? Tem estacionamento?",
+    answer: `No ${site.building}, ${site.street}, ${site.neighborhood}, ${site.city} - ${site.state}. O local tem estacionamento.`,
+  },
+  {
+    question: "Quais formas de pagamento são aceitas?",
+    answer:
+      "Pix, dinheiro, débito e crédito. No cartão, o pagamento é por aproximação.",
+  },
+  {
+    question: "E se eu precisar cancelar ou me atrasar?",
+    answer:
+      "Cancelamentos são feitos com 24 horas de antecedência. A tolerância de atraso é de 15 minutos.",
+  },
+  {
+    question: "Você atende a domicílio?",
+    answer: "Não. O atendimento é feito só no studio, uma cliente por vez.",
   },
 ];
-
-export function formatPrice(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}

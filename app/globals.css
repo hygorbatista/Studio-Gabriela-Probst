@@ -1,5 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+/* Paleta da marca (docs/07-design-system.md). Os nomes do shadcn apontam para ela. */
 :root {
   --background: #fafafa;
   --foreground: #0b0b0c;
@@ -12,6 +15,20 @@
   --input-border: #d6d6d6;
   --muted-foreground: #6b6b6b;
   --destructive: #ba1a1a;
+
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1f1;
+  --secondary-foreground: var(--foreground);
+  --muted: #f1f1f1;
+  --accent-foreground: #ffffff;
+  --input: var(--input-border);
+  --ring: var(--primary);
+  /* Cantos retos em todo o sistema. */
+  --radius: 0rem;
 }
 
 @theme inline {
@@ -21,13 +38,32 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-deep: var(--primary-deep);
+  --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-input-border: var(--input-border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-destructive: var(--destructive);
   --font-sans: var(--font-jakarta);
   --font-serif: var(--font-playfair);
+  --font-heading: var(--font-playfair);
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
 }
 
 @theme {
@@ -37,6 +73,12 @@
     to {
       transform: translateX(-50%);
     }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
 }
 

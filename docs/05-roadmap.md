@@ -6,7 +6,7 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 | --- | --- |
 | 0. Fundação | ✅ concluída, com RLS e migrações movidos para a Fase 2 |
 | 1. Landing page | ✅ publicada em 2026-10-07 |
-| 2. Agenda, clientes e serviços | ⏳ próxima |
+| 2. Agenda, clientes e serviços | ⏳ em andamento: banco e serviços prontos |
 | 3. Financeiro | ⬜ |
 | 4. Relatórios | ⬜ |
 | 5. Futuro | ⬜ não comprometido |
@@ -31,15 +31,16 @@ Entregue:
 - SEO: título, descrição, dados de negócio local (JSON-LD), sitemap, robots, favicon e imagem de compartilhamento.
 
 Ficou para depois:
-- **Perguntas frequentes:** aguardando as respostas da Gabriela ([09-questionario-faq.md](09-questionario-faq.md)).
-- **Preços vindos do banco (LP-07):** hoje ficam em `lib/site.ts`. Passam para o banco na Fase 2, quando existir o cadastro de serviços.
+- **Perguntas frequentes:** publicadas só com respostas confirmadas. Horário detalhado, remarcação e o resto aguardam o [questionário](09-questionario-faq.md).
+- ✅ **Preços vindos do banco (LP-07):** entregue na Fase 2.
 - **Domínio próprio:** opcional, decisão de custo.
 - **Perfil no Google (Google Meu Negócio):** fora deste projeto, por decisão do Hygor.
 
 ## Fase 2: Agenda, clientes e serviços ⏳
 
-- Tabelas, RLS e migrações versionadas ([04-modelo-dados.md](04-modelo-dados.md)).
-- Cadastro e edição de serviços, que passam a alimentar a landing page.
+- ✅ Tabelas, RLS e migrações versionadas ([04-modelo-dados.md](04-modelo-dados.md)).
+- ✅ Estrutura do painel (shadcn/ui ajustado, navegação Agenda · Clientes · Serviços).
+- ✅ Cadastro, edição, desativação e exclusão de serviços, que alimentam a landing page.
 - Cadastro, busca e histórico de clientes.
 - Agenda diária e semanal, com criação, remarcação, cancelamento e conflito de horário.
 - Mensagem de WhatsApp pronta (confirmação e lembrete).

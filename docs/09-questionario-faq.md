@@ -13,7 +13,7 @@ Só responder "certo" ou corrigir.
 3. Cancelamento ou remarcação com 24 h de antecedência.
 4. Tolerância de 15 minutos de atraso.
 5. Atende só no studio, não vai a domicílio.
-6. Horário: segunda a sexta, das 8h às 19h, com flexibilidade para combinar com a cliente. Sábado a combinar.
+6. ~~Horário~~ **Respondido (2026-10-09):** segunda a sexta, sem horário fixo, combinado com a cliente (inclusive mais tarde). Sábado sem horário base, atende com agendamento.
 7. O endereço é Rua Nossa Senhora dos Navegantes, Serraria, São José - SC, 88115-400, no Centro Comercial Ventura, com estacionamento. **Qual é o número e a sala?** Existe algum ponto de referência perto?
 8. Agendamento pelo WhatsApp (48) 99840-2796.
 
