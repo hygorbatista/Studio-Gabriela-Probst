@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
+import { clientStats, formatBirthday } from '@/lib/client-stats'
 import { formatDateTime, formatPrice, statusLabels } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { BackLink } from '../../back-link'
@@ -29,6 +30,20 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
   if (!client) notFound()
 
   const firstName = client.name.split(' ')[0]
+  const stats = clientStats(client.appointments)
+  const summary = [
+    { label: 'Total gasto', value: formatPrice(stats.totalSpent) },
+    { label: 'Atendimentos', value: String(stats.visits) },
+    { label: 'Ticket médio', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
+    { label: 'Última visita', value: stats.lastVisit ? formatDateTime(stats.lastVisit) : '—' },
+    { label: 'Próximo horário', value: stats.nextVisit ? formatDateTime(stats.nextVisit) : '—' },
+    { label: 'Serviço favorito', value: stats.favoriteService ?? '—' },
+    { label: 'Horário favorito', value: stats.favoriteTime ?? '—' },
+    {
+      label: 'Aniversário',
+      value: client.birth_date ? formatBirthday(client.birth_date) : '—',
+    },
+  ]
 
   return (
     <div className="flex flex-col gap-12">
@@ -46,6 +61,23 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
           </a>
         )}
       </div>
+
+      <section>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Resumo
+        </h2>
+        {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
+        <dl className="grid grid-cols-2 border-t border-l border-border">
+          {summary.map((item) => (
+            <div key={item.label} className="border-r border-b border-border bg-surface p-4">
+              <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                {item.label}
+              </dt>
+              <dd className="mt-1 text-base font-semibold">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       <section>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">

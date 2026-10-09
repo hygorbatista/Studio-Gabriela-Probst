@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input'
 import { formatPhone } from '@/lib/phone'
 import { saveClient, type ClientFormState } from './actions'
 
-type Client = { id: string; name: string; phone: string | null; preferences: string | null }
+type Client = {
+  id: string
+  name: string
+  phone: string | null
+  birth_date: string | null
+  preferences: string | null
+}
 
 export function ClientForm({ client }: { client?: Client }) {
   const [state, action, pending] = useActionState<ClientFormState, FormData>(
@@ -49,6 +55,20 @@ export function ClientForm({ client }: { client?: Client }) {
             aria-invalid={!!errors.phone}
           />
           <FieldError>{errors.phone?.[0]}</FieldError>
+        </Field>
+
+        <Field data-invalid={!!errors.birth_date}>
+          <FieldLabel htmlFor="birth_date">Data de nascimento</FieldLabel>
+          <Input
+            id="birth_date"
+            name="birth_date"
+            type="date"
+            min="1900-01-01"
+            defaultValue={value('birth_date', client?.birth_date)}
+            aria-invalid={!!errors.birth_date}
+          />
+          <FieldDescription>Opcional. Para lembrar o aniversário.</FieldDescription>
+          <FieldError>{errors.birth_date?.[0]}</FieldError>
         </Field>
 
         <Field data-invalid={!!errors.preferences}>

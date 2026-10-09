@@ -21,6 +21,19 @@ const clientSchema = z.object({
       }
       return phone
     }),
+  // Opcional. O campo de data do navegador envia "AAAA-MM-DD".
+  birth_date: z
+    .string()
+    .trim()
+    .refine(
+      (v) =>
+        v === '' ||
+        (/^\d{4}-\d{2}-\d{2}$/.test(v) &&
+          v >= '1900-01-01' &&
+          v <= new Date().toISOString().slice(0, 10)),
+      'Data inválida.'
+    )
+    .transform((v) => v || null),
   preferences: z
     .string()
     .trim()
