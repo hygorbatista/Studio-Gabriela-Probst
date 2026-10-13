@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
@@ -90,14 +91,19 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
         ) : (
           <ul className="border-t border-border">
             {client.appointments.map((a) => (
-              <li key={a.id} className="flex items-center gap-4 border-b border-border py-3">
-                <div className="flex-1">
-                  <p className="text-base font-semibold">{a.services?.name}</p>
-                  <p className="text-base text-muted-foreground">
-                    {formatDateTime(a.starts_at)} · {statusLabels[a.status]}
-                  </p>
-                </div>
-                <p className="text-base">{formatPrice(a.price_charged)}</p>
+              <li key={a.id} className="border-b border-border">
+                <Link
+                  href={`/painel/agenda/${a.id}`}
+                  className="flex min-h-16 items-center gap-4 py-3 hover:bg-surface"
+                >
+                  <div className="flex-1">
+                    <p className="text-base font-semibold">{a.services?.name}</p>
+                    <p className="text-base text-muted-foreground">
+                      {formatDateTime(a.starts_at)} · {statusLabels[a.status]}
+                    </p>
+                  </div>
+                  <p className="text-base">{formatPrice(a.price_charged)}</p>
+                </Link>
               </li>
             ))}
           </ul>

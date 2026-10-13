@@ -4,21 +4,15 @@ import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { parseMoney } from '@/lib/format'
 import { SERVICES_TAG } from '@/lib/services'
 import type { DeleteState } from '../delete-button'
-
-// Aceita "180", "180,50", "R$ 1.234,50".
-function parsePrice(raw: unknown) {
-  let text = String(raw ?? '').replace(/[^\d,.]/g, '')
-  if (text.includes(',')) text = text.replace(/\./g, '').replace(',', '.')
-  return text === '' ? undefined : Number(text)
-}
 
 const serviceSchema = z.object({
   name: z.string().trim().min(1, 'Informe o nome.').max(80, 'Use até 80 caracteres.'),
   category: z.string().trim().min(1, 'Informe a categoria.').max(40, 'Use até 40 caracteres.'),
   price: z.preprocess(
-    parsePrice,
+    parseMoney,
     z.number({ error: 'Informe o valor.' }).min(0, 'O valor não pode ser negativo.').max(10000, 'Valor alto demais.')
   ),
   duration_minutes: z.coerce
