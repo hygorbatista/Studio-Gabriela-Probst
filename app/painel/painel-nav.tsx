@@ -3,12 +3,13 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, Sparkles, Users } from 'lucide-react'
+import { CalendarDays, ChartColumn, Sparkles, Users } from 'lucide-react'
 import { cn } from 'cn'
 
 const items = [
   { href: '/painel', label: 'Agenda', icon: CalendarDays },
   { href: '/painel/clientes', label: 'Clientes', icon: Users },
+  { href: '/painel/resumo', label: 'Resumo', icon: ChartColumn },
   { href: '/painel/servicos', label: 'Serviços', icon: Sparkles },
 ]
 
@@ -33,7 +34,7 @@ function NavBar({ pathname }: { pathname: string }) {
       aria-label="Painel"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="mx-auto grid max-w-2xl grid-cols-3">
+      <ul className="mx-auto grid max-w-2xl grid-cols-4">
         {items.map(({ href, label, icon: Icon }) => {
           const active =
             href === '/painel'
@@ -45,7 +46,7 @@ function NavBar({ pathname }: { pathname: string }) {
                 href={href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex h-16 flex-col items-center justify-center gap-1 text-xs font-semibold uppercase tracking-[0.15em] transition-colors',
+                  'flex h-16 flex-col items-center justify-center gap-1 text-xs font-semibold uppercase tracking-[0.1em] transition-colors',
                   active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
