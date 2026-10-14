@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { LogOut } from 'lucide-react'
 import { logout } from '../login/actions'
@@ -8,6 +8,14 @@ import { PainelNav } from './painel-nav'
 export const metadata: Metadata = {
   title: { default: 'Painel', template: '%s | Painel' },
   robots: { index: false, follow: false },
+  // App instalável no celular (docs/10-plano-ui-ux.md, etapa 2).
+  manifest: '/painel.webmanifest',
+  appleWebApp: { capable: true, title: 'Gabriela', statusBarStyle: 'default' },
+}
+
+// Barra do celular branca, como o cabeçalho do painel.
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
 }
 
 export default function PainelLayout({ children }: LayoutProps<'/painel'>) {
