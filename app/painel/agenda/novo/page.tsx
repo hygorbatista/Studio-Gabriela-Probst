@@ -22,9 +22,16 @@ export default function NovoAgendamentoPage({ searchParams }: PageProps<'/painel
 async function NewAppointment({
   searchParams,
 }: Pick<PageProps<'/painel/agenda/novo'>, 'searchParams'>) {
-  const { d } = await searchParams
+  const { d, cliente } = await searchParams
   const day = typeof d === 'string' && isValidDay(d) ? d : todayISO()
   const { clients, services } = await getFormOptions()
 
-  return <AppointmentForm clients={clients} services={services} defaultDay={day} />
+  return (
+    <AppointmentForm
+      clients={clients}
+      services={services}
+      defaultDay={day}
+      initialClientId={typeof cliente === 'string' ? cliente : undefined}
+    />
+  )
 }

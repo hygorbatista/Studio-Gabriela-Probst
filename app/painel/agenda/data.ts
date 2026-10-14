@@ -31,7 +31,7 @@ export async function getAppointment(id: string) {
 export async function getFormOptions() {
   const { supabase } = await requireUser()
   const [clients, services] = await Promise.all([
-    supabase.from('clients').select('id, name').order('name'),
+    supabase.from('clients').select('id, name, phone').order('name'),
     supabase
       .from('services')
       .select('id, name, price, duration_minutes, duration_up_to')

@@ -90,3 +90,16 @@ export function formatMonthTitle(month: string) {
   const text = monthFmt.format(new Date(`${month}-15T12:00:00Z`))
   return text[0].toUpperCase() + text.slice(1)
 }
+
+// Horários de 15 em 15 minutos, das 6h às 22h: o horário dela é flexível.
+export const timeOptions = Array.from({ length: 65 }, (_, i) => {
+  const minutes = 6 * 60 + i * 15
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+})
+
+// "14:30" + 150 → "17:00"
+export function addMinutesToTime(time: string, minutes: number) {
+  const [h, m] = time.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}

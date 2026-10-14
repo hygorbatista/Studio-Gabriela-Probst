@@ -1,0 +1,43 @@
+import { Suspense } from 'react'
+import { notFound, redirect } from 'next/navigation'
+import { dayOf, formatDayTitle, formatTime } from '@/lib/agenda'
+import { BackLink } from '../../../back-link'
+import { PageHeader } from '../../../page-header'
+import { getAppointment } from '../../data'
+import { RescheduleForm } from '../../reschedule-form'
+
+export const metadata = { title: 'Remarcar' }
+
+export default function RemarcarPage({ params }: PageProps<'/painel/agenda/[id]/remarcar'>) {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Reschedule params={params} />
+    </Suspense>
+  )
+}
+
+async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarcar'>, 'params'>) {
+  const { id } = await params
+  const a = /^[0-9a-f-]{36}$/i.test(id) ? await getAppointment(id) : null
+  if (!a) notFound()
+  // Só atendimentos agendados podem ser remarcados.
+  if (a.status !== 'scheduled') redirect(`/painel/agenda/${a.id}`)
+
+  const day = dayOf(a.starts_at)
+  const duration = Math.round((Date.parse(a.ends_at) - Date.parse(a.starts_at)) / 60000)
+
+  return (
+    <>
+      <BackLink href={`/painel/agenda/${a.id}`} label="Atendimento" />
+      <PageHeader title="Remarcar" />
+      <p className="mb-8 text-base">
+        <strong>{a.clients?.name}</strong> · {a.services?.name}
+        <br />
+        <span className="text-muted-foreground">
+          Está marcado para {formatDayTitle(day).toLowerCase()}, às {formatTime(a.starts_at)}.
+        </span>
+      </p>
+      <RescheduleForm id={a.id} day={day} time={formatTime(a.starts_at)} durationMinutes={duration} />
+    </>
+  )
+}

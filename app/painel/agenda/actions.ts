@@ -59,6 +59,7 @@ export async function createAppointment(
     [...formData.entries()].map(([k, v]) => [k, String(v)])
   )
   const parsed = appointmentSchema.safeParse({
+    client_id: '',
     new_client_name: '',
     new_client_phone: '',
     notes: '',
@@ -174,4 +175,39 @@ export async function reopenAppointment(id: string): Promise<ActionState> {
   if (error) return { message: 'Não foi possível reabrir. Tente de novo.' }
 
   redirect(`/painel/agenda/${id}`)
+}
+
+const rescheduleSchema = z.object({
+  day: z.string().refine(isValidDay, 'Data inválida.'),
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Escolha o horário.'),
+})
+
+export type RescheduleState = {
+  message?: string
+  errors?: Partial<Record<'day' | 'time', string[]>>
+} | null
+
+// Muda só a data e o horário. O gatilho do banco mantém a duração e o intervalo.
+export async function rescheduleAppointment(
+  id: string,
+  _prev: RescheduleState,
+  formData: FormData
+): Promise<RescheduleState> {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success) return { message: 'Atendimento inválido.' }
+
+  const parsed = rescheduleSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors }
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .update({ starts_at: toTimestamp(parsed.data.day, parsed.data.time) })
+    .eq('id', id)
+    .eq('status', 'scheduled')
+    .select('id')
+    .maybeSingle()
+  if (error?.code === '23P01') return { message: CONFLICT }
+  if (error || !data) return { message: 'Não foi possível remarcar. Tente de novo.' }
+
+  redirect(`/painel/agenda/${id}?remarcado=1`)
 }

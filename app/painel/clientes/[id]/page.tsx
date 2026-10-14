@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { CalendarPlus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { clientStats, formatBirthday } from '@/lib/client-stats'
@@ -50,17 +51,26 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
     <div className="flex flex-col gap-12">
       <div>
         <h1 className="font-serif text-4xl">{client.name}</h1>
-        {client.phone && (
-          <a
-            href={whatsappTo(client.phone, `Olá, ${firstName}!`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ className: 'mt-6 w-full' })}
+        <div className="mt-6 grid gap-2">
+          <Link
+            href={`/painel/agenda/novo?cliente=${client.id}`}
+            className={buttonVariants({ className: 'w-full' })}
           >
-            <WhatsAppIcon className="size-5" />
-            {formatPhone(client.phone)}
-          </a>
-        )}
+            <CalendarPlus className="size-5" aria-hidden="true" />
+            Agendar
+          </Link>
+          {client.phone && (
+            <a
+              href={whatsappTo(client.phone, `Olá, ${firstName}!`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: 'outline', className: 'w-full' })}
+            >
+              <WhatsAppIcon className="size-5" />
+              {formatPhone(client.phone)}
+            </a>
+          )}
+        </div>
       </div>
 
       <section>
