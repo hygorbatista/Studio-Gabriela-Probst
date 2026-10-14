@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/format'
 import { BackLink } from '../back-link'
 import { MonthNav } from '../month-nav'
 import { getMonthExpenses } from './data'
+import { DetailSkeleton } from '../skeletons'
 
 export const metadata = { title: 'Despesas' }
 
@@ -15,7 +16,7 @@ const label = 'text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreg
 
 export default function DespesasPage({ searchParams }: PageProps<'/painel/despesas'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<DetailSkeleton />}>
       <Despesas searchParams={searchParams} />
     </Suspense>
   )

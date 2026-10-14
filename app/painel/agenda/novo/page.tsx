@@ -4,6 +4,7 @@ import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { AppointmentForm } from '../appointment-form'
 import { getFormOptions } from '../data'
+import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Novo agendamento' }
 
@@ -12,7 +13,7 @@ export default function NovoAgendamentoPage({ searchParams }: PageProps<'/painel
     <>
       <BackLink href="/painel" label="Agenda" />
       <PageHeader title="Agendar" />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<FormSkeleton fields={5} />}>
         <NewAppointment searchParams={searchParams} />
       </Suspense>
     </>

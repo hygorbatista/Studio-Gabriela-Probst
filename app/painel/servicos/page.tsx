@@ -6,6 +6,7 @@ import { formatDuration, formatPrice } from '@/lib/format'
 import { groupByCategory } from '@/lib/services'
 import { PageHeader } from '../page-header'
 import { listAllServices } from './data'
+import { ListSkeleton } from '../skeletons'
 
 export const metadata = { title: 'Serviços' }
 
@@ -21,7 +22,7 @@ export default function ServicosPage() {
           </Link>
         }
       />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<ListSkeleton />}>
         <ServiceList />
       </Suspense>
     </>

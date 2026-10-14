@@ -13,12 +13,13 @@ import { StatusBadge } from '../../status-badge'
 import { reopenAppointment, setAppointmentStatus } from '../actions'
 import { CompleteForm } from '../complete-form'
 import { getAppointment } from '../data'
+import { DetailSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Atendimento' }
 
 export default function AtendimentoPage({ params, searchParams }: PageProps<'/painel/agenda/[id]'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<DetailSkeleton />}>
       <Appointment params={params} searchParams={searchParams} />
     </Suspense>
   )

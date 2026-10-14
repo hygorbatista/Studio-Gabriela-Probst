@@ -7,6 +7,7 @@ import { BackLink } from '../../back-link'
 import { DeleteButton } from '../../delete-button'
 import { categoriesOf, listAllServices } from '../data'
 import { ServiceForm } from '../service-form'
+import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Editar serviço' }
 
@@ -15,7 +16,7 @@ export default function EditarServicoPage({ params }: PageProps<'/painel/servico
     <>
       <BackLink href="/painel/servicos" label="Serviços" />
       <PageHeader title="Editar serviço" />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<FormSkeleton fields={5} />}>
         <EditService params={params} />
       </Suspense>
     </>

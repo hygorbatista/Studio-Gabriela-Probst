@@ -9,6 +9,7 @@ import { getMonthExpenses } from '../despesas/data'
 import { MonthNav } from '../month-nav'
 import { getMonthData } from './data'
 import { GoalsForm } from './goals-form'
+import { DetailSkeleton } from '../skeletons'
 
 export const metadata = { title: 'Resumo' }
 
@@ -33,7 +34,7 @@ const percent = (value: number) => `${Math.round(value * 100)}%`
 
 export default function ResumoPage({ searchParams }: PageProps<'/painel/resumo'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<DetailSkeleton />}>
       <Resumo searchParams={searchParams} />
     </Suspense>
   )
