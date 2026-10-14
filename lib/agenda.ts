@@ -59,3 +59,34 @@ export function formatTime(iso: string) {
 export function dayOf(iso: string) {
   return todayISO(new Date(iso))
 }
+
+// Mês atual em Brasília, "AAAA-MM".
+export function monthISO(now = new Date()) {
+  return todayISO(now).slice(0, 7)
+}
+
+export function isValidMonth(month: string) {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(month)
+}
+
+export function addMonths(month: string, amount: number) {
+  const [y, m] = month.split('-').map(Number)
+  const total = y * 12 + (m - 1) + amount
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`
+}
+
+// Início e fim do mês em Brasília.
+export function monthRange(month: string) {
+  return {
+    start: `${month}-01T00:00:00${OFFSET}`,
+    end: `${addMonths(month, 1)}-01T00:00:00${OFFSET}`,
+  }
+}
+
+const monthFmt = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'long', year: 'numeric' })
+
+// "2026-10" → "Outubro de 2026"
+export function formatMonthTitle(month: string) {
+  const text = monthFmt.format(new Date(`${month}-15T12:00:00Z`))
+  return text[0].toUpperCase() + text.slice(1)
+}
