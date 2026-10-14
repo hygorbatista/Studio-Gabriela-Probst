@@ -47,7 +47,15 @@ export function AgendaSkeleton() {
           <Bone key={i} className="h-18" />
         ))}
       </div>
-      <ListSkeleton count={3} />
+      <div className="mb-4 flex items-center justify-between">
+        <Bone className="h-8 w-40" />
+        <Bone className="h-12 w-32" />
+      </div>
+      <div className="flex flex-col gap-2">
+        {rows(3).map((i) => (
+          <Bone key={i} className="h-24" />
+        ))}
+      </div>
     </Loading>
   )
 }

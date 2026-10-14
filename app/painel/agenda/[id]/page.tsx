@@ -103,7 +103,8 @@ async function Appointment({
               </Link>
             </div>
 
-            <section>
+            {/* Alvo do "Concluir" da agenda (#concluir). */}
+            <section id="concluir" className="scroll-mt-6">
               <h2 className={`${sectionTitle} mb-4`}>Concluir</h2>
               <CompleteForm id={a.id} price={a.price_charged} />
             </section>
