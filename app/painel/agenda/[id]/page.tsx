@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { CalendarClock } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { dayOf, formatDayTitle, formatTime } from '@/lib/agenda'
@@ -15,16 +16,21 @@ import { getAppointment } from '../data'
 
 export const metadata = { title: 'Atendimento' }
 
-export default function AtendimentoPage({ params }: PageProps<'/painel/agenda/[id]'>) {
+export default function AtendimentoPage({ params, searchParams }: PageProps<'/painel/agenda/[id]'>) {
   return (
     <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
-      <Appointment params={params} />
+      <Appointment params={params} searchParams={searchParams} />
     </Suspense>
   )
 }
 
-async function Appointment({ params }: Pick<PageProps<'/painel/agenda/[id]'>, 'params'>) {
+async function Appointment({
+  params,
+  searchParams,
+}: Pick<PageProps<'/painel/agenda/[id]'>, 'params' | 'searchParams'>) {
   const { id } = await params
+  // Acabou de remarcar: destaca o aviso para a cliente.
+  const rescheduled = (await searchParams).remarcado === '1'
   const a = /^[0-9a-f-]{36}$/i.test(id) ? await getAppointment(id) : null
   if (!a) notFound()
 
@@ -34,9 +40,10 @@ async function Appointment({ params }: Pick<PageProps<'/painel/agenda/[id]'>, 'p
   const when = `${/^(sábado|domingo)/.test(dayTitle) ? 'no' : 'na'} ${dayTitle}, às ${formatTime(a.starts_at)}`
   const client = a.clients
   const payment = a.payments
-  const confirmation = client
-    ? `Olá, ${client.name.split(' ')[0]}! Confirmando seu horário de ${a.services?.name} ${when}. Até lá!`
-    : ''
+  const firstName = client?.name.split(' ')[0]
+  const confirmation = rescheduled
+    ? `Olá, ${firstName}! Seu horário de ${a.services?.name} foi remarcado para ${when.slice(3)}. Até lá!`
+    : `Olá, ${firstName}! Confirmando seu horário de ${a.services?.name} ${when}. Até lá!`
 
   return (
     <>
@@ -63,17 +70,36 @@ async function Appointment({ params }: Pick<PageProps<'/painel/agenda/[id]'>, 'p
       <div className="flex flex-col gap-10">
         {a.status === 'scheduled' && (
           <>
-            {client?.phone && (
-              <a
-                href={whatsappTo(client.phone, confirmation)}
-                target="_blank"
-                rel="noopener noreferrer"
+            {rescheduled && (
+              <p role="status" className="border border-primary bg-surface p-4 text-base">
+                <strong>Remarcado</strong> para {when.slice(3)}.
+                {client?.phone && ' Avise a cliente da nova data:'}
+              </p>
+            )}
+
+            <div className="grid gap-2">
+              {client?.phone && (
+                <a
+                  href={whatsappTo(client.phone, confirmation)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({
+                    variant: rescheduled ? 'default' : 'outline',
+                    className: 'w-full',
+                  })}
+                >
+                  <WhatsAppIcon className="size-5" />
+                  {rescheduled ? 'Avisar da nova data' : 'Enviar confirmação'}
+                </a>
+              )}
+              <Link
+                href={`/painel/agenda/${a.id}/remarcar`}
                 className={buttonVariants({ variant: 'outline', className: 'w-full' })}
               >
-                <WhatsAppIcon className="size-5" />
-                Enviar confirmação
-              </a>
-            )}
+                <CalendarClock className="size-5" aria-hidden="true" />
+                Remarcar
+              </Link>
+            </div>
 
             <section>
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">

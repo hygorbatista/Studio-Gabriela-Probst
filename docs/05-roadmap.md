@@ -8,7 +8,7 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 | 1. Landing page | ✅ publicada em 2026-10-07 |
 | 2. Uso diário (clientes, agenda, resumo do mês) | ✅ entregue em 2026-10-13 |
 | 3. Despesas | ✅ entregue em 2026-10-14 (valores a cadastrar pela Gabriela) |
-| 4. Refinamentos | ⬜ |
+| 4. Refinamentos | ⏳ em andamento |
 | 5. Futuro | ⬜ não comprometido |
 
 ## Fase 0: Fundação ✅
@@ -53,9 +53,12 @@ Reordenada em 2026-10-09 para os números chegarem cedo: a prioridade nº 2 da G
 
 **Falta:** a Gabriela cadastrar os valores das despesas.
 
-## Fase 4: Refinamentos
+## Fase 4: Refinamentos ⏳
 
-- Agenda semanal e remarcação.
+Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o requisito principal.**
+
+- ✅ Remarcação e busca de cliente ao agendar (2026-10-14).
+- Agenda semanal.
 - Mensagem de WhatsApp pronta (confirmação e lembrete).
 - Histórico da cliente e aviso de clientes "sumidas".
 - Melhores clientes e serviços mais vendidos.
