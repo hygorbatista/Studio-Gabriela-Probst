@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { formatPhone } from '@/lib/phone'
 import { PageHeader } from '../page-header'
 import { searchClients } from './data'
+import { InactiveSection } from './inactive-section'
 import { SearchInput } from './search-input'
 
 export const metadata = { title: 'Clientes' }
@@ -27,6 +28,9 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
           <SearchInput />
         </Suspense>
       </form>
+      <Suspense fallback={null}>
+        <InactiveSection />
+      </Suspense>
       <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
         <ClientList searchParams={searchParams} />
       </Suspense>

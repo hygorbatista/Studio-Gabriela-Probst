@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { CircleAlert } from 'lucide-react'
 import { addMonths, dayOf, formatMonthTitle, isValidMonth, monthISO } from '@/lib/agenda'
 import { formatPrice } from '@/lib/format'
+import { monthRankings } from '@/lib/month-rankings'
 import { monthSummary } from '@/lib/month-summary'
 import { getMonthExpenses } from '../despesas/data'
 import { MonthNav } from '../month-nav'
@@ -44,6 +45,7 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
   const month = typeof m === 'string' && isValidMonth(m) ? m : current
   const [data, expenses] = await Promise.all([getMonthData(month), getMonthExpenses(month)])
   const s = monthSummary({ ...data, expenses: expenses.total })
+  const { topClients, topServices } = monthRankings(data.payments)
   const previousTitle = formatMonthTitle(addMonths(month, -1)).split(' ')[0].toLowerCase()
 
   return (
@@ -166,6 +168,51 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
           </ul>
         )}
       </section>
+
+      {topClients.length > 0 && (
+        <section>
+          <h2 className={`${label} mb-2`}>Melhores clientes</h2>
+          <ol className="border-t border-border">
+            {topClients.map((c, i) => (
+              <li key={c.id} className="border-b border-border">
+                <Link
+                  href={`/painel/clientes/${c.id}`}
+                  className="flex min-h-14 items-center gap-3 py-2 text-base hover:bg-surface"
+                >
+                  <span className="w-5 text-muted-foreground">{i + 1}</span>
+                  <span className="flex-1">
+                    <span className="font-semibold">{c.name}</span>
+                    <span className="block text-muted-foreground">
+                      {c.visits} {c.visits === 1 ? 'visita' : 'visitas'}
+                    </span>
+                  </span>
+                  <span className="font-semibold">{formatPrice(c.total)}</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {topServices.length > 0 && (
+        <section>
+          <h2 className={`${label} mb-2`}>Serviços mais feitos</h2>
+          <ol className="border-t border-border">
+            {topServices.map((sv, i) => (
+              <li key={sv.name} className="flex min-h-14 items-center gap-3 border-b border-border py-2 text-base">
+                <span className="w-5 text-muted-foreground">{i + 1}</span>
+                <span className="flex-1">
+                  <span className="font-semibold">{sv.name}</span>
+                  <span className="block text-muted-foreground">
+                    {sv.count} {sv.count === 1 ? 'vez' : 'vezes'}
+                  </span>
+                </span>
+                <span className="font-semibold">{formatPrice(sv.total)}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <details className="group border-t border-border pt-6">
         <summary className={`${label} flex min-h-11 cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden`}>

@@ -2,9 +2,18 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
-import { addDays, formatDayTitle, formatTime, isValidDay, todayISO } from '@/lib/agenda'
+import { cn } from 'cn'
+import {
+  addDays,
+  formatDayTitle,
+  formatShortWeekday,
+  formatTime,
+  isValidDay,
+  todayISO,
+  weekStart,
+} from '@/lib/agenda'
 import { formatPrice } from '@/lib/format'
-import { getDayAppointments } from './agenda/data'
+import { getDayAppointments, getWeekCounts } from './agenda/data'
 import { StatusBadge } from './status-badge'
 
 export const metadata = { title: 'Agenda' }
@@ -21,18 +30,24 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
   const { d } = await searchParams
   const today = todayISO()
   const day = typeof d === 'string' && isValidDay(d) ? d : today
-  const appointments = await getDayAppointments(day)
+  const [appointments, weekCounts] = await Promise.all([
+    getDayAppointments(day),
+    getWeekCounts(weekStart(day)),
+  ])
 
   const active = appointments.filter((a) => a.status === 'scheduled' || a.status === 'completed')
   const expected = active.reduce((sum, a) => sum + a.price_charged, 0)
 
-  const navClass =
+  const start = weekStart(day)
+  const week = Array.from({ length: 7 }, (_, i) => addDays(start, i))
+
+  const arrowClass =
     'inline-flex size-11 items-center justify-center border border-border bg-surface hover:border-foreground'
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between gap-2">
-        <Link href={`/painel?d=${addDays(day, -1)}`} className={navClass} aria-label="Dia anterior">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Link href={`/painel?d=${addDays(day, -7)}`} className={arrowClass} aria-label="Semana anterior">
           <ChevronLeft className="size-5" aria-hidden="true" />
         </Link>
         <div className="text-center">
@@ -48,27 +63,43 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
             </Link>
           )}
         </div>
-        <Link href={`/painel?d=${addDays(day, 1)}`} className={navClass} aria-label="Próximo dia">
+        <Link href={`/painel?d=${addDays(day, 7)}`} className={arrowClass} aria-label="Próxima semana">
           <ChevronRight className="size-5" aria-hidden="true" />
         </Link>
       </div>
 
-      {/* Ir para uma data: formulário comum, funciona sem JavaScript. */}
-      <form className="mb-8 flex gap-2">
-        <label htmlFor="d" className="sr-only">
-          Ir para a data
-        </label>
-        <input
-          id="d"
-          name="d"
-          type="date"
-          defaultValue={day}
-          className="h-11 flex-1 border border-input bg-surface px-3 text-base outline-none focus-visible:border-primary"
-        />
-        <button type="submit" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-          Ir
-        </button>
-      </form>
+      {/* A semana de relance: toque no dia para abrir. */}
+      <nav aria-label="Dias da semana" className="mb-8">
+        <ul className="grid grid-cols-7 gap-1">
+          {week.map((d) => {
+            const count = weekCounts.get(d) ?? 0
+            const selected = d === day
+            return (
+              <li key={d}>
+                <Link
+                  href={`/painel?d=${d}`}
+                  aria-current={selected ? 'date' : undefined}
+                  aria-label={`${formatDayTitle(d)}: ${count} ${count === 1 ? 'atendimento' : 'atendimentos'}`}
+                  className={cn(
+                    'flex min-h-18 flex-col items-center justify-center gap-0.5 border text-center',
+                    selected
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-surface hover:border-foreground'
+                  )}
+                >
+                  <span className="text-xs font-semibold uppercase">{formatShortWeekday(d)}</span>
+                  <span className={cn('text-lg font-semibold', d === today && !selected && 'text-primary')}>
+                    {Number(d.slice(8))}
+                  </span>
+                  <span className={cn('text-xs', selected ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    {count > 0 ? count : '·'}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       <div className="mb-3 flex items-end justify-between gap-4">
         <p className="text-base text-muted-foreground">
