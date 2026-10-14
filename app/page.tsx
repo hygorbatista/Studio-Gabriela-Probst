@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { HeroSlideshow } from "@/components/hero-slideshow";
 import { InstagramIcon, MapPinIcon, WhatsAppIcon } from "@/components/icons";
 import { MobileMenu } from "@/components/mobile-menu";
@@ -548,6 +549,15 @@ export default async function Home() {
       >
         <p>{site.name} · Nail designer em São José - SC</p>
         <p>{site.address}</p>
+        {/* Acesso discreto ao painel da Gabriela. */}
+        <Link
+          href="/login"
+          prefetch={false}
+          rel="nofollow"
+          className="inline-flex min-h-11 items-center self-start text-muted-foreground/70 hover:text-foreground md:min-h-0 md:self-auto"
+        >
+          Entrar
+        </Link>
       </footer>
 
       <nav
