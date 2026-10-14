@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { safeReturnPath } from '@/lib/return-path'
 import { createClient } from '@/lib/supabase/server'
 
 // email volta para o formulário não apagar o que foi digitado.
@@ -24,7 +25,7 @@ export async function login(
     return { error: 'E-mail ou senha incorretos. Confira e tente de novo.', email }
   }
 
-  redirect('/painel')
+  redirect(safeReturnPath(formData.get('voltar')))
 }
 
 export async function logout() {
