@@ -4,23 +4,14 @@ import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { addMinutesToTime, timeOptions } from '@/lib/agenda'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { createAppointment, type AppointmentFormState } from './actions'
+import { ClientPicker } from './client-picker'
 
 type Option = { id: string; name: string }
+type ClientOption = Option & { phone: string | null }
 type ServiceOption = Option & { price: number; duration_minutes: number; duration_up_to: boolean }
-
-// Horários de 15 em 15 minutos, das 6h às 22h: o horário dela é flexível.
-const times = Array.from({ length: 65 }, (_, i) => {
-  const minutes = 6 * 60 + i * 15
-  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
-})
-
-function addMinutes(time: string, minutes: number) {
-  const [h, m] = time.split(':').map(Number)
-  const total = h * 60 + m + minutes
-  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-}
 
 const selectClass =
   'h-12 w-full border border-input bg-surface px-4 text-base outline-none focus-visible:border-primary aria-invalid:border-destructive'
@@ -29,10 +20,13 @@ export function AppointmentForm({
   clients,
   services,
   defaultDay,
+  initialClientId,
 }: {
-  clients: Option[]
+  clients: ClientOption[]
   services: ServiceOption[]
   defaultDay: string
+  // Vindo da ficha da cliente, ela já chega escolhida.
+  initialClientId?: string
 }) {
   const [state, action, pending] = useActionState<AppointmentFormState, FormData>(
     createAppointment,
@@ -41,7 +35,6 @@ export function AppointmentForm({
   const values = state?.values
   const errors = state?.errors ?? {}
 
-  const [clientId, setClientId] = useState(values?.client_id ?? '')
   const [serviceId, setServiceId] = useState(values?.service_id ?? '')
   const [time, setTime] = useState(values?.time ?? '09:00')
   const service = services.find((s) => s.id === serviceId)
@@ -49,60 +42,12 @@ export function AppointmentForm({
   return (
     <form action={action}>
       <FieldGroup>
-        <Field data-invalid={!!errors.client_id}>
-          <FieldLabel htmlFor="client_id">Cliente</FieldLabel>
-          <select
-            id="client_id"
-            name="client_id"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            aria-invalid={!!errors.client_id}
-            className={selectClass}
-            required
-          >
-            <option value="" disabled>
-              Escolha a cliente
-            </option>
-            <option value="new">+ Nova cliente</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <FieldError>{errors.client_id?.[0]}</FieldError>
-        </Field>
-
-        {clientId === 'new' && (
-          <div className="flex flex-col gap-5 border-l-2 border-primary pl-4">
-            <Field data-invalid={!!errors.new_client_name}>
-              <FieldLabel htmlFor="new_client_name">Nome da nova cliente</FieldLabel>
-              <Input
-                id="new_client_name"
-                name="new_client_name"
-                autoComplete="off"
-                defaultValue={values?.new_client_name}
-                aria-invalid={!!errors.new_client_name}
-                required
-              />
-              <FieldError>{errors.new_client_name?.[0]}</FieldError>
-            </Field>
-            <Field data-invalid={!!errors.new_client_phone}>
-              <FieldLabel htmlFor="new_client_phone">WhatsApp</FieldLabel>
-              <Input
-                id="new_client_phone"
-                name="new_client_phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="off"
-                placeholder="(48) 99999-9999"
-                defaultValue={values?.new_client_phone}
-                aria-invalid={!!errors.new_client_phone}
-              />
-              <FieldError>{errors.new_client_phone?.[0]}</FieldError>
-            </Field>
-          </div>
-        )}
+        <ClientPicker
+          clients={clients}
+          values={values}
+          errors={errors}
+          initialClientId={initialClientId}
+        />
 
         <Field data-invalid={!!errors.service_id}>
           <FieldLabel htmlFor="service_id">Serviço</FieldLabel>
@@ -150,7 +95,7 @@ export function AppointmentForm({
               aria-invalid={!!errors.time}
               className={selectClass}
             >
-              {times.map((t) => (
+              {timeOptions.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -163,7 +108,7 @@ export function AppointmentForm({
         {service && (
           <p className="text-base text-muted-foreground">
             {formatDuration(service.duration_minutes, service.duration_up_to)}: termina às{' '}
-            <strong className="text-foreground">{addMinutes(time, service.duration_minutes)}</strong>
+            <strong className="text-foreground">{addMinutesToTime(time, service.duration_minutes)}</strong>
             , mais 15 min de intervalo.
           </p>
         )}
