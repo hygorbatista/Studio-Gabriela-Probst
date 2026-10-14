@@ -10,6 +10,7 @@ erDiagram
     services ||--o{ appointments : usa
     appointments ||--o| payments : gera
     expenses
+    recurring_expenses
     settings
 
     clients {
@@ -54,7 +55,14 @@ erDiagram
         text category
         numeric amount
         date expense_date
-        boolean recurring
+    }
+    recurring_expenses {
+        uuid id PK
+        text description
+        text category
+        numeric amount
+        date starts_on
+        date ends_on
     }
     settings {
         int id PK
