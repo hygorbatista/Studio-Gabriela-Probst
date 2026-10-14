@@ -1,6 +1,6 @@
 import 'server-only'
 import { requireUser } from '@/lib/auth'
-import { dayRange } from '@/lib/agenda'
+import { addDays, dayOf, dayRange } from '@/lib/agenda'
 
 // Atendimentos de um dia (horário de Brasília), em ordem de horário.
 export async function getDayAppointments(day: string) {
@@ -41,4 +41,23 @@ export async function getFormOptions() {
   if (clients.error) throw clients.error
   if (services.error) throw services.error
   return { clients: clients.data, services: services.data }
+}
+
+// Quantos atendimentos (agendados ou concluídos) há em cada dia da semana.
+export async function getWeekCounts(start: string) {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('starts_at')
+    .in('status', ['scheduled', 'completed'])
+    .gte('starts_at', dayRange(start).start)
+    .lt('starts_at', dayRange(addDays(start, 6)).end)
+  if (error) throw error
+
+  const counts = new Map<string, number>()
+  for (const a of data) {
+    const day = dayOf(a.starts_at)
+    counts.set(day, (counts.get(day) ?? 0) + 1)
+  }
+  return counts
 }

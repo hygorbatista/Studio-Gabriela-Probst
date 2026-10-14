@@ -103,3 +103,16 @@ export function addMinutesToTime(time: string, minutes: number) {
   const total = h * 60 + m + minutes
   return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
+
+// Segunda-feira da semana de um dia, "AAAA-MM-DD".
+export function weekStart(day: string) {
+  const weekday = new Date(`${day}T12:00:00Z`).getUTCDay() // 0 = domingo
+  return addDays(day, -((weekday + 6) % 7))
+}
+
+const shortWeekday = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', weekday: 'short' })
+
+// "2026-10-12" → "seg"
+export function formatShortWeekday(day: string) {
+  return shortWeekday.format(new Date(`${day}T12:00:00Z`)).replace('.', '')
+}
