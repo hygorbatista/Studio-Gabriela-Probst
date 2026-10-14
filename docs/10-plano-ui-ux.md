@@ -39,7 +39,17 @@ Entregue em 2026-10-14. De bônus, corrigido um bug em que links com estilo de b
 | 1.4 Carregamento com esqueleto | Blocos cinza no formato da lista enquanto os dados chegam, no lugar de "Carregando..." | M |
 | 1.5 Login polido | Mesmo visual do painel, nome em Playfair, "mostrar senha", mensagem de erro clara | P |
 
-### Etapa 2: o painel vira um app
+### Etapa 2: o painel vira um app ✅
+
+Entregue em 2026-10-14. Como ficou:
+- **Manifesto:** fica em `/painel.webmanifest`. Só o painel e o login apontam para ele, para a landing page não oferecer "Instalar" às clientes.
+- **Ícones:** o "G" em 192 e 512 px, mais uma versão com margem para o recorte do Android (`lib/app-icon.tsx`).
+- **Sessão:** o Supabase renova o login sozinho, e o cookie dura 400 dias.
+- **Volta para a tela certa:** se a sessão cair, o login leva de volta para a tela onde ela estava (`?voltar=`). Só aceita endereços do painel (`lib/return-path.ts`).
+
+Para instalar:
+- **No Android (Chrome):** menu ⋮ → "Instalar app".
+- **No iPhone (Safari):** Compartilhar → "Adicionar à Tela de Início".
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
