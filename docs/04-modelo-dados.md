@@ -10,6 +10,7 @@ erDiagram
     services ||--o{ appointments : usa
     appointments ||--o| payments : gera
     expenses
+    recurring_expenses
     settings
 
     clients {
@@ -54,7 +55,14 @@ erDiagram
         text category
         numeric amount
         date expense_date
-        boolean recurring
+    }
+    recurring_expenses {
+        uuid id PK
+        text description
+        text category
+        numeric amount
+        date starts_on
+        date ends_on
     }
     settings {
         int id PK
@@ -74,7 +82,8 @@ erDiagram
   - `blocked_until` = `ends_at` + intervalo das configurações.
   - `price_charged` = preço atual do serviço, se não for informado.
 - **payments:** um pagamento por atendimento concluído. `method` em `pix | cash | debit | credit`. `paid_at` é a data do atendimento, para o faturamento contar no dia do serviço. Gravado pela função `complete_appointment`, que conclui e registra o pagamento numa transação só; `reopen_appointment` desfaz.
-- **expenses:** despesas avulsas e recorrentes. `category` em `rent | mei | materials | other` (lista ajustável).
+- **expenses:** despesas **avulsas** (materiais, compras pontuais), com data. `category` em `rent | mei | materials | other`.
+- **recurring_expenses:** despesas **fixas** (aluguel, MEI), que entram em todo mês entre `starts_on` e `ends_on` (meses guardados como o dia 1). Mudar o valor encerra a versão antiga no mês anterior e cria uma nova a partir do mês atual: os meses passados não mudam.
 - **settings:** linha única com metas (R$ 3.600 e 30 atendimentos), intervalo entre atendimentos e dias para considerar uma cliente "sumida".
 
 ## Regras de integridade
@@ -99,5 +108,4 @@ erDiagram
 
 ## Pendências
 
-- Definir a lista final de categorias de despesa (Fase 3).
 - Confirmar com a Gabriela os 45 dias para cliente "sumida".

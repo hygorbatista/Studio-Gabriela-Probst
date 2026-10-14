@@ -39,7 +39,9 @@ function NavBar({ pathname }: { pathname: string }) {
           const active =
             href === '/painel'
               ? pathname === href || pathname.startsWith('/painel/agenda')
-              : pathname.startsWith(href)
+              : href === '/painel/resumo'
+                ? pathname.startsWith(href) || pathname.startsWith('/painel/despesas')
+                : pathname.startsWith(href)
           return (
             <li key={href}>
               <Link

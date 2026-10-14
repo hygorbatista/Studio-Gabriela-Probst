@@ -11,12 +11,15 @@ export function monthSummary({
   payments,
   appointments,
   previousRevenue,
+  expenses = 0,
   goals,
   now = new Date(),
 }: {
   payments: Payment[]
   appointments: Appointment[]
   previousRevenue: number
+  // Total de despesas do mês (fixas + avulsas).
+  expenses?: number
   goals: Goals
   now?: Date
 }) {
@@ -45,6 +48,9 @@ export function monthSummary({
 
   return {
     revenue,
+    expenses,
+    // Quanto sobrou: entrou − saiu.
+    profit: revenue - expenses,
     revenueGoal,
     revenueProgress: revenueGoal > 0 ? revenue / revenueGoal : 0,
     revenueMissing: Math.max(revenueGoal - revenue, 0),

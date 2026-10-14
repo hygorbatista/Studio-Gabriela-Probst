@@ -7,7 +7,7 @@ Ordem definida com a Gabriela: **site primeiro**, depois o painel. Cada fase ter
 | 0. Fundação | ✅ concluída, com RLS e migrações movidos para a Fase 2 |
 | 1. Landing page | ✅ publicada em 2026-10-07 |
 | 2. Uso diário (clientes, agenda, resumo do mês) | ✅ entregue em 2026-10-13 |
-| 3. Despesas | ⬜ |
+| 3. Despesas | ✅ entregue em 2026-10-14 (valores a cadastrar pela Gabriela) |
 | 4. Refinamentos | ⬜ |
 | 5. Futuro | ⬜ não comprometido |
 
@@ -45,12 +45,13 @@ Reordenada em 2026-10-09 para os números chegarem cedo: a prioridade nº 2 da G
 - ✅ **2.2 Agenda essencial:** agenda do dia, marcar atendimento, concluir com valor e forma de pagamento, cancelar e faltou. **A Gabriela larga o papel aqui.**
 - ✅ **2.3 Resumo do mês:** faturamento e atendimentos contra as metas (ajustáveis), comparação com o mês anterior, ticket médio, ainda agendado, por forma de pagamento e aviso de atendimentos passados sem conclusão.
 
-## Fase 3: Despesas
+## Fase 3: Despesas ✅
 
-- Despesas avulsas e recorrentes (aluguel, MEI, materiais).
-- Resumo mensal completo: entrou, saiu, **sobrou**.
+- ✅ Despesas fixas (aluguel, MEI), que entram em todo mês, com reajuste que não altera meses passados.
+- ✅ Despesas avulsas (materiais, compras pontuais).
+- ✅ Resumo mensal completo: entrou, saiu, **sobrou**.
 
-**Depende de:** a Gabriela informar os valores das despesas.
+**Falta:** a Gabriela cadastrar os valores das despesas.
 
 ## Fase 4: Refinamentos
 
