@@ -93,7 +93,12 @@ Entregue em 2026-10-14. Detalhes que não estavam no protótipo:
 | 4.3 Formas de pagamento em barras | Cada forma com uma barra horizontal proporcional ao valor (Pix, dinheiro, cartão) | P |
 | 4.4 Rankings com posição | 1º, 2º e 3º com o número em Playfair; a 1ª cliente com destaque leve | P |
 
-### Etapa 5: clientes
+### Etapa 5: clientes ✅
+
+Entregue em 2026-10-14. Detalhes:
+- **Lista:** cada cliente mostra o próximo horário (em bordô) ou "Última visita há N dias". Na busca por telefone, o telefone também aparece.
+- **Lógica:** fica em `lib/client-list.ts`, que calcula as iniciais, o tom e os dias contados no calendário de Brasília.
+- **Números da Playfair:** passaram a ter altura uniforme (`lining-nums`) em todo o painel. Sem isso, o "0" parecia um "o".
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
