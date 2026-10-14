@@ -95,6 +95,33 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description: string
+          expense_date: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -129,6 +156,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recurring_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          ends_on: string | null
+          id: string
+          starts_on: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description: string
+          ends_on?: string | null
+          id?: string
+          starts_on: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          ends_on?: string | null
+          id?: string
+          starts_on?: string
+        }
+        Relationships: []
       }
       services: {
         Row: {

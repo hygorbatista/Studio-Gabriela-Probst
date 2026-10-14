@@ -1,15 +1,11 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, CircleAlert } from 'lucide-react'
-import {
-  addMonths,
-  dayOf,
-  formatMonthTitle,
-  isValidMonth,
-  monthISO,
-} from '@/lib/agenda'
+import { CircleAlert } from 'lucide-react'
+import { addMonths, dayOf, formatMonthTitle, isValidMonth, monthISO } from '@/lib/agenda'
 import { formatPrice } from '@/lib/format'
 import { monthSummary } from '@/lib/month-summary'
+import { getMonthExpenses } from '../despesas/data'
+import { MonthNav } from '../month-nav'
 import { getMonthData } from './data'
 import { GoalsForm } from './goals-form'
 
@@ -46,36 +42,36 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
   const { m } = await searchParams
   const current = monthISO()
   const month = typeof m === 'string' && isValidMonth(m) ? m : current
-  const data = await getMonthData(month)
-  const s = monthSummary(data)
+  const [data, expenses] = await Promise.all([getMonthData(month), getMonthExpenses(month)])
+  const s = monthSummary({ ...data, expenses: expenses.total })
   const previousTitle = formatMonthTitle(addMonths(month, -1)).split(' ')[0].toLowerCase()
-
-  const navClass =
-    'inline-flex size-11 items-center justify-center border border-border bg-surface hover:border-foreground'
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between gap-2">
-        <Link href={`/painel/resumo?m=${addMonths(month, -1)}`} className={navClass} aria-label="Mês anterior">
-          <ChevronLeft className="size-5" aria-hidden="true" />
+      <MonthNav basePath="/painel/resumo" month={month} current={current} />
+
+      <section className="border border-border bg-surface p-5">
+        <h2 className={label}>Quanto sobrou</h2>
+        <p className={`mt-2 font-serif text-4xl ${s.profit < 0 ? 'text-destructive' : ''}`}>
+          {formatPrice(s.profit)}
+        </p>
+        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-border pt-4">
+          <div>
+            <dt className={label}>Entrou</dt>
+            <dd className="mt-1 text-base font-semibold">{formatPrice(s.revenue)}</dd>
+          </div>
+          <div>
+            <dt className={label}>Saiu</dt>
+            <dd className="mt-1 text-base font-semibold">{formatPrice(s.expenses)}</dd>
+          </div>
+        </dl>
+        <Link
+          href={`/painel/despesas?m=${month}`}
+          className="mt-4 inline-flex min-h-11 items-center gap-1 text-base font-semibold text-primary underline underline-offset-4"
+        >
+          {s.expenses === 0 ? 'Cadastrar despesas' : 'Ver despesas do mês'}
         </Link>
-        <div className="text-center">
-          <h1 className="font-serif text-3xl leading-tight">{formatMonthTitle(month)}</h1>
-          {month === current ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Este mês</p>
-          ) : (
-            <Link
-              href="/painel/resumo"
-              className="inline-flex min-h-8 items-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              Voltar para este mês
-            </Link>
-          )}
-        </div>
-        <Link href={`/painel/resumo?m=${addMonths(month, 1)}`} className={navClass} aria-label="Próximo mês">
-          <ChevronRight className="size-5" aria-hidden="true" />
-        </Link>
-      </div>
+      </section>
 
       {s.pendingCount > 0 && s.firstPendingAt && (
         <Link
