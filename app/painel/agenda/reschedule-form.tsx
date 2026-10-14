@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { addMinutesToTime, timeOptions } from '@/lib/agenda'
+import { FormCard } from '../form-card'
 import { rescheduleAppointment, type RescheduleState } from './actions'
 
 const selectClass =
@@ -35,43 +36,45 @@ export function RescheduleForm({
   return (
     <form action={action}>
       <FieldGroup>
-        <div className="grid grid-cols-2 gap-4">
-          <Field data-invalid={!!errors.day}>
-            <FieldLabel htmlFor="day">Nova data</FieldLabel>
-            <Input
-              id="day"
-              name="day"
-              type="date"
-              defaultValue={day}
-              aria-invalid={!!errors.day}
-              required
-            />
-            <FieldError>{errors.day?.[0]}</FieldError>
-          </Field>
-          <Field data-invalid={!!errors.time}>
-            <FieldLabel htmlFor="time">Novo horário</FieldLabel>
-            <select
-              id="time"
-              name="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              aria-invalid={!!errors.time}
-              className={selectClass}
-            >
-              {options.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <FieldError>{errors.time?.[0]}</FieldError>
-          </Field>
-        </div>
+        <FormCard>
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!errors.day}>
+              <FieldLabel htmlFor="day">Nova data</FieldLabel>
+              <Input
+                id="day"
+                name="day"
+                type="date"
+                defaultValue={day}
+                aria-invalid={!!errors.day}
+                required
+              />
+              <FieldError>{errors.day?.[0]}</FieldError>
+            </Field>
+            <Field data-invalid={!!errors.time}>
+              <FieldLabel htmlFor="time">Novo horário</FieldLabel>
+              <select
+                id="time"
+                name="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                aria-invalid={!!errors.time}
+                className={selectClass}
+              >
+                {options.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <FieldError>{errors.time?.[0]}</FieldError>
+            </Field>
+          </div>
 
-        <p className="text-base text-muted-foreground">
-          Termina às <strong className="text-foreground">{addMinutesToTime(time, durationMinutes)}</strong>,
-          mais 15 min de intervalo.
-        </p>
+          <p className="text-base text-muted-foreground">
+            Termina às <strong className="text-foreground">{addMinutesToTime(time, durationMinutes)}</strong>,
+            mais 15 min de intervalo.
+          </p>
+        </FormCard>
 
         {state?.message && (
           <p role="alert" className="text-base text-destructive">
