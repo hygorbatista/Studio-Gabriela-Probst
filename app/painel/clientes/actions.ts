@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { withFlash } from '@/lib/flash'
 import { normalizePhone } from '@/lib/phone'
 import type { DeleteState } from '../delete-button'
 
@@ -81,7 +82,7 @@ export async function saveClient(
     clientId = data.id
   }
 
-  redirect(`/painel/clientes/${clientId}`)
+  redirect(withFlash(`/painel/clientes/${clientId}`, 'cliente-salva'))
 }
 
 // Só exclui cliente sem atendimentos; com histórico, o banco recusa (on delete restrict).
@@ -97,5 +98,5 @@ export async function deleteClient(id: string): Promise<DeleteState> {
   }
   if (error) return { message: 'Não foi possível excluir. Tente de novo.' }
 
-  redirect('/painel/clientes')
+  redirect(withFlash('/painel/clientes', 'cliente-excluida'))
 }

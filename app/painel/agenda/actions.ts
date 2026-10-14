@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { withFlash } from '@/lib/flash'
 import { dayOf, isValidDay, toTimestamp } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
@@ -103,7 +104,7 @@ export async function createAppointment(
     return { message: 'Não foi possível agendar. Tente de novo.', values }
   }
 
-  redirect(`/painel?d=${v.day}`)
+  redirect(withFlash(`/painel?d=${v.day}`, 'agendado'))
 }
 
 // Cancelar ou marcar falta.
@@ -123,7 +124,9 @@ export async function setAppointmentStatus(
     .maybeSingle()
   if (error || !data) return { message: 'Não foi possível alterar. Tente de novo.' }
 
-  redirect(`/painel?d=${dayOf(data.starts_at)}`)
+  redirect(
+    withFlash(`/painel?d=${dayOf(data.starts_at)}`, status === 'cancelled' ? 'cancelado' : 'falta')
+  )
 }
 
 const completeSchema = z.object({
@@ -160,7 +163,7 @@ export async function completeAppointment(
   })
   if (error) return { message: 'Não foi possível concluir. Tente de novo.' }
 
-  redirect(`/painel/agenda/${id}`)
+  redirect(withFlash(`/painel/agenda/${id}`, 'concluido'))
 }
 
 // Desfaz conclusão, falta ou cancelamento feitos por engano.
@@ -174,7 +177,7 @@ export async function reopenAppointment(id: string): Promise<ActionState> {
   }
   if (error) return { message: 'Não foi possível reabrir. Tente de novo.' }
 
-  redirect(`/painel/agenda/${id}`)
+  redirect(withFlash(`/painel/agenda/${id}`, 'reaberto'))
 }
 
 const rescheduleSchema = z.object({

@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { withFlash } from '@/lib/flash'
 import { addMonths, isValidDay, isValidMonth, monthISO } from '@/lib/agenda'
 import { expenseCategories, monthStart, type ExpenseCategory } from '@/lib/expenses'
 import { parseMoney } from '@/lib/format'
@@ -54,7 +55,7 @@ export async function saveExpense(
     : await supabase.from('expenses').insert(parsed.data)
   if (error) return { message: 'Não foi possível salvar. Tente de novo.', values }
 
-  redirect(`/painel/despesas?m=${parsed.data.expense_date.slice(0, 7)}`)
+  redirect(withFlash(`/painel/despesas?m=${parsed.data.expense_date.slice(0, 7)}`, 'despesa-salva'))
 }
 
 export async function deleteExpense(id: string): Promise<ActionState> {
@@ -69,7 +70,7 @@ export async function deleteExpense(id: string): Promise<ActionState> {
     .maybeSingle()
   if (error || !data) return { message: 'Não foi possível excluir. Tente de novo.' }
 
-  redirect(`/painel/despesas?m=${data.expense_date.slice(0, 7)}`)
+  redirect(withFlash(`/painel/despesas?m=${data.expense_date.slice(0, 7)}`, 'despesa-excluida'))
 }
 
 // Fixas ------------------------------------------------------------------------
@@ -97,7 +98,7 @@ export async function saveRecurringExpense(
       .from('recurring_expenses')
       .insert({ ...data, starts_on: monthStart(starts_month ?? monthISO()) })
     if (error) return { message: 'Não foi possível salvar. Tente de novo.', values }
-    redirect('/painel/despesas')
+    redirect(withFlash('/painel/despesas', 'despesa-salva'))
   }
 
   if (!idSchema.safeParse(id).success) return { message: 'Despesa inválida.', values }
@@ -135,7 +136,7 @@ export async function saveRecurringExpense(
     }
   }
 
-  redirect('/painel/despesas')
+  redirect(withFlash('/painel/despesas', 'despesa-salva'))
 }
 
 // Parar de cobrar: este mês ainda conta, os próximos não.
@@ -158,5 +159,5 @@ export async function endRecurringExpense(id: string): Promise<ActionState> {
       : await supabase.from('recurring_expenses').update({ ends_on: current }).eq('id', id)
   if (error) return { message: 'Não foi possível encerrar. Tente de novo.' }
 
-  redirect('/painel/despesas')
+  redirect(withFlash('/painel/despesas', 'despesa-encerrada'))
 }
