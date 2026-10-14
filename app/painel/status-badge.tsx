@@ -2,8 +2,8 @@ import { cn } from 'cn'
 import { statusLabels } from '@/lib/format'
 
 const styles: Record<string, string> = {
-  scheduled: 'border-foreground text-foreground',
-  completed: 'border-primary bg-primary text-primary-foreground',
+  scheduled: 'border-primary text-primary',
+  completed: 'border-success bg-success text-white',
   cancelled: 'border-border text-muted-foreground line-through',
   no_show: 'border-destructive text-destructive',
 }

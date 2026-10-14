@@ -13,6 +13,7 @@ import { deleteClient } from '../actions'
 import { ClientForm } from '../client-form'
 import { getClient } from '../data'
 import { DetailSkeleton } from '../../skeletons'
+import { dataLabel, sectionTitle } from '../../styles'
 
 export const metadata = { title: 'Cliente' }
 
@@ -75,16 +76,12 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
       </div>
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Resumo
-        </h2>
+        <h2 className={`${sectionTitle} mb-2`}>Resumo</h2>
         {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
         <dl className="grid grid-cols-2 border-t border-l border-border">
           {summary.map((item) => (
             <div key={item.label} className="border-r border-b border-border bg-surface p-4">
-              <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                {item.label}
-              </dt>
+              <dt className={dataLabel}>{item.label}</dt>
               <dd className="mt-1 text-base font-semibold">{item.value}</dd>
             </div>
           ))}
@@ -92,9 +89,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
       </section>
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Atendimentos
-        </h2>
+        <h2 className={`${sectionTitle} mb-2`}>Atendimentos</h2>
         {client.appointments.length === 0 ? (
           <p className="border-t border-border pt-4 text-muted-foreground">
             Nenhum atendimento ainda.
@@ -122,9 +117,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
       </section>
 
       <section>
-        <h2 className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Dados
-        </h2>
+        <h2 className={`${sectionTitle} mb-6`}>Dados</h2>
         <ClientForm client={client} />
       </section>
 

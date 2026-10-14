@@ -7,6 +7,7 @@ import { groupByCategory } from '@/lib/services'
 import { PageHeader } from '../page-header'
 import { listAllServices } from './data'
 import { ListSkeleton } from '../skeletons'
+import { sectionTitle } from '../styles'
 
 export const metadata = { title: 'Serviços' }
 
@@ -40,9 +41,7 @@ async function ServiceList() {
     <div className="flex flex-col gap-10">
       {groupByCategory(services).map((group) => (
         <section key={group.title}>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {group.title}
-          </h2>
+          <h2 className={`${sectionTitle} mb-2`}>{group.title}</h2>
           <ul className="border-t border-border">
             {group.items.map((service) => (
               <li key={service.id} className="border-b border-border">
@@ -58,7 +57,7 @@ async function ServiceList() {
                     </p>
                   </div>
                   {!service.active && (
-                    <span className="border border-border px-2 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    <span className="bg-muted px-2 py-1 text-sm font-semibold text-muted-foreground">
                       Desativado
                     </span>
                   )}

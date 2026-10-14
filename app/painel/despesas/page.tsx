@@ -9,10 +9,9 @@ import { BackLink } from '../back-link'
 import { MonthNav } from '../month-nav'
 import { getMonthExpenses } from './data'
 import { DetailSkeleton } from '../skeletons'
+import { card, dataLabel, sectionTitle } from '../styles'
 
 export const metadata = { title: 'Despesas' }
-
-const label = 'text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground'
 
 export default function DespesasPage({ searchParams }: PageProps<'/painel/despesas'>) {
   return (
@@ -61,8 +60,8 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
         <MonthNav basePath="/painel/despesas" month={month} current={current} />
       </div>
 
-      <section className="border border-border bg-surface p-5">
-        <h2 className={label}>Despesas do mês</h2>
+      <section className={card}>
+        <h2 className={dataLabel}>Despesas do mês</h2>
         <p className="mt-2 font-serif text-4xl">{formatPrice(e.total)}</p>
         <p className="mt-1 text-base text-muted-foreground">
           Fixas {formatPrice(e.recurringTotal)} · Avulsas {formatPrice(e.oneOffTotal)}
@@ -71,7 +70,7 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
 
       <section>
         <div className="mb-2 flex items-end justify-between gap-4">
-          <h2 className={label}>Fixas (todo mês)</h2>
+          <h2 className={sectionTitle}>Fixas (todo mês)</h2>
           <Link href="/painel/despesas/fixas/nova" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
             <Plus aria-hidden="true" />
             Fixa
@@ -98,7 +97,7 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
 
       <section>
         <div className="mb-2 flex items-end justify-between gap-4">
-          <h2 className={label}>Avulsas</h2>
+          <h2 className={sectionTitle}>Avulsas</h2>
           <Link href={`/painel/despesas/nova?m=${month}`} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
             <Plus aria-hidden="true" />
             Avulsa

@@ -31,7 +31,7 @@ export function CompleteForm({ id, price }: { id: string; price: number }) {
       </Field>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <legend className="mb-2 text-sm font-semibold">
           Forma de pagamento
         </legend>
         <div className="grid grid-cols-2 gap-2">

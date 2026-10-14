@@ -54,11 +54,11 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
         <div className="text-center">
           <h1 className="font-serif text-2xl leading-tight sm:text-3xl">{formatDayTitle(day)}</h1>
           {day === today ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Hoje</p>
+            <p className="text-sm font-semibold text-primary">Hoje</p>
           ) : (
             <Link
               href="/painel"
-              className="inline-flex min-h-8 items-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              className="inline-flex min-h-8 items-center text-sm font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Voltar para hoje
             </Link>
