@@ -8,7 +8,8 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="painel-theme flex flex-1 flex-col items-center justify-center bg-background px-5 py-12 text-foreground">
+    // Fundo preto do topo do site; o cartão do formulário continua branco.
+    <main className="painel-theme flex flex-1 flex-col items-center justify-center bg-foreground px-5 py-12 text-foreground">
       <div className="w-full max-w-sm bg-surface p-8 shadow-card">
         <span
           aria-hidden="true"
@@ -22,7 +23,7 @@ export default function LoginPage() {
       </div>
       <Link
         href="/"
-        className="mt-6 inline-flex min-h-11 items-center text-base text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        className="mt-6 inline-flex min-h-11 items-center text-base text-white/70 underline underline-offset-4 hover:text-white"
       >
         Voltar para o site
       </Link>
