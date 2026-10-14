@@ -61,7 +61,7 @@ async function EditService({ params }: Pick<PageProps<'/painel/servicos/[id]'>, 
           <DeleteButton
             action={deleteService.bind(null, service.id)}
             label="Excluir serviço"
-            confirmText={`Excluir "${service.name}"? Não dá para desfazer.`}
+            name={service.name}
           />
         </div>
       </section>

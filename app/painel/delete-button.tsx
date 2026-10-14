@@ -9,18 +9,23 @@ export type DeleteState = ActionState
 export function DeleteButton({
   action,
   label,
-  confirmText,
+  name,
 }: {
   action: () => Promise<DeleteState>
   label: string
-  confirmText: string
+  // O que será excluído, para a pergunta da confirmação.
+  name: string
 }) {
   return (
     <ActionButton
       action={action}
       label={label}
       pendingLabel="Excluindo..."
-      confirmText={confirmText}
+      confirm={{
+        title: `Excluir "${name}"?`,
+        description: 'Isso não pode ser desfeito.',
+        confirmLabel: 'Excluir',
+      }}
       variant="link"
       className="w-full text-destructive"
     />

@@ -131,7 +131,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
         <DeleteButton
           action={deleteClient.bind(null, client.id)}
           label="Excluir cliente"
-          confirmText={`Excluir "${client.name}"? Não dá para desfazer.`}
+          name={client.name}
         />
       </section>
     </div>

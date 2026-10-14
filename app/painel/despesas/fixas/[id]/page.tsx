@@ -58,7 +58,11 @@ async function EditRecurring({ params }: Pick<PageProps<'/painel/despesas/fixas/
                 action={endRecurringExpense.bind(null, expense.id)}
                 label="Encerrar despesa fixa"
                 pendingLabel="Encerrando..."
-                confirmText={`Encerrar "${expense.description}" a partir do próximo mês?`}
+                confirm={{
+                  title: `Encerrar "${expense.description}"?`,
+                  description: 'Este mês ainda conta. A partir do próximo, ela não entra mais.',
+                  confirmLabel: 'Encerrar',
+                }}
                 variant="destructive"
               />
             </div>

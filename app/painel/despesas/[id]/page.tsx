@@ -36,7 +36,7 @@ async function EditExpense({ params }: Pick<PageProps<'/painel/despesas/[id]'>, 
           <DeleteButton
             action={deleteExpense.bind(null, expense.id)}
             label="Excluir despesa"
-            confirmText={`Excluir "${expense.description}"?`}
+            name={expense.description}
           />
         </div>
       </div>
