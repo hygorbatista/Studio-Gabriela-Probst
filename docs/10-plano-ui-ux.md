@@ -27,7 +27,9 @@ Criado em 2026-10-14, depois de concluídas as Fases 2 a 4. Objetivo: deixar o p
 
 ## Etapas
 
-### Etapa 1: nada parece quebrado (antes do treinamento)
+### Etapa 1: nada parece quebrado (antes do treinamento) ✅
+
+Entregue em 2026-10-14. De bônus, corrigido um bug em que links com estilo de botão ("Enviar confirmação", "Remarcar") perdiam a borda.
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
