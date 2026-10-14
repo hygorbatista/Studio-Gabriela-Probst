@@ -132,7 +132,8 @@ html:has(dialog[open]) {
   --border: #e6e2dd;
   --muted: #edeae6;
   --secondary: #edeae6;
-  font-variant-numeric: tabular-nums;
+  /* lining-nums: na Playfair, o "0" deixa de parecer um "o" minúsculo. */
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 body {
