@@ -1,18 +1,19 @@
 import { cn } from 'cn'
 import { statusLabels } from '@/lib/format'
 
+// Bolinha + palavra. As bolinhas são a exceção redonda do design system.
 const styles: Record<string, string> = {
-  scheduled: 'border-primary text-primary',
-  completed: 'border-success bg-success text-white',
-  cancelled: 'border-border text-muted-foreground line-through',
-  no_show: 'border-destructive text-destructive',
+  scheduled: 'text-primary',
+  completed: 'text-success',
+  cancelled: 'text-muted-foreground',
+  no_show: 'text-destructive',
 }
 
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        'inline-block border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.15em]',
+        'inline-flex items-center gap-1.5 text-sm font-semibold before:size-2 before:rounded-full before:bg-current',
         styles[status]
       )}
     >
