@@ -78,7 +78,13 @@ Entregue em 2026-10-14, junto com os itens 3.1 e 3.2 do plano de UI/UX. Ajustes 
 
 O "agora" e o "Concluir pela agenda" (etapa 3 do plano de UI/UX) entram nesse mesmo cartão novo.
 
-### Etapa 4: resumo do mês
+### Etapa 4: resumo do mês ✅
+
+Entregue em 2026-10-14. Detalhes que não estavam no protótipo:
+- Quando a meta é batida, a barra fica verde-oliva e aparece o selo "Meta batida!".
+- Se sair mais do que entrou, o cartão escuro mostra o aviso "Saiu mais do que entrou".
+- A queda em relação ao mês anterior aparece em preto, não em vermelho, para não assustar.
+- "Ticket médio" continua com esse nome até a revisão de textos (item 4.1 do plano de UI/UX).
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
