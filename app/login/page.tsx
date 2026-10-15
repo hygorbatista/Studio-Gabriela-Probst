@@ -1,12 +1,21 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { LoginForm } from './login-form'
 
 export const metadata = {
   title: 'Entrar',
   robots: { index: false, follow: false },
+  // O login abre dentro do app instalado, então aponta para o mesmo manifesto.
+  manifest: '/painel.webmanifest',
+  appleWebApp: { capable: true, title: 'Gabriela', statusBarStyle: 'default' },
 }
 
-export default function LoginPage() {
+async function LoginWithReturn({ searchParams }: Pick<PageProps<'/login'>, 'searchParams'>) {
+  const { voltar } = await searchParams
+  return <LoginForm returnTo={typeof voltar === 'string' ? voltar : undefined} />
+}
+
+export default function LoginPage({ searchParams }: PageProps<'/login'>) {
   return (
     // Fundo preto do topo do site; o cartão do formulário continua branco.
     <main className="painel-theme flex flex-1 flex-col items-center justify-center bg-foreground px-5 py-12 text-foreground">
@@ -19,7 +28,10 @@ export default function LoginPage() {
         </span>
         <h1 className="mt-6 font-serif text-4xl">Gabriela Probst</h1>
         <p className="mt-1 mb-8 text-base text-muted-foreground">Painel do studio</p>
-        <LoginForm />
+        {/* Sem esperar o endereço: o formulário já aparece pronto para usar. */}
+        <Suspense fallback={<LoginForm />}>
+          <LoginWithReturn searchParams={searchParams} />
+        </Suspense>
       </div>
       <Link
         href="/"

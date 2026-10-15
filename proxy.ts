@@ -30,7 +30,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!isLoggedIn && pathname.startsWith('/painel')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    // Guarda onde ela estava: depois de entrar, volta para a mesma tela.
+    const login = new URL('/login', request.url)
+    if (pathname !== '/painel' || request.nextUrl.search) {
+      login.searchParams.set('voltar', pathname + request.nextUrl.search)
+    }
+    return NextResponse.redirect(login)
   }
 
   if (isLoggedIn && pathname === '/login') {

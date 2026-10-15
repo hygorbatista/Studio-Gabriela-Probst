@@ -7,13 +7,15 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { login, type LoginState } from './actions'
 
-export function LoginForm() {
+// returnTo: a tela do painel onde ela estava quando a sessão expirou.
+export function LoginForm({ returnTo }: { returnTo?: string }) {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(login, null)
   // No celular é fácil errar a senha: o botão do olho mostra o que foi digitado.
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <form action={formAction}>
+      {returnTo && <input type="hidden" name="voltar" value={returnTo} />}
       <FieldGroup>
         <Field data-invalid={!!state?.error}>
           <FieldLabel htmlFor="email">E-mail</FieldLabel>
