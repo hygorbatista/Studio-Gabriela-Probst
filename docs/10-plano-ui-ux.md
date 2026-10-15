@@ -48,6 +48,8 @@ Entregue em 2026-10-14. De bônus, corrigido um bug em que links com estilo de b
 
 ### Etapa 3: o dia a dia mais rápido
 
+Itens 3.1 e 3.2 ✅, entregues com a etapa 3 do [plano de design](11-plano-design.md). "Concluir" abre o atendimento direto no formulário de conclusão, porque ainda precisa do valor e da forma de pagamento.
+
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
 | 3.1 Agenda com "agora" | Destaque do próximo atendimento de hoje e marcação dos que já passaram | P |

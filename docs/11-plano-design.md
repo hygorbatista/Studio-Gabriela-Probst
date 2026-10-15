@@ -57,9 +57,16 @@ Ajustes nos tokens de `app/globals.css`. Mudam o sistema inteiro de uma vez, sem
 | 2.2 Aba ativa clara | Traço bordô em cima da aba, ícone mais forte e fundo `primary-soft` | P |
 | 2.3 Títulos de tela | Padrão único: título em Playfair, uma linha de apoio embaixo ("12 clientes", "outubro de 2026") e a ação principal à direita | P |
 
-### Etapa 3: agenda
+### Etapa 3: agenda ✅
 
 A tela que ela mais abre. Prioridade de beleza.
+
+Entregue em 2026-10-14, junto com os itens 3.1 e 3.2 do plano de UI/UX. Ajustes em relação ao protótipo:
+- Com mais de 3 atendimentos no dia, a faixa da semana mostra o número no lugar das bolinhas, para não esconder a quantidade.
+- O atendimento em andamento ganha a etiqueta "Em atendimento", para não repetir a palavra da linha "Agora".
+- O atendimento que passou sem conclusão mostra "Não concluído". Isso vale também em dias passados.
+- O botão "Concluir atendimento", na tela do atendimento, também ficou verde-oliva.
+- A lógica fica em `lib/agenda-now.ts`.
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |

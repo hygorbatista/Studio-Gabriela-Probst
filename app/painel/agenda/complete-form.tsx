@@ -58,7 +58,8 @@ export function CompleteForm({ id, price }: { id: string; price: number }) {
         </p>
       )}
 
-      <Button type="submit" disabled={pending} className="w-full">
+      {/* Verde-oliva: a mesma cor de "Concluído" na agenda. */}
+      <Button type="submit" disabled={pending} className="w-full bg-success hover:bg-success/90">
         {pending ? 'Concluindo...' : 'Concluir atendimento'}
       </Button>
     </form>
