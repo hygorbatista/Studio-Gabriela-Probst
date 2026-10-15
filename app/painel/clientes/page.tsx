@@ -1,12 +1,13 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight, Plus, Search, Users } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from 'cn'
 import { clientContext } from '@/lib/client-list'
 import { formatPhone } from '@/lib/phone'
 import { Initials } from './initials'
+import { EmptyState } from '../empty-state'
 import { PageHeader } from '../page-header'
 import { searchClients } from './data'
 import { InactiveSection } from './inactive-section'
@@ -48,10 +49,20 @@ async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 
   const clients = await searchClients(term)
 
   if (clients.length === 0) {
-    return (
-      <p className="text-muted-foreground">
-        {term ? 'Nenhuma cliente encontrada.' : 'Nenhuma cliente cadastrada ainda.'}
-      </p>
+    const action = (
+      <Link href="/painel/clientes/nova" className={buttonVariants()}>
+        <Plus className="size-5" aria-hidden="true" />
+        Cadastrar cliente
+      </Link>
+    )
+    return term ? (
+      <EmptyState icon={Search} title="Nenhuma cliente encontrada" action={action}>
+        Confira o nome ou o telefone, ou cadastre uma cliente nova.
+      </EmptyState>
+    ) : (
+      <EmptyState icon={Users} title="Nenhuma cliente ainda" action={action}>
+        Cadastre a primeira para agendar e acompanhar o histórico dela.
+      </EmptyState>
     )
   }
 

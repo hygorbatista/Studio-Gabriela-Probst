@@ -1,11 +1,12 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight, Plus, Repeat, ShoppingBag } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { isValidMonth, monthISO } from '@/lib/agenda'
 import { expenseCategories, type ExpenseCategory } from '@/lib/expenses'
 import { formatPrice } from '@/lib/format'
 import { BackLink } from '../back-link'
+import { EmptyState } from '../empty-state'
 import { MonthNav } from '../month-nav'
 import { getMonthExpenses } from './data'
 import { DetailSkeleton } from '../skeletons'
@@ -77,9 +78,11 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
           </Link>
         </div>
         {e.recurring.length === 0 ? (
-          <p className="border-t border-border pt-4 text-muted-foreground">
-            Nenhuma despesa fixa. Cadastre aluguel, MEI e o que se repete todo mês.
-          </p>
+          <div className="border-t border-border">
+            <EmptyState icon={Repeat} title="Nenhuma despesa fixa">
+              Cadastre aluguel, MEI e o que se repete todo mês.
+            </EmptyState>
+          </div>
         ) : (
           <ul className="border-t border-border">
             {e.recurring.map((r) => (
@@ -104,7 +107,11 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
           </Link>
         </div>
         {e.oneOff.length === 0 ? (
-          <p className="border-t border-border pt-4 text-muted-foreground">Nenhuma despesa avulsa no mês.</p>
+          <div className="border-t border-border">
+            <EmptyState icon={ShoppingBag} title="Nenhuma despesa avulsa no mês">
+              Lance aqui compras de material e outros gastos do dia a dia.
+            </EmptyState>
+          </div>
         ) : (
           <ul className="border-t border-border">
             {e.oneOff.map((x) => (

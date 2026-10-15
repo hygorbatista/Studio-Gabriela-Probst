@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight, Plus, Sparkles } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { groupByCategory } from '@/lib/services'
+import { EmptyState } from '../empty-state'
 import { PageHeader } from '../page-header'
 import { listAllServices } from './data'
 import { ListSkeleton } from '../skeletons'
@@ -34,7 +35,20 @@ async function ServiceList() {
   const services = await listAllServices()
 
   if (services.length === 0) {
-    return <p className="text-muted-foreground">Nenhum serviço cadastrado.</p>
+    return (
+      <EmptyState
+        icon={Sparkles}
+        title="Nenhum serviço ainda"
+        action={
+          <Link href="/painel/servicos/novo" className={buttonVariants()}>
+            <Plus className="size-5" aria-hidden="true" />
+            Cadastrar serviço
+          </Link>
+        }
+      >
+        Os serviços aparecem no site e na hora de agendar.
+      </EmptyState>
+    )
   }
 
   return (

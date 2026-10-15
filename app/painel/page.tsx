@@ -15,6 +15,7 @@ import {
 import { agendaMoments, needsCompletion, type Moment } from '@/lib/agenda-now'
 import { formatPrice } from '@/lib/format'
 import { getDayAppointments, getWeekCounts } from './agenda/data'
+import { EmptyState } from './empty-state'
 import { StatusBadge } from './status-badge'
 import { AgendaSkeleton } from './skeletons'
 
@@ -161,10 +162,9 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
       </div>
 
       {appointments.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 px-4 py-12 text-center text-muted-foreground">
-          <CalendarDays className="size-10" strokeWidth={1} aria-hidden="true" />
-          <p className="text-base">Nenhum horário marcado neste dia.</p>
-        </div>
+        <EmptyState icon={CalendarDays} title="Nenhum horário marcado">
+          Toque em Agendar para marcar um atendimento neste dia.
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
           {appointments.map((a, i) => {

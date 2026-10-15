@@ -59,6 +59,8 @@ Itens 3.1 e 3.2 ✅, entregues com a etapa 3 do [plano de design](11-plano-desig
 
 ### Etapa 4: linguagem e primeira vez
 
+Item 4.2 ✅, entregue com a etapa 6 do [plano de design](11-plano-design.md).
+
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
 | 4.1 Revisão de textos | Trocar jargões ("ticket médio" → "média por atendimento", "avulsa" → "do dia a dia", "fixa" → "todo mês"), padronizar botões e mensagens | P |

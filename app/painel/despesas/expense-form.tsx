@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { expenseCategories } from '@/lib/expenses'
+import { FormCard } from '../form-card'
 import type { ExpenseFormState } from './actions'
 
 type Saved = { description: string; category: string; amount: number }
@@ -31,73 +32,75 @@ export function ExpenseForm({
   return (
     <form action={action}>
       <FieldGroup>
-        <Field data-invalid={!!errors.description}>
-          <FieldLabel htmlFor="description">Descrição</FieldLabel>
-          <Input
-            id="description"
-            name="description"
-            autoComplete="off"
-            placeholder="Ex.: Aluguel do studio"
-            defaultValue={value('description', saved?.description)}
-            aria-invalid={!!errors.description}
-            required
-          />
-          <FieldError>{errors.description?.[0]}</FieldError>
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field data-invalid={!!errors.category}>
-            <FieldLabel htmlFor="category">Categoria</FieldLabel>
-            <select
-              id="category"
-              name="category"
-              defaultValue={value('category', saved?.category ?? 'other')}
-              aria-invalid={!!errors.category}
-              className={selectClass}
-            >
-              {Object.entries(expenseCategories).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <FieldError>{errors.category?.[0]}</FieldError>
-          </Field>
-
-          <Field data-invalid={!!errors.amount}>
-            <FieldLabel htmlFor="amount">Valor (R$)</FieldLabel>
+        <FormCard>
+          <Field data-invalid={!!errors.description}>
+            <FieldLabel htmlFor="description">Descrição</FieldLabel>
             <Input
-              id="amount"
-              name="amount"
-              inputMode="decimal"
-              placeholder="0,00"
-              defaultValue={value(
-                'amount',
-                saved ? saved.amount.toFixed(2).replace('.', ',') : undefined
-              )}
-              aria-invalid={!!errors.amount}
+              id="description"
+              name="description"
+              autoComplete="off"
+              placeholder="Ex.: Aluguel do studio"
+              defaultValue={value('description', saved?.description)}
+              aria-invalid={!!errors.description}
               required
             />
-            <FieldError>{errors.amount?.[0]}</FieldError>
+            <FieldError>{errors.description?.[0]}</FieldError>
           </Field>
-        </div>
 
-        {dateField && (
-          <Field data-invalid={!!errors[dateField.name]}>
-            <FieldLabel htmlFor={dateField.name}>{dateField.label}</FieldLabel>
-            <Input
-              id={dateField.name}
-              name={dateField.name}
-              type={dateField.name === 'expense_date' ? 'date' : 'month'}
-              defaultValue={value(dateField.name, dateField.value)}
-              aria-invalid={!!errors[dateField.name]}
-              required
-            />
-            <FieldError>{errors[dateField.name]?.[0]}</FieldError>
-          </Field>
-        )}
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!errors.category}>
+              <FieldLabel htmlFor="category">Categoria</FieldLabel>
+              <select
+                id="category"
+                name="category"
+                defaultValue={value('category', saved?.category ?? 'other')}
+                aria-invalid={!!errors.category}
+                className={selectClass}
+              >
+                {Object.entries(expenseCategories).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <FieldError>{errors.category?.[0]}</FieldError>
+            </Field>
 
-        {hint && <FieldDescription>{hint}</FieldDescription>}
+            <Field data-invalid={!!errors.amount}>
+              <FieldLabel htmlFor="amount">Valor (R$)</FieldLabel>
+              <Input
+                id="amount"
+                name="amount"
+                inputMode="decimal"
+                placeholder="0,00"
+                defaultValue={value(
+                  'amount',
+                  saved ? saved.amount.toFixed(2).replace('.', ',') : undefined
+                )}
+                aria-invalid={!!errors.amount}
+                required
+              />
+              <FieldError>{errors.amount?.[0]}</FieldError>
+            </Field>
+          </div>
+
+          {dateField && (
+            <Field data-invalid={!!errors[dateField.name]}>
+              <FieldLabel htmlFor={dateField.name}>{dateField.label}</FieldLabel>
+              <Input
+                id={dateField.name}
+                name={dateField.name}
+                type={dateField.name === 'expense_date' ? 'date' : 'month'}
+                defaultValue={value(dateField.name, dateField.value)}
+                aria-invalid={!!errors[dateField.name]}
+                required
+              />
+              <FieldError>{errors[dateField.name]?.[0]}</FieldError>
+            </Field>
+          )}
+
+          {hint && <FieldDescription>{hint}</FieldDescription>}
+        </FormCard>
 
         {state?.message && (
           <p role="alert" className="text-base text-destructive">

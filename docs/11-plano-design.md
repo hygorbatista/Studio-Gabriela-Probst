@@ -107,7 +107,13 @@ Entregue em 2026-10-14. Detalhes:
 | 5.3 Ficha com hierarquia | Topo com iniciais, nome e botões; 3 números grandes (total gasto, atendimentos, última visita); o resto em lista menor | M |
 | 5.4 Histórico em linha do tempo | Atendimentos numa linha vertical com bolinhas de status | P |
 
-### Etapa 6: formulários, estados e acabamento
+### Etapa 6: formulários, estados e acabamento ✅
+
+Entregue em 2026-10-14. Detalhes:
+- **Formulários:** os campos ficam em blocos brancos (`app/painel/form-card.tsx`). O Agendar tem 3 blocos: cliente, serviço e horário, observações. O botão salvar fixo ficou de fora: todos os formulários cabem na tela do celular, então ele não ajudaria.
+- **Telas vazias:** usam `app/painel/empty-state.tsx`. Isso também cumpre o item 4.2 do plano de UI/UX.
+- **Transição:** a entrada suave fica em `app/painel/template.tsx`. Ela aparece ao trocar de seção, não ao trocar de dia.
+- **Ícone do app:** já era o "G" branco sobre preto, igual ao monograma. O instalável (manifesto) é a etapa 2 do plano de UI/UX.
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |

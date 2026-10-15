@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CalendarPlus } from 'lucide-react'
+import { CalendarDays, CalendarPlus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { cn } from 'cn'
@@ -11,6 +11,7 @@ import { formatDateTime, formatPrice, statusLabels } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { BackLink } from '../../back-link'
 import { DeleteButton } from '../../delete-button'
+import { EmptyState } from '../../empty-state'
 import { deleteClient } from '../actions'
 import { ClientForm } from '../client-form'
 import { getClient } from '../data'
@@ -112,7 +113,9 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
       <section>
         <h2 className={`${sectionTitle} mb-4`}>Atendimentos</h2>
         {client.appointments.length === 0 ? (
-          <p className="text-muted-foreground">Nenhum atendimento ainda.</p>
+          <EmptyState icon={CalendarDays} title="Nenhum atendimento ainda">
+            Toque em Agendar para marcar o primeiro.
+          </EmptyState>
         ) : (
           // Linha do tempo: uma linha vertical com uma bolinha por atendimento.
           <ol className="relative ml-1.5 border-l border-border">
@@ -121,7 +124,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
                 <span
                   aria-hidden="true"
                   className={cn(
-                    'absolute top-5 -left-[5px] size-2.5 rounded-full ring-4 ring-background',
+                    'absolute top-5 -left-1.25 size-2.5 rounded-full ring-4 ring-background',
                     dotColors[a.status]
                   )}
                 />

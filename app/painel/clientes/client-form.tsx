@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { formatPhone } from '@/lib/phone'
+import { FormCard } from '../form-card'
 import { saveClient, type ClientFormState } from './actions'
 
 type Client = {
@@ -29,61 +30,63 @@ export function ClientForm({ client }: { client?: Client }) {
   return (
     <form action={action}>
       <FieldGroup>
-        <Field data-invalid={!!errors.name}>
-          <FieldLabel htmlFor="name">Nome</FieldLabel>
-          <Input
-            id="name"
-            name="name"
-            autoComplete="off"
-            defaultValue={value('name', client?.name)}
-            aria-invalid={!!errors.name}
-            required
-          />
-          <FieldError>{errors.name?.[0]}</FieldError>
-        </Field>
+        <FormCard>
+          <Field data-invalid={!!errors.name}>
+            <FieldLabel htmlFor="name">Nome</FieldLabel>
+            <Input
+              id="name"
+              name="name"
+              autoComplete="off"
+              defaultValue={value('name', client?.name)}
+              aria-invalid={!!errors.name}
+              required
+            />
+            <FieldError>{errors.name?.[0]}</FieldError>
+          </Field>
 
-        <Field data-invalid={!!errors.phone}>
-          <FieldLabel htmlFor="phone">WhatsApp</FieldLabel>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="off"
-            placeholder="(48) 99999-9999"
-            defaultValue={value('phone', client?.phone ? formatPhone(client.phone) : null)}
-            aria-invalid={!!errors.phone}
-          />
-          <FieldError>{errors.phone?.[0]}</FieldError>
-        </Field>
+          <Field data-invalid={!!errors.phone}>
+            <FieldLabel htmlFor="phone">WhatsApp</FieldLabel>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              placeholder="(48) 99999-9999"
+              defaultValue={value('phone', client?.phone ? formatPhone(client.phone) : null)}
+              aria-invalid={!!errors.phone}
+            />
+            <FieldError>{errors.phone?.[0]}</FieldError>
+          </Field>
 
-        <Field data-invalid={!!errors.birth_date}>
-          <FieldLabel htmlFor="birth_date">Data de nascimento</FieldLabel>
-          <Input
-            id="birth_date"
-            name="birth_date"
-            type="date"
-            min="1900-01-01"
-            defaultValue={value('birth_date', client?.birth_date)}
-            aria-invalid={!!errors.birth_date}
-          />
-          <FieldDescription>Opcional. Para lembrar o aniversário.</FieldDescription>
-          <FieldError>{errors.birth_date?.[0]}</FieldError>
-        </Field>
+          <Field data-invalid={!!errors.birth_date}>
+            <FieldLabel htmlFor="birth_date">Data de nascimento</FieldLabel>
+            <Input
+              id="birth_date"
+              name="birth_date"
+              type="date"
+              min="1900-01-01"
+              defaultValue={value('birth_date', client?.birth_date)}
+              aria-invalid={!!errors.birth_date}
+            />
+            <FieldDescription>Opcional. Para lembrar o aniversário.</FieldDescription>
+            <FieldError>{errors.birth_date?.[0]}</FieldError>
+          </Field>
 
-        <Field data-invalid={!!errors.preferences}>
-          <FieldLabel htmlFor="preferences">Preferências</FieldLabel>
-          <textarea
-            id="preferences"
-            name="preferences"
-            rows={4}
-            defaultValue={value('preferences', client?.preferences)}
-            aria-invalid={!!errors.preferences}
-            className="w-full border border-input bg-surface px-4 py-3 text-base outline-none focus-visible:border-primary aria-invalid:border-destructive"
-          />
-          <FieldDescription>Formato, cor preferida, alergias, o que ela gosta.</FieldDescription>
-          <FieldError>{errors.preferences?.[0]}</FieldError>
-        </Field>
+          <Field data-invalid={!!errors.preferences}>
+            <FieldLabel htmlFor="preferences">Preferências</FieldLabel>
+            <textarea
+              id="preferences"
+              name="preferences"
+              rows={4}
+              defaultValue={value('preferences', client?.preferences)}
+              aria-invalid={!!errors.preferences}
+              className="w-full border border-input bg-surface px-4 py-3 text-base outline-none focus-visible:border-primary aria-invalid:border-destructive"
+            />
+            <FieldDescription>Formato, cor preferida, alergias, o que ela gosta.</FieldDescription>
+            <FieldError>{errors.preferences?.[0]}</FieldError>
+          </Field>
+        </FormCard>
 
         {state?.message && (
           <p role="alert" className="text-base text-destructive">
