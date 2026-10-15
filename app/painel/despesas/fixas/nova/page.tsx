@@ -7,13 +7,13 @@ import { saveRecurringExpense } from '../../actions'
 import { ExpenseForm } from '../../expense-form'
 import { FormSkeleton } from '../../../skeletons'
 
-export const metadata = { title: 'Nova despesa fixa' }
+export const metadata = { title: 'Nova despesa de todo mês' }
 
 export default function NovaDespesaFixaPage() {
   return (
     <>
       <BackLink href="/painel/despesas" label="Despesas" />
-      <PageHeader title="Despesa fixa" />
+      <PageHeader title="Despesa de todo mês" />
       {/* O mês atual depende da hora do acesso. */}
       <Suspense fallback={<FormSkeleton />}>
         <NewRecurring />

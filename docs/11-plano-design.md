@@ -84,7 +84,7 @@ Entregue em 2026-10-14. Detalhes que não estavam no protótipo:
 - Quando a meta é batida, a barra fica verde-oliva e aparece o selo "Meta batida!".
 - Se sair mais do que entrou, o cartão escuro mostra o aviso "Saiu mais do que entrou".
 - A queda em relação ao mês anterior aparece em preto, não em vermelho, para não assustar.
-- "Ticket médio" continua com esse nome até a revisão de textos (item 4.1 do plano de UI/UX).
+- "Ticket médio" virou "Média por atendimento" na revisão de textos (item 4.1 do plano de UI/UX).
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |

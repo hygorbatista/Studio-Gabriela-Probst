@@ -24,7 +24,7 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
         action={
           <Link href="/painel/clientes/nova" className={buttonVariants({ size: 'sm' })}>
             <Plus aria-hidden="true" />
-            Nova
+            Nova cliente
           </Link>
         }
       />

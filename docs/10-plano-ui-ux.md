@@ -71,6 +71,11 @@ Itens 3.1 e 3.2 ✅, entregues com a etapa 3 do [plano de design](11-plano-desig
 
 Item 4.2 ✅, entregue com a etapa 6 do [plano de design](11-plano-design.md).
 
+Item 4.1 ✅, entregue em 2026-10-14:
+- **Trocas de termo:** "Ticket médio" virou "Média por atendimento". As despesas "Fixas" e "Avulsas" viraram "Todo mês" e "Do dia a dia", com o botão "Adicionar" em cada seção. Os botões de topo dizem o que criam: "Nova cliente" e "Novo serviço".
+- **Termos mantidos:** "Faturamento", "Desativar", "Reabrir" e "Encerrar" ficaram, porque são palavras comuns para quem tem um negócio.
+- **Código:** os nomes no código e no banco (`fixas`, `recurring_expenses`) não mudaram; só o que aparece na tela.
+
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
 | 4.1 Revisão de textos | Trocar jargões ("ticket médio" → "média por atendimento", "avulsa" → "do dia a dia", "fixa" → "todo mês"), padronizar botões e mensagens | P |

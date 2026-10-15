@@ -26,7 +26,7 @@ async function EditExpense({ params }: Pick<PageProps<'/painel/despesas/[id]'>, 
   return (
     <>
       <BackLink href={`/painel/despesas?m=${expense.expense_date.slice(0, 7)}`} label="Despesas" />
-      <PageHeader title="Despesa avulsa" />
+      <PageHeader title="Despesa do dia a dia" />
       <div className="flex flex-col gap-10">
         <ExpenseForm
           action={saveExpense.bind(null, expense.id)}
