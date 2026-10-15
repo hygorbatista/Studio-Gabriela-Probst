@@ -9,7 +9,12 @@ export async function searchClients(term: string) {
   const text = term.replace(/[,()*%\\]/g, ' ').trim()
   const digits = text.replace(/\D/g, '')
 
-  let query = supabase.from('clients').select('id, name, phone').order('name').limit(200)
+  // Os atendimentos vêm junto para a linha "Próximo..." / "Última visita...".
+  let query = supabase
+    .from('clients')
+    .select('id, name, phone, appointments(starts_at, status)')
+    .order('name')
+    .limit(200)
   if (digits.length >= 3) {
     query = query.or(`name.ilike.%${text}%,phone.ilike.%${digits}%`)
   } else if (text) {

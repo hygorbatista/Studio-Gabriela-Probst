@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { CalendarPlus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
+import { cn } from 'cn'
+import { daysAgo, formatNextVisit } from '@/lib/client-list'
 import { clientStats, formatBirthday } from '@/lib/client-stats'
 import { formatDateTime, formatPrice, statusLabels } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
@@ -12,10 +14,19 @@ import { DeleteButton } from '../../delete-button'
 import { deleteClient } from '../actions'
 import { ClientForm } from '../client-form'
 import { getClient } from '../data'
+import { Initials } from '../initials'
 import { DetailSkeleton } from '../../skeletons'
-import { dataLabel, sectionTitle } from '../../styles'
+import { card, dataLabel, sectionTitle } from '../../styles'
 
 export const metadata = { title: 'Cliente' }
+
+// Bolinha da linha do tempo, na cor do status.
+const dotColors: Record<string, string> = {
+  scheduled: 'bg-primary',
+  completed: 'bg-success',
+  cancelled: 'bg-muted-foreground/50',
+  no_show: 'bg-destructive',
+}
 
 export default function ClientePage({ params }: PageProps<'/painel/clientes/[id]'>) {
   return (
@@ -35,24 +46,27 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
 
   const firstName = client.name.split(' ')[0]
   const stats = clientStats(client.appointments)
-  const summary = [
+  // Os três números que ela olha primeiro.
+  const highlights = [
     { label: 'Total gasto', value: formatPrice(stats.totalSpent) },
     { label: 'Atendimentos', value: String(stats.visits) },
-    { label: 'Ticket médio', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
-    { label: 'Última visita', value: stats.lastVisit ? formatDateTime(stats.lastVisit) : '—' },
-    { label: 'Próximo horário', value: stats.nextVisit ? formatDateTime(stats.nextVisit) : '—' },
+    { label: 'Última visita', value: stats.lastVisit ? daysAgo(stats.lastVisit) : '—' },
+  ]
+  const details = [
+    { label: 'Próximo horário', value: stats.nextVisit ? formatNextVisit(stats.nextVisit) : '—' },
     { label: 'Serviço favorito', value: stats.favoriteService ?? '—' },
     { label: 'Horário favorito', value: stats.favoriteTime ?? '—' },
-    {
-      label: 'Aniversário',
-      value: client.birth_date ? formatBirthday(client.birth_date) : '—',
-    },
+    { label: 'Ticket médio', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
+    { label: 'Aniversário', value: client.birth_date ? formatBirthday(client.birth_date) : '—' },
   ]
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-10">
       <div>
-        <h1 className="font-serif text-4xl">{client.name}</h1>
+        <div className="flex items-center gap-4">
+          <Initials name={client.name} className="size-16 text-xl" />
+          <h1 className="min-w-0 font-serif text-3xl leading-tight sm:text-4xl">{client.name}</h1>
+        </div>
         <div className="mt-6 grid gap-2">
           <Link
             href={`/painel/agenda/novo?cliente=${client.id}`}
@@ -75,36 +89,51 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
         </div>
       </div>
 
-      <section>
-        <h2 className={`${sectionTitle} mb-2`}>Resumo</h2>
-        {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
-        <dl className="grid grid-cols-2 border-t border-l border-border">
-          {summary.map((item) => (
-            <div key={item.label} className="border-r border-b border-border bg-surface p-4">
+      {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
+      <section aria-label="Resumo" className={card}>
+        <dl className="grid grid-cols-3 gap-3">
+          {highlights.map((item) => (
+            <div key={item.label}>
               <dt className={dataLabel}>{item.label}</dt>
-              <dd className="mt-1 text-base font-semibold">{item.value}</dd>
+              <dd className="mt-1 font-serif text-xl leading-tight sm:text-2xl">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <dl className="mt-5 divide-y divide-border border-t border-border">
+          {details.map((item) => (
+            <div key={item.label} className="flex items-baseline justify-between gap-4 py-3">
+              <dt className={dataLabel}>{item.label}</dt>
+              <dd className="text-right text-base font-semibold">{item.value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
       <section>
-        <h2 className={`${sectionTitle} mb-2`}>Atendimentos</h2>
+        <h2 className={`${sectionTitle} mb-4`}>Atendimentos</h2>
         {client.appointments.length === 0 ? (
-          <p className="border-t border-border pt-4 text-muted-foreground">
-            Nenhum atendimento ainda.
-          </p>
+          <p className="text-muted-foreground">Nenhum atendimento ainda.</p>
         ) : (
-          <ul className="border-t border-border">
+          // Linha do tempo: uma linha vertical com uma bolinha por atendimento.
+          <ol className="relative ml-1.5 border-l border-border">
             {client.appointments.map((a) => (
-              <li key={a.id} className="border-b border-border">
+              <li key={a.id} className="relative">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'absolute top-5 -left-[5px] size-2.5 rounded-full ring-4 ring-background',
+                    dotColors[a.status]
+                  )}
+                />
                 <Link
                   href={`/painel/agenda/${a.id}`}
-                  className="flex min-h-16 items-center gap-4 py-3 hover:bg-surface"
+                  className="ml-4 flex min-h-16 items-center gap-4 px-2 py-3 hover:bg-surface"
                 >
-                  <div className="flex-1">
-                    <p className="text-base font-semibold">{a.services?.name}</p>
-                    <p className="text-base text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className={cn('text-base font-semibold', a.status === 'cancelled' && 'line-through')}>
+                      {a.services?.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
                       {formatDateTime(a.starts_at)} · {statusLabels[a.status]}
                     </p>
                   </div>
@@ -112,7 +141,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
                 </Link>
               </li>
             ))}
-          </ul>
+          </ol>
         )}
       </section>
 

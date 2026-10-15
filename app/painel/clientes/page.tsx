@@ -3,7 +3,10 @@ import Link from 'next/link'
 import { ChevronRight, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { cn } from 'cn'
+import { clientContext } from '@/lib/client-list'
 import { formatPhone } from '@/lib/phone'
+import { Initials } from './initials'
 import { PageHeader } from '../page-header'
 import { searchClients } from './data'
 import { InactiveSection } from './inactive-section'
@@ -52,24 +55,35 @@ async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 
     )
   }
 
+  // Buscando por telefone, o telefone aparece para ela conferir.
+  const showPhone = term.replace(/\D/g, '').length >= 3
+  const now = new Date()
+
   return (
-    <ul className="border-t border-border">
-      {clients.map((client) => (
-        <li key={client.id} className="border-b border-border">
-          <Link
-            href={`/painel/clientes/${client.id}`}
-            className="flex min-h-16 items-center gap-4 py-3 hover:bg-surface"
-          >
-            <div className="flex-1">
-              <p className="text-base font-semibold">{client.name}</p>
-              {client.phone && (
-                <p className="text-base text-muted-foreground">{formatPhone(client.phone)}</p>
-              )}
-            </div>
-            <ChevronRight className="size-5 text-muted-foreground" aria-hidden="true" />
-          </Link>
-        </li>
-      ))}
+    <ul className="divide-y divide-border bg-surface shadow-card">
+      {clients.map((client) => {
+        const context = clientContext(client.appointments, now)
+        return (
+          <li key={client.id}>
+            <Link
+              href={`/painel/clientes/${client.id}`}
+              className="flex min-h-18 items-center gap-3 px-4 py-3 hover:bg-muted/50"
+            >
+              <Initials name={client.name} />
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-semibold">{client.name}</p>
+                <p className={cn('text-sm', context.kind === 'next' ? 'font-semibold text-primary' : 'text-muted-foreground')}>
+                  {context.text}
+                </p>
+                {showPhone && client.phone && (
+                  <p className="text-sm text-muted-foreground">{formatPhone(client.phone)}</p>
+                )}
+              </div>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden="true" />
+            </Link>
+          </li>
+        )
+      })}
     </ul>
   )
 }
