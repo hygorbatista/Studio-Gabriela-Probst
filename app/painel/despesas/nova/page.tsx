@@ -4,12 +4,13 @@ import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { saveExpense } from '../actions'
 import { ExpenseForm } from '../expense-form'
+import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Nova despesa' }
 
 export default function NovaDespesaPage({ searchParams }: PageProps<'/painel/despesas/nova'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<FormSkeleton />}>
       <NewExpense searchParams={searchParams} />
     </Suspense>
   )

@@ -8,6 +8,7 @@ import { PageHeader } from '../../../page-header'
 import { endRecurringExpense, saveRecurringExpense } from '../../actions'
 import { getRecurringExpense } from '../../data'
 import { ExpenseForm } from '../../expense-form'
+import { FormSkeleton } from '../../../skeletons'
 
 export const metadata = { title: 'Despesa fixa' }
 
@@ -16,7 +17,7 @@ export default function DespesaFixaPage({ params }: PageProps<'/painel/despesas/
     <>
       <BackLink href="/painel/despesas" label="Despesas" />
       <PageHeader title="Despesa fixa" />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<FormSkeleton />}>
         <EditRecurring params={params} />
       </Suspense>
     </>
@@ -58,7 +59,11 @@ async function EditRecurring({ params }: Pick<PageProps<'/painel/despesas/fixas/
                 action={endRecurringExpense.bind(null, expense.id)}
                 label="Encerrar despesa fixa"
                 pendingLabel="Encerrando..."
-                confirmText={`Encerrar "${expense.description}" a partir do próximo mês?`}
+                confirm={{
+                  title: `Encerrar "${expense.description}"?`,
+                  description: 'Este mês ainda conta. A partir do próximo, ela não entra mais.',
+                  confirmLabel: 'Encerrar',
+                }}
                 variant="destructive"
               />
             </div>

@@ -5,12 +5,13 @@ import { BackLink } from '../../../back-link'
 import { PageHeader } from '../../../page-header'
 import { getAppointment } from '../../data'
 import { RescheduleForm } from '../../reschedule-form'
+import { FormSkeleton } from '../../../skeletons'
 
 export const metadata = { title: 'Remarcar' }
 
 export default function RemarcarPage({ params }: PageProps<'/painel/agenda/[id]/remarcar'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<FormSkeleton fields={2} />}>
       <Reschedule params={params} />
     </Suspense>
   )

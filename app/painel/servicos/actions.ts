@@ -4,6 +4,7 @@ import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { withFlash } from '@/lib/flash'
 import { parseMoney } from '@/lib/format'
 import { SERVICES_TAG } from '@/lib/services'
 import type { DeleteState } from '../delete-button'
@@ -69,7 +70,7 @@ export async function saveService(
 
   // Renova o cache do site: a landing page passa a mostrar o valor novo.
   updateTag(SERVICES_TAG)
-  redirect('/painel/servicos')
+  redirect(withFlash('/painel/servicos', 'servico-salvo'))
 }
 
 // Só exclui serviço que nunca foi usado. Com atendimentos, o banco recusa
@@ -88,7 +89,7 @@ export async function deleteService(id: string): Promise<DeleteState> {
   if (error) return { message: 'Não foi possível excluir. Tente de novo.' }
 
   updateTag(SERVICES_TAG)
-  redirect('/painel/servicos')
+  redirect(withFlash('/painel/servicos', 'servico-excluido'))
 }
 
 // Desativar esconde o serviço do site e da agenda, sem apagar o histórico.
@@ -100,5 +101,5 @@ export async function setServiceActive(id: string, active: boolean) {
   if (error) throw new Error('Não foi possível alterar o serviço.')
 
   updateTag(SERVICES_TAG)
-  redirect('/painel/servicos')
+  redirect(withFlash('/painel/servicos', active ? 'servico-reativado' : 'servico-desativado'))
 }

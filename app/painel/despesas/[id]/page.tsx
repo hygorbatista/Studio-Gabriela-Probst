@@ -6,12 +6,13 @@ import { PageHeader } from '../../page-header'
 import { deleteExpense, saveExpense } from '../actions'
 import { getExpense } from '../data'
 import { ExpenseForm } from '../expense-form'
+import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Despesa' }
 
 export default function DespesaPage({ params }: PageProps<'/painel/despesas/[id]'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<FormSkeleton />}>
       <EditExpense params={params} />
     </Suspense>
   )
@@ -36,7 +37,7 @@ async function EditExpense({ params }: Pick<PageProps<'/painel/despesas/[id]'>, 
           <DeleteButton
             action={deleteExpense.bind(null, expense.id)}
             label="Excluir despesa"
-            confirmText={`Excluir "${expense.description}"?`}
+            name={expense.description}
           />
         </div>
       </div>

@@ -13,12 +13,13 @@ import { StatusBadge } from '../../status-badge'
 import { reopenAppointment, setAppointmentStatus } from '../actions'
 import { CompleteForm } from '../complete-form'
 import { getAppointment } from '../data'
+import { DetailSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Atendimento' }
 
 export default function AtendimentoPage({ params, searchParams }: PageProps<'/painel/agenda/[id]'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<DetailSkeleton />}>
       <Appointment params={params} searchParams={searchParams} />
     </Suspense>
   )
@@ -113,13 +114,21 @@ async function Appointment({
                 action={setAppointmentStatus.bind(null, a.id, 'no_show')}
                 label="Faltou"
                 pendingLabel="Salvando..."
-                confirmText="Marcar que a cliente faltou?"
+                confirm={{
+                  title: 'A cliente faltou?',
+                  description: 'O atendimento fica marcado como falta e não entra no faturamento.',
+                  confirmLabel: 'Sim, faltou',
+                }}
               />
               <ActionButton
                 action={setAppointmentStatus.bind(null, a.id, 'cancelled')}
                 label="Cancelar"
                 pendingLabel="Cancelando..."
-                confirmText="Cancelar este atendimento? O horário fica livre."
+                confirm={{
+                  title: 'Cancelar este atendimento?',
+                  description: 'O horário fica livre para outra cliente.',
+                  confirmLabel: 'Cancelar atendimento',
+                }}
                 variant="destructive"
               />
             </section>
@@ -143,11 +152,14 @@ async function Appointment({
             action={reopenAppointment.bind(null, a.id)}
             label="Reabrir atendimento"
             pendingLabel="Reabrindo..."
-            confirmText={
-              a.status === 'completed'
-                ? 'Reabrir? O pagamento registrado será apagado.'
-                : 'Reabrir este atendimento como agendado?'
-            }
+            confirm={{
+              title: 'Reabrir este atendimento?',
+              description:
+                a.status === 'completed'
+                  ? 'Ele volta a ficar agendado e o pagamento registrado é apagado.'
+                  : 'Ele volta a ficar agendado.',
+              confirmLabel: 'Reabrir',
+            }}
             variant="link"
             className="w-full text-muted-foreground"
           />

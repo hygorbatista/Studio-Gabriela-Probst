@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { logout } from '../login/actions'
+import { Flash } from './flash'
 import { PainelNav } from './painel-nav'
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function PainelLayout({ children }: LayoutProps<'/painel'>) {
         {children}
       </main>
 
+      <Flash />
       <PainelNav />
     </div>
   )

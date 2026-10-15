@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
+import { withFlash } from '@/lib/flash'
 import { isValidMonth } from '@/lib/agenda'
 import { parseMoney } from '@/lib/format'
 
@@ -36,5 +37,7 @@ export async function saveGoals(
   const { error } = await supabase.from('settings').update(parsed.data).eq('id', 1)
   if (error) return { message: 'Não foi possível salvar. Tente de novo.' }
 
-  redirect(isValidMonth(month) ? `/painel/resumo?m=${month}` : '/painel/resumo')
+  redirect(
+    withFlash(isValidMonth(month) ? `/painel/resumo?m=${month}` : '/painel/resumo', 'metas-salvas')
+  )
 }

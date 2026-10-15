@@ -8,6 +8,7 @@ import { PageHeader } from '../page-header'
 import { searchClients } from './data'
 import { InactiveSection } from './inactive-section'
 import { SearchInput } from './search-input'
+import { ListSkeleton } from '../skeletons'
 
 export const metadata = { title: 'Clientes' }
 
@@ -31,7 +32,7 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
       <Suspense fallback={null}>
         <InactiveSection />
       </Suspense>
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<ListSkeleton />}>
         <ClientList searchParams={searchParams} />
       </Suspense>
     </>

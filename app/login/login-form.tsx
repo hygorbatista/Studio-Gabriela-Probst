@@ -1,51 +1,72 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import { login, type LoginState } from './actions'
 
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState<LoginState, FormData>(
-    login,
-    null
-  )
+  const [state, formAction, pending] = useActionState<LoginState, FormData>(login, null)
+  // No celular é fácil errar a senha: o botão do olho mostra o que foi digitado.
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
-      <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em]">
-        E-mail
-        <input
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          className="h-12 border border-[#D6D6D6] bg-white px-3 text-base font-normal normal-case tracking-normal outline-none focus:border-[#6E1628]"
-        />
-      </label>
+    <form action={formAction}>
+      <FieldGroup>
+        <Field data-invalid={!!state?.error}>
+          <FieldLabel htmlFor="email">E-mail</FieldLabel>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            defaultValue={state?.email}
+            aria-invalid={!!state?.error}
+            required
+          />
+        </Field>
 
-      <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em]">
-        Senha
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="h-12 border border-[#D6D6D6] bg-white px-3 text-base font-normal normal-case tracking-normal outline-none focus:border-[#6E1628]"
-        />
-      </label>
+        <Field data-invalid={!!state?.error}>
+          <FieldLabel htmlFor="password">Senha</FieldLabel>
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              aria-invalid={!!state?.error}
+              className="pr-14"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Esconder a senha' : 'Mostrar a senha'}
+              aria-pressed={showPassword}
+              className="absolute top-0 right-0 inline-flex size-12 items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? (
+                <EyeOff className="size-5" aria-hidden="true" />
+              ) : (
+                <Eye className="size-5" aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </Field>
 
-      {state?.error && (
-        <p role="alert" className="text-sm text-[#BA1A1A]">
-          {state.error}
-        </p>
-      )}
+        {state?.error && (
+          <p role="alert" className="text-base text-destructive">
+            {state.error}
+          </p>
+        )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="h-12 border border-[#6E1628] bg-[#6E1628] text-xs font-semibold uppercase tracking-[0.2em] text-white hover:bg-[#881D33] disabled:opacity-60"
-      >
-        {pending ? 'Entrando...' : 'Entrar'}
-      </button>
+        <Button type="submit" disabled={pending} className="w-full">
+          {pending ? 'Entrando...' : 'Entrar'}
+        </Button>
+      </FieldGroup>
     </form>
   )
 }

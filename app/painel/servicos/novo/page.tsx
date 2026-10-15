@@ -3,6 +3,7 @@ import { PageHeader } from '../../page-header'
 import { BackLink } from '../../back-link'
 import { categoriesOf, listAllServices } from '../data'
 import { ServiceForm } from '../service-form'
+import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Novo serviço' }
 
@@ -11,7 +12,7 @@ export default function NovoServicoPage() {
     <>
       <BackLink href="/painel/servicos" label="Serviços" />
       <PageHeader title="Novo serviço" />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<FormSkeleton fields={5} />}>
         <NewServiceForm />
       </Suspense>
     </>

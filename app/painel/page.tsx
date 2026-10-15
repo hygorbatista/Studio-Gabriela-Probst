@@ -15,12 +15,13 @@ import {
 import { formatPrice } from '@/lib/format'
 import { getDayAppointments, getWeekCounts } from './agenda/data'
 import { StatusBadge } from './status-badge'
+import { AgendaSkeleton } from './skeletons'
 
 export const metadata = { title: 'Agenda' }
 
 export default function AgendaPage({ searchParams }: PageProps<'/painel'>) {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+    <Suspense fallback={<AgendaSkeleton />}>
       <Agenda searchParams={searchParams} />
     </Suspense>
   )

@@ -12,6 +12,7 @@ import { DeleteButton } from '../../delete-button'
 import { deleteClient } from '../actions'
 import { ClientForm } from '../client-form'
 import { getClient } from '../data'
+import { DetailSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Cliente' }
 
@@ -19,7 +20,7 @@ export default function ClientePage({ params }: PageProps<'/painel/clientes/[id]
   return (
     <>
       <BackLink href="/painel/clientes" label="Clientes" />
-      <Suspense fallback={<p className="text-muted-foreground">Carregando...</p>}>
+      <Suspense fallback={<DetailSkeleton />}>
         <ClientDetail params={params} />
       </Suspense>
     </>
@@ -131,7 +132,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
         <DeleteButton
           action={deleteClient.bind(null, client.id)}
           label="Excluir cliente"
-          confirmText={`Excluir "${client.name}"? Não dá para desfazer.`}
+          name={client.name}
         />
       </section>
     </div>
