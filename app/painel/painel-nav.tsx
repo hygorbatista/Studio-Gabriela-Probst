@@ -48,11 +48,14 @@ function NavBar({ pathname }: { pathname: string }) {
                 href={href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex h-16 flex-col items-center justify-center gap-1 text-xs font-semibold uppercase tracking-[0.1em] transition-colors',
-                  active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  'relative flex h-16 flex-col items-center justify-center gap-1 text-sm font-semibold transition-colors',
+                  // Aba ativa: traço bordô em cima, fundo bordô claro e ícone mais forte.
+                  active
+                    ? 'bg-primary-soft text-primary before:absolute before:inset-x-[22%] before:top-0 before:h-0.5 before:bg-primary'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <Icon className="size-5" strokeWidth={1.5} aria-hidden="true" />
+                <Icon className="size-5" strokeWidth={active ? 2.25 : 1.5} aria-hidden="true" />
                 {label}
               </Link>
             </li>

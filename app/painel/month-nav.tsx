@@ -23,11 +23,11 @@ export function MonthNav({
       <div className="text-center">
         <h1 className="font-serif text-3xl leading-tight">{formatMonthTitle(month)}</h1>
         {month === current ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Este mês</p>
+          <p className="text-sm font-semibold text-primary">Este mês</p>
         ) : (
           <Link
             href={basePath}
-            className="inline-flex min-h-8 items-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            className="inline-flex min-h-8 items-center text-sm font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground"
           >
             Voltar para este mês
           </Link>

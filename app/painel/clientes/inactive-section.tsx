@@ -9,7 +9,7 @@ export async function InactiveSection() {
   if (clients.length === 0) return null
 
   return (
-    <details className="group mb-8 border border-border bg-surface">
+    <details className="group mb-8 bg-surface shadow-card">
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 [&::-webkit-details-marker]:hidden">
         <span className="text-base">
           <strong>

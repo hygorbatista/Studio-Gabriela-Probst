@@ -15,6 +15,10 @@
   --input-border: #d6d6d6;
   --muted-foreground: #6b6b6b;
   --destructive: #ba1a1a;
+  /* Fundo de destaques pequenos: aba ativa, etiquetas, avisos. */
+  --primary-soft: #f7ecee;
+  /* Atendimento concluído. Verde-oliva escuro, que combina com o bordô. */
+  --success: #4a6136;
 
   --card: var(--surface);
   --card-foreground: var(--foreground);
@@ -38,6 +42,8 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-deep: var(--primary-deep);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -67,6 +73,8 @@
 }
 
 @theme {
+  /* Sombra única dos cartões do painel: suave, sem peso. */
+  --shadow-card: 0 1px 2px rgb(11 11 12 / 0.04), 0 6px 16px -8px rgb(11 11 12 / 0.1);
   --animate-marquee: marquee 45s linear infinite;
 
   @keyframes marquee {
@@ -114,6 +122,17 @@ section[id] {
 /* Trava a rolagem da página enquanto o menu está aberto. */
 html:has(dialog[open]) {
   overflow: hidden;
+}
+
+/* Painel e login (docs/11-plano-design.md): fundo levemente quente, para os
+   cartões brancos se destacarem, e números com largura fixa, para horários e
+   valores alinharem na coluna. A landing page continua com o fundo original. */
+.painel-theme {
+  --background: #f5f3f0;
+  --border: #e6e2dd;
+  --muted: #edeae6;
+  --secondary: #edeae6;
+  font-variant-numeric: tabular-nums;
 }
 
 body {

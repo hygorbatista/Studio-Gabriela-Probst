@@ -14,6 +14,7 @@ import { reopenAppointment, setAppointmentStatus } from '../actions'
 import { CompleteForm } from '../complete-form'
 import { getAppointment } from '../data'
 import { DetailSkeleton } from '../../skeletons'
+import { card, dataLabel, sectionTitle } from '../../styles'
 
 export const metadata = { title: 'Atendimento' }
 
@@ -103,9 +104,7 @@ async function Appointment({
             </div>
 
             <section>
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                Concluir
-              </h2>
+              <h2 className={`${sectionTitle} mb-4`}>Concluir</h2>
               <CompleteForm id={a.id} price={a.price_charged} />
             </section>
 
@@ -136,10 +135,8 @@ async function Appointment({
         )}
 
         {a.status === 'completed' && payment && (
-          <section className="border border-border bg-surface p-5">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Pagamento
-            </h2>
+          <section className={card}>
+            <h2 className={dataLabel}>Pagamento</h2>
             <p className="mt-2 text-2xl font-semibold">{formatPrice(payment.amount)}</p>
             <p className="text-base text-muted-foreground">
               {paymentMethods[payment.method as PaymentMethod]}

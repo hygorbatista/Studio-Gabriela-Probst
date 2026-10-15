@@ -91,6 +91,18 @@ Decisões tomadas durante a implementação, que complementam as regras acima:
 - **Exceção aos cantos retos:** o botão flutuante do WhatsApp é **redondo**, porque esse é o formato que todo mundo reconhece. Ele é bordô, com o símbolo branco e um anel branco sutil.
 - **Animações** (`components/motion.tsx`): entram uma vez só, ao aparecer na tela. Usam apenas posição, opacidade, escala e recorte. Títulos sobem de trás de uma máscara, linhas finas se desenham e fotos se revelam de baixo para cima. Tudo é desligado para quem ativa "reduzir movimento" no aparelho.
 
+## Como fica no painel
+
+Decisões do [plano de design](11-plano-design.md), aprovadas a partir de um protótipo:
+
+- **Fundo quente:** no painel e no login, o fundo é `#F5F3F0` e as bordas `#E6E2DD` (classe `.painel-theme`), para os cartões brancos se destacarem. A landing continua com `#FAFAFA`.
+- **Tokens novos:** `primary-soft` (`#F7ECEE`) para fundos de destaque pequenos, como a aba ativa, e `success` (`#4A6136`, verde-oliva) para "Concluído".
+- **Cores de status:** agendado em bordô, concluído em verde-oliva, falta em vermelho e cancelado em cinza.
+- **Cartões:** fundo branco com a sombra `shadow-card`, sem borda.
+- **Rótulos:** maiúsculas espaçadas só em títulos de seção. Rótulos de campos e de dados ficam em texto normal (`app/painel/styles.ts`).
+- **Números:** largura fixa (`tabular-nums`) em todo o painel.
+- **Cabeçalho:** monograma "G" (quadrado preto, Playfair branca) + "Gabriela Probst".
+
 ## Logo
 
 A Gabriela ainda não tem logo. A proposta inicial é um **logotipo tipográfico**: "Gabriela Probst" em Playfair Display, com "NAIL STUDIO" em rótulo maiúsculo embaixo. É gratuito, rápido e coerente com o design system, e pode ser substituído no futuro por um logo feito por um designer.

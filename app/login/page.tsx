@@ -8,10 +8,16 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center bg-background px-5 py-12 text-foreground">
-      <div className="w-full max-w-sm border border-border bg-surface p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Painel</p>
-        <h1 className="mt-2 mb-8 font-serif text-4xl">Gabriela Probst</h1>
+    <main className="painel-theme flex flex-1 flex-col items-center justify-center bg-background px-5 py-12 text-foreground">
+      <div className="w-full max-w-sm bg-surface p-8 shadow-card">
+        <span
+          aria-hidden="true"
+          className="grid size-12 place-items-center bg-foreground font-serif text-3xl leading-none text-white"
+        >
+          G
+        </span>
+        <h1 className="mt-6 font-serif text-4xl">Gabriela Probst</h1>
+        <p className="mt-1 mb-8 text-base text-muted-foreground">Painel do studio</p>
         <LoginForm />
       </div>
       <Link

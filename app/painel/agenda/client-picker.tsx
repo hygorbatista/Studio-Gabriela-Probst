@@ -62,7 +62,7 @@ export function ClientPicker({
           <button
             type="button"
             onClick={() => setSelected(null)}
-            className="min-h-11 text-xs font-semibold uppercase tracking-[0.2em] text-primary underline underline-offset-4"
+            className="min-h-11 text-sm font-semibold text-primary underline underline-offset-4"
           >
             Trocar
           </button>
@@ -105,7 +105,7 @@ export function ClientPicker({
         <button
           type="button"
           onClick={() => setSelected(null)}
-          className="min-h-11 self-start text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4"
+          className="min-h-11 self-start text-sm font-semibold text-muted-foreground underline underline-offset-4"
         >
           Escolher uma cliente cadastrada
         </button>

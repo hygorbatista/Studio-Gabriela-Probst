@@ -10,10 +10,9 @@ import { MonthNav } from '../month-nav'
 import { getMonthData } from './data'
 import { GoalsForm } from './goals-form'
 import { DetailSkeleton } from '../skeletons'
+import { card, dataLabel, sectionTitle } from '../styles'
 
 export const metadata = { title: 'Resumo' }
-
-const label = 'text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground'
 
 function Progress({ value }: { value: number }) {
   const pct = Math.min(value, 1) * 100
@@ -23,7 +22,7 @@ function Progress({ value }: { value: number }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(pct)}
-      className="mt-4 h-2 w-full bg-muted"
+      className="mt-4 h-2.5 w-full bg-primary-soft"
     >
       <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
     </div>
@@ -53,18 +52,18 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
     <div className="flex flex-col gap-8">
       <MonthNav basePath="/painel/resumo" month={month} current={current} />
 
-      <section className="border border-border bg-surface p-5">
-        <h2 className={label}>Quanto sobrou</h2>
+      <section className={card}>
+        <h2 className={dataLabel}>Quanto sobrou</h2>
         <p className={`mt-2 font-serif text-4xl ${s.profit < 0 ? 'text-destructive' : ''}`}>
           {formatPrice(s.profit)}
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-border pt-4">
           <div>
-            <dt className={label}>Entrou</dt>
+            <dt className={dataLabel}>Entrou</dt>
             <dd className="mt-1 text-base font-semibold">{formatPrice(s.revenue)}</dd>
           </div>
           <div>
-            <dt className={label}>Saiu</dt>
+            <dt className={dataLabel}>Saiu</dt>
             <dd className="mt-1 text-base font-semibold">{formatPrice(s.expenses)}</dd>
           </div>
         </dl>
@@ -95,8 +94,8 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
         </Link>
       )}
 
-      <section className="border border-border bg-surface p-5">
-        <h2 className={label}>Faturamento</h2>
+      <section className={card}>
+        <h2 className={dataLabel}>Faturamento</h2>
         <p className="mt-2 font-serif text-4xl">{formatPrice(s.revenue)}</p>
         <p className="mt-1 text-base text-muted-foreground">
           de {formatPrice(s.revenueGoal)} · {percent(s.revenueProgress)} da meta
@@ -119,8 +118,8 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
         )}
       </section>
 
-      <section className="border border-border bg-surface p-5">
-        <h2 className={label}>Atendimentos concluídos</h2>
+      <section className={card}>
+        <h2 className={dataLabel}>Atendimentos concluídos</h2>
         <p className="mt-2 font-serif text-4xl">
           {s.completed}
           <span className="text-2xl text-muted-foreground"> / {s.visitsGoal}</span>
@@ -148,14 +147,14 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
           { label: 'Cancelamentos', value: String(s.cancelled) },
         ].map((item) => (
           <div key={item.label} className="border-r border-b border-border bg-surface p-4">
-            <dt className={label}>{item.label}</dt>
+            <dt className={dataLabel}>{item.label}</dt>
             <dd className="mt-1 text-base font-semibold">{item.value}</dd>
           </div>
         ))}
       </dl>
 
       <section>
-        <h2 className={`${label} mb-2`}>Por forma de pagamento</h2>
+        <h2 className={`${sectionTitle} mb-2`}>Por forma de pagamento</h2>
         {s.byMethod.length === 0 ? (
           <p className="border-t border-border pt-4 text-muted-foreground">Nenhum pagamento no mês.</p>
         ) : (
@@ -172,7 +171,7 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
 
       {topClients.length > 0 && (
         <section>
-          <h2 className={`${label} mb-2`}>Melhores clientes</h2>
+          <h2 className={`${sectionTitle} mb-2`}>Melhores clientes</h2>
           <ol className="border-t border-border">
             {topClients.map((c, i) => (
               <li key={c.id} className="border-b border-border">
@@ -197,7 +196,7 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
 
       {topServices.length > 0 && (
         <section>
-          <h2 className={`${label} mb-2`}>Serviços mais feitos</h2>
+          <h2 className={`${sectionTitle} mb-2`}>Serviços mais feitos</h2>
           <ol className="border-t border-border">
             {topServices.map((sv, i) => (
               <li key={sv.name} className="flex min-h-14 items-center gap-3 border-b border-border py-2 text-base">
@@ -216,7 +215,7 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
       )}
 
       <details className="group border-t border-border pt-6">
-        <summary className={`${label} flex min-h-11 cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden`}>
+        <summary className={`${sectionTitle} flex min-h-11 cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden`}>
           Ajustar metas
           <span aria-hidden className="text-lg text-primary transition-transform group-open:rotate-45">
             +
