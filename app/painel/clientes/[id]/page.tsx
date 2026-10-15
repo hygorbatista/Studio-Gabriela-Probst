@@ -57,7 +57,7 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
     { label: 'Próximo horário', value: stats.nextVisit ? formatNextVisit(stats.nextVisit) : '—' },
     { label: 'Serviço favorito', value: stats.favoriteService ?? '—' },
     { label: 'Horário favorito', value: stats.favoriteTime ?? '—' },
-    { label: 'Ticket médio', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
+    { label: 'Média por atendimento', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
     { label: 'Aniversário', value: client.birth_date ? formatBirthday(client.birth_date) : '—' },
   ]
 

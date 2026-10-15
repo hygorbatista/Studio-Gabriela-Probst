@@ -25,7 +25,7 @@ async function NewExpense({ searchParams }: Pick<PageProps<'/painel/despesas/nov
   return (
     <>
       <BackLink href={`/painel/despesas?m=${month}`} label="Despesas" />
-      <PageHeader title="Despesa avulsa" />
+      <PageHeader title="Despesa do dia a dia" />
       <ExpenseForm
         action={saveExpense.bind(null, null)}
         dateField={{ name: 'expense_date', label: 'Data', value: date }}

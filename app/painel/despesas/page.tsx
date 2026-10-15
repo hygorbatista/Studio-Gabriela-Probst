@@ -65,21 +65,25 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
         <h2 className={dataLabel}>Despesas do mês</h2>
         <p className="mt-2 font-serif text-4xl">{formatPrice(e.total)}</p>
         <p className="mt-1 text-base text-muted-foreground">
-          Fixas {formatPrice(e.recurringTotal)} · Avulsas {formatPrice(e.oneOffTotal)}
+          Todo mês {formatPrice(e.recurringTotal)} · Dia a dia {formatPrice(e.oneOffTotal)}
         </p>
       </section>
 
       <section>
         <div className="mb-2 flex items-end justify-between gap-4">
-          <h2 className={sectionTitle}>Fixas (todo mês)</h2>
-          <Link href="/painel/despesas/fixas/nova" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          <h2 className={sectionTitle}>Todo mês</h2>
+          <Link
+            href="/painel/despesas/fixas/nova"
+            aria-label="Adicionar despesa de todo mês"
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
             <Plus aria-hidden="true" />
-            Fixa
+            Adicionar
           </Link>
         </div>
         {e.recurring.length === 0 ? (
           <div className="border-t border-border">
-            <EmptyState icon={Repeat} title="Nenhuma despesa fixa">
+            <EmptyState icon={Repeat} title="Nenhuma despesa de todo mês">
               Cadastre aluguel, MEI e o que se repete todo mês.
             </EmptyState>
           </div>
@@ -100,15 +104,19 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
 
       <section>
         <div className="mb-2 flex items-end justify-between gap-4">
-          <h2 className={sectionTitle}>Avulsas</h2>
-          <Link href={`/painel/despesas/nova?m=${month}`} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          <h2 className={sectionTitle}>Do dia a dia</h2>
+          <Link
+            href={`/painel/despesas/nova?m=${month}`}
+            aria-label="Adicionar despesa do dia a dia"
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
             <Plus aria-hidden="true" />
-            Avulsa
+            Adicionar
           </Link>
         </div>
         {e.oneOff.length === 0 ? (
           <div className="border-t border-border">
-            <EmptyState icon={ShoppingBag} title="Nenhuma despesa avulsa no mês">
+            <EmptyState icon={ShoppingBag} title="Nenhuma despesa do dia a dia neste mês">
               Lance aqui compras de material e outros gastos do dia a dia.
             </EmptyState>
           </div>

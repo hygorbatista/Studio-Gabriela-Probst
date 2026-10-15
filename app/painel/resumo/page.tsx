@@ -186,7 +186,7 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
 
       <dl className={cn(card, 'grid grid-cols-2 gap-x-4 gap-y-5')}>
         {[
-          { label: 'Ticket médio', value: s.completed ? formatPrice(s.averageTicket) : '—' },
+          { label: 'Média por atendimento', value: s.completed ? formatPrice(s.averageTicket) : '—' },
           {
             label: 'Ainda agendado',
             value: s.upcomingCount ? `${s.upcomingCount} · ${formatPrice(s.upcomingValue)}` : '—',

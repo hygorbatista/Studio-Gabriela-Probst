@@ -20,7 +20,7 @@ export default function ServicosPage() {
         action={
           <Link href="/painel/servicos/novo" className={buttonVariants({ size: 'sm' })}>
             <Plus aria-hidden="true" />
-            Novo
+            Novo serviço
           </Link>
         }
       />
