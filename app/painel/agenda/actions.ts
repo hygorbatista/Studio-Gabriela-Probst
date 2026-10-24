@@ -4,11 +4,12 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { withFlash } from '@/lib/flash'
-import { dayOf, isValidDay, toTimestamp, todayISO } from '@/lib/agenda'
+import { addDays, dayOf, isValidDay, toTimestamp, todayISO } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
 import type { TablesInsert } from '@/lib/supabase/database.types'
 import type { ActionState } from '../action-button'
+import { getBusy } from './data'
 
 const CONFLICT =
   'Esse horário conflita com outro atendimento (contando o intervalo de 15 minutos).'
@@ -105,6 +106,13 @@ export async function createAppointment(
   }
 
   redirect(withFlash(`/painel?d=${v.day}`, 'agendado'))
+}
+
+// Agenda de duas semanas a partir de um dia escolhido em "Outra data", fora
+// do período que a tela já trouxe.
+export async function loadBusy(from: string) {
+  if (!isValidDay(from)) return []
+  return getBusy(from, addDays(from, 13))
 }
 
 // Cancelar ou marcar falta.

@@ -1,6 +1,8 @@
 import 'server-only'
 import { requireUser } from '@/lib/auth'
 import { addDays, dayOf, dayRange } from '@/lib/agenda'
+import { clientHabits } from '@/lib/client-stats'
+import { busyMinutes, dayLoad, type BusyItem, type Load } from '@/lib/free-slots'
 
 // Atendimentos de um dia (horário de Brasília), em ordem de horário.
 export async function getDayAppointments(day: string) {
@@ -8,7 +10,9 @@ export async function getDayAppointments(day: string) {
   const { start, end } = dayRange(day)
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, starts_at, ends_at, time_known, status, price_charged, clients(name), services(name)')
+    .select(
+      'id, starts_at, ends_at, blocked_until, time_known, status, price_charged, clients(name), services(name)'
+    )
     .gte('starts_at', start)
     .lt('starts_at', end)
     .order('starts_at')
@@ -43,21 +47,70 @@ export async function getFormOptions() {
   return { clients: clients.data, services: services.data }
 }
 
-// Quantos atendimentos (agendados ou concluídos) há em cada dia da semana.
-export async function getWeekCounts(start: string) {
+// Atendimentos que ocupam a agenda (agendados e concluídos) de "from" até "to",
+// inclusive, numa consulta só. Base dos horários livres e da ocupação.
+export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
-    .select('starts_at')
+    .select('id, starts_at, ends_at, blocked_until, time_known, status, clients(name), services(name)')
     .in('status', ['scheduled', 'completed'])
-    .gte('starts_at', dayRange(start).start)
-    .lt('starts_at', dayRange(addDays(start, 6)).end)
+    .gte('starts_at', dayRange(from).start)
+    .lt('starts_at', dayRange(to).end)
+    .order('starts_at')
   if (error) throw error
+  return data.map((a) => ({
+    id: a.id,
+    starts_at: a.starts_at,
+    ends_at: a.ends_at,
+    blocked_until: a.blocked_until,
+    time_known: a.time_known,
+    status: a.status,
+    client: a.clients?.name ?? null,
+    service: a.services?.name ?? null,
+  }))
+}
 
-  const counts = new Map<string, number>()
-  for (const a of data) {
+export type DaySummary = { count: number; minutes: number; load: Load }
+
+// Por dia: quantos atendimentos e quanto do dia está ocupado. Lançamentos
+// "sem horário" contam como atendimento, mas não ocupam a agenda.
+export function summarizeDays(items: BusyItem[]) {
+  const byDay = new Map<string, BusyItem[]>()
+  for (const a of items) {
     const day = dayOf(a.starts_at)
-    counts.set(day, (counts.get(day) ?? 0) + 1)
+    byDay.set(day, [...(byDay.get(day) ?? []), a])
   }
-  return counts
+  const days = new Map<string, DaySummary>()
+  for (const [day, list] of byDay) {
+    const minutes = busyMinutes(day, list.filter((a) => a.time_known))
+    days.set(day, { count: list.length, minutes, load: dayLoad(minutes) })
+  }
+  return days
+}
+
+// Resumo de cada dia da semana que começa em "start".
+export async function getWeekSummary(start: string) {
+  return summarizeDays(await getBusy(start, addDays(start, 6)))
+}
+
+// Intervalo depois de cada atendimento (configurações).
+export async function getBufferMinutes() {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase.from('settings').select('buffer_minutes').eq('id', 1).single()
+  if (error) throw error
+  return data.buffer_minutes
+}
+
+// Serviço e hora de costume de cada cliente, a partir do último ano.
+export async function getClientHabits() {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('client_id, service_id, starts_at, time_known')
+    .eq('status', 'completed')
+    .gte('starts_at', new Date(Date.now() - 365 * 86400000).toISOString())
+    .order('starts_at', { ascending: false })
+  if (error) throw error
+  return clientHabits(data)
 }

@@ -3,16 +3,17 @@
 import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { addMinutesToTime, timeOptions } from '@/lib/agenda'
 import { formatDuration, formatPrice } from '@/lib/format'
+import type { BusyItem } from '@/lib/free-slots'
 import { createAppointment, type AppointmentFormState } from './actions'
 import { FormCard } from '../form-card'
 import { ClientPicker } from './client-picker'
+import { DayTimePicker } from './day-time-picker'
 
 type Option = { id: string; name: string }
 type ClientOption = Option & { phone: string | null }
 type ServiceOption = Option & { price: number; duration_minutes: number; duration_up_to: boolean }
+export type Habits = Record<string, { serviceId?: string; hour?: number }>
 
 const selectClass =
   'h-12 w-full border border-input bg-surface px-4 text-base outline-none focus-visible:border-primary aria-invalid:border-destructive'
@@ -20,14 +21,31 @@ const selectClass =
 export function AppointmentForm({
   clients,
   services,
+  habits,
+  busy,
+  range,
+  today,
+  now,
+  buffer,
   defaultDay,
   initialClientId,
+  initialServiceId,
+  initialTime,
 }: {
   clients: ClientOption[]
   services: ServiceOption[]
+  habits: Habits
+  busy: BusyItem[]
+  range: { from: string; to: string }
+  today: string
+  now: string
+  buffer: number
   defaultDay: string
   // Vindo da ficha da cliente, ela já chega escolhida.
   initialClientId?: string
+  // Vindo de "Horários livres" ou da semana: serviço e hora já escolhidos.
+  initialServiceId?: string
+  initialTime?: string
 }) {
   const [state, action, pending] = useActionState<AppointmentFormState, FormData>(
     createAppointment,
@@ -36,31 +54,45 @@ export function AppointmentForm({
   const values = state?.values
   const errors = state?.errors ?? {}
 
-  const [serviceId, setServiceId] = useState(values?.service_id ?? '')
-  const [time, setTime] = useState(values?.time ?? '09:00')
+  const startClient = values?.client_id ?? initialClientId ?? null
+  const [clientId, setClientId] = useState(startClient)
+  const [serviceId, setServiceId] = useState(
+    values?.service_id ?? initialServiceId ?? (startClient ? habits[startClient]?.serviceId : '') ?? ''
+  )
+  // Depois que ela escolhe o serviço à mão, trocar a cliente não muda mais.
+  const [serviceTouched, setServiceTouched] = useState(!!values?.service_id || !!initialServiceId)
   const service = services.find((s) => s.id === serviceId)
+  const habit = clientId ? habits[clientId] : undefined
+
+  const onClientChange = (id: string | null) => {
+    setClientId(id)
+    const usual = id ? habits[id]?.serviceId : undefined
+    if (!serviceTouched && usual && services.some((s) => s.id === usual)) setServiceId(usual)
+  }
 
   return (
     <form action={action}>
       <FieldGroup>
-        {/* Três blocos: quem, o quê e quando, observações. */}
+        {/* Três blocos: quem e o quê, quando, observações. */}
         <FormCard>
           <ClientPicker
             clients={clients}
             values={values}
             errors={errors}
             initialClientId={initialClientId}
+            onChange={onClientChange}
           />
-        </FormCard>
 
-        <FormCard>
           <Field data-invalid={!!errors.service_id}>
             <FieldLabel htmlFor="service_id">Serviço</FieldLabel>
             <select
               id="service_id"
               name="service_id"
               value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
+              onChange={(e) => {
+                setServiceId(e.target.value)
+                setServiceTouched(true)
+              }}
               aria-invalid={!!errors.service_id}
               className={selectClass}
               required
@@ -74,49 +106,29 @@ export function AppointmentForm({
                 </option>
               ))}
             </select>
+            {service && (
+              <FieldDescription>
+                {formatDuration(service.duration_minutes, service.duration_up_to)}
+                {habit?.serviceId === service.id && ' · o de costume da cliente'}
+              </FieldDescription>
+            )}
             <FieldError>{errors.service_id?.[0]}</FieldError>
           </Field>
+        </FormCard>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field data-invalid={!!errors.day}>
-              <FieldLabel htmlFor="day">Data</FieldLabel>
-              <Input
-                id="day"
-                name="day"
-                type="date"
-                defaultValue={values?.day ?? defaultDay}
-                aria-invalid={!!errors.day}
-                required
-              />
-              <FieldError>{errors.day?.[0]}</FieldError>
-            </Field>
-            <Field data-invalid={!!errors.time}>
-              <FieldLabel htmlFor="time">Horário</FieldLabel>
-              <select
-                id="time"
-                name="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                aria-invalid={!!errors.time}
-                className={selectClass}
-              >
-                {timeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <FieldError>{errors.time?.[0]}</FieldError>
-            </Field>
-          </div>
-
-          {service && (
-            <p className="text-base text-muted-foreground">
-              {formatDuration(service.duration_minutes, service.duration_up_to)}: termina às{' '}
-              <strong className="text-foreground">{addMinutesToTime(time, service.duration_minutes)}</strong>
-              , mais 15 min de intervalo.
-            </p>
-          )}
+        <FormCard>
+          <DayTimePicker
+            busy={busy}
+            range={range}
+            today={today}
+            now={now}
+            buffer={buffer}
+            duration={service?.duration_minutes ?? null}
+            initialDay={values?.day ?? defaultDay}
+            initialTime={values?.time ?? initialTime}
+            favoriteHour={habit?.hour}
+            errors={errors}
+          />
         </FormCard>
 
         <FormCard>

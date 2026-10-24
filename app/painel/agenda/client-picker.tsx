@@ -21,6 +21,7 @@ export function ClientPicker({
   errors,
   initialClientId,
   optional = false,
+  onChange,
 }: {
   clients: Client[]
   values?: Record<string, string>
@@ -28,12 +29,18 @@ export function ClientPicker({
   initialClientId?: string
   // No lançamento de atendimento antigo, pode ficar sem cliente.
   optional?: boolean
+  // Avisa a cliente escolhida (null: nenhuma ou nova).
+  onChange?: (clientId: string | null) => void
 }) {
   const label = optional ? 'Cliente (opcional)' : 'Cliente'
   const startId = values?.client_id ?? initialClientId ?? ''
-  const [selected, setSelected] = useState<Client | 'new' | null>(
+  const [selected, setSelectedState] = useState<Client | 'new' | null>(
     startId === 'new' ? 'new' : (clients.find((c) => c.id === startId) ?? null)
   )
+  const setSelected = (c: Client | 'new' | null) => {
+    setSelectedState(c)
+    onChange?.(c && c !== 'new' ? c.id : null)
+  }
   const [query, setQuery] = useState('')
 
   const term = normalize(query)

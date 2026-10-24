@@ -44,6 +44,14 @@ export function formatDayTitle(day: string) {
   return text[0].toUpperCase() + text.slice(1)
 }
 
+const weekdayFmt = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', weekday: 'long' })
+
+// "2026-10-30" → "sexta, 30/10" (mensagem para a cliente)
+export function formatDayShort(day: string) {
+  const weekday = weekdayFmt.format(new Date(`${day}T12:00:00Z`)).replace('-feira', '')
+  return `${weekday}, ${day.slice(8)}/${day.slice(5, 7)}`
+}
+
 const timeFmt = new Intl.DateTimeFormat('pt-BR', {
   timeZone: tz,
   hour: '2-digit',
