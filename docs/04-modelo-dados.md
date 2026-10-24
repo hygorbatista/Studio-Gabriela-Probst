@@ -81,14 +81,16 @@ erDiagram
   - `ends_at` = `starts_at` + duração do serviço, se não for informado. Ao remarcar, mantém a duração; ao trocar o serviço, recalcula.
   - `blocked_until` = `ends_at` + intervalo das configurações.
   - `price_charged` = preço atual do serviço, se não for informado.
-- **payments:** um pagamento por atendimento concluído. `method` em `pix | cash | debit | credit`. `paid_at` é a data do atendimento, para o faturamento contar no dia do serviço. Gravado pela função `complete_appointment`, que conclui e registra o pagamento numa transação só; `reopen_appointment` desfaz.
-- **expenses:** despesas **avulsas** (materiais, compras pontuais), com data. `category` em `rent | mei | materials | other`.
+  - Sem serviço, a duração padrão é de 1 hora.
+- **Lançamento de atendimento antigo** (desde 2026-10-24): `client_id` e `service_id` podem ser nulos, e `time_known = false` marca o atendimento em que ela não lembra o horário (fica ao meio-dia do dia e **não ocupa a agenda**). A função `record_past_appointment` grava o atendimento já concluído e o pagamento numa transação só e recusa datas futuras. O agendamento normal continua exigindo cliente e serviço (validação na tela).
+- **payments:** um pagamento por atendimento concluído. `method` em `pix | cash | debit | credit | unknown` (`unknown` = "Não informado", só nos lançamentos antigos). `paid_at` é a data do atendimento, para o faturamento contar no dia do serviço. Gravado pela função `complete_appointment`, que conclui e registra o pagamento numa transação só; `reopen_appointment` desfaz.
+- **expenses:** despesas **do dia a dia** (na tela; "avulsas" no código), com data. `category` em `rent | bills | mei | materials | equipment | courses | transport | food | marketing | other`, com os nomes em `lib/expenses.ts`.
 - **recurring_expenses:** despesas **fixas** (aluguel, MEI), que entram em todo mês entre `starts_on` e `ends_on` (meses guardados como o dia 1). Mudar o valor encerra a versão antiga no mês anterior e cria uma nova a partir do mês atual: os meses passados não mudam.
 - **settings:** linha única com metas (R$ 3.600 e 30 atendimentos), intervalo entre atendimentos e dias para considerar uma cliente "sumida".
 
 ## Regras de integridade
 
-- **Conflito de horário barrado no banco:** dois atendimentos `scheduled` ou `completed` não podem ocupar o mesmo período de `starts_at` a `blocked_until` (restrição de exclusão `appointments_no_overlap`, erro `23P01`). Cancelados e faltas liberam o horário. A tela traduz o erro para uma mensagem amigável.
+- **Conflito de horário barrado no banco:** dois atendimentos `scheduled` ou `completed` não podem ocupar o mesmo período de `starts_at` a `blocked_until` (restrição de exclusão `appointments_no_overlap`, erro `23P01`). Cancelados, faltas e lançamentos sem horário (`time_known = false`) liberam o horário. A tela traduz o erro para uma mensagem amigável.
 - Clientes e serviços com atendimentos não podem ser apagados (`on delete restrict`).
 - Telefone guardado só com dígitos e DDI (12 ou 13 dígitos).
 - Valores monetários em `numeric(10,2)`.
