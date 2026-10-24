@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -17,39 +17,42 @@ export type Database = {
       appointments: {
         Row: {
           blocked_until: string
-          client_id: string
+          client_id: string | null
           created_at: string
           ends_at: string
           id: string
           notes: string | null
           price_charged: number
-          service_id: string
+          service_id: string | null
           starts_at: string
           status: string
+          time_known: boolean
         }
         Insert: {
           blocked_until: string
-          client_id: string
+          client_id?: string | null
           created_at?: string
           ends_at: string
           id?: string
           notes?: string | null
           price_charged: number
-          service_id: string
+          service_id?: string | null
           starts_at: string
           status?: string
+          time_known?: boolean
         }
         Update: {
           blocked_until?: string
-          client_id?: string
+          client_id?: string | null
           created_at?: string
           ends_at?: string
           id?: string
           notes?: string | null
           price_charged?: number
-          service_id?: string
+          service_id?: string | null
           starts_at?: string
           status?: string
+          time_known?: boolean
         }
         Relationships: [
           {
@@ -255,6 +258,18 @@ export type Database = {
       complete_appointment: {
         Args: { p_amount: number; p_appointment_id: string; p_method: string }
         Returns: undefined
+      }
+      record_past_appointment: {
+        Args: {
+          p_amount: number
+          p_client_id: string
+          p_method: string
+          p_notes: string
+          p_service_id: string
+          p_starts_at: string
+          p_time_known: boolean
+        }
+        Returns: string
       }
       reopen_appointment: {
         Args: { p_appointment_id: string }
