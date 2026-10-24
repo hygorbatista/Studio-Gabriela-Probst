@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { dayOf, formatDayTitle, formatTime } from '@/lib/agenda'
+import { addDays, dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
 import { noClient, noService } from '@/lib/format'
 import { BackLink } from '../../../back-link'
 import { PageHeader } from '../../../page-header'
-import { getAppointment } from '../../data'
+import { getAppointment, getBufferMinutes, getBusy } from '../../data'
 import { RescheduleForm } from '../../reschedule-form'
 import { FormSkeleton } from '../../../skeletons'
 
@@ -27,6 +27,9 @@ async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarc
 
   const day = dayOf(a.starts_at)
   const duration = Math.round((Date.parse(a.ends_at) - Date.parse(a.starts_at)) / 60000)
+  const today = todayISO()
+  const to = addDays(day > today ? day : today, 60)
+  const [busy, buffer] = await Promise.all([getBusy(today, to), getBufferMinutes()])
 
   return (
     <>
@@ -40,7 +43,16 @@ async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarc
           {a.time_known ? `, às ${formatTime(a.starts_at)}` : ', sem horário'}.
         </span>
       </p>
-      <RescheduleForm id={a.id} day={day} time={formatTime(a.starts_at)} durationMinutes={duration} />
+      <RescheduleForm
+        id={a.id}
+        day={day}
+        durationMinutes={duration}
+        busy={busy}
+        range={{ from: today, to }}
+        today={today}
+        now={new Date().toISOString()}
+        buffer={buffer}
+      />
     </>
   )
 }

@@ -54,6 +54,33 @@ export function clientStats(appointments: Appointment[], now = new Date()) {
   }
 }
 
+type Visit = {
+  client_id: string | null
+  service_id: string | null
+  starts_at: string
+  time_known: boolean
+}
+
+// Serviço e hora de costume de cada cliente, para o Agendar já vir sugerido.
+// A hora só conta a partir de 2 atendimentos com horário, como em clientStats.
+export function clientHabits(visits: Visit[]) {
+  const byClient = new Map<string, Visit[]>()
+  for (const v of visits) {
+    if (!v.client_id) continue
+    byClient.set(v.client_id, [...(byClient.get(v.client_id) ?? []), v])
+  }
+
+  const habits: Record<string, { serviceId?: string; hour?: number }> = {}
+  for (const [clientId, list] of byClient) {
+    const hours = list.filter((v) => v.time_known).map((v) => Number(hourFmt.format(new Date(v.starts_at))))
+    habits[clientId] = {
+      serviceId: mode(list.map((v) => v.service_id).filter((id): id is string => !!id)),
+      hour: hours.length >= 2 ? mode(hours) : undefined,
+    }
+  }
+  return habits
+}
+
 const months = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',

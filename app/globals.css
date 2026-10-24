@@ -19,6 +19,9 @@
   --primary-soft: #f7ecee;
   /* Atendimento concluído. Verde-oliva escuro, que combina com o bordô. */
   --success: #4a6136;
+  /* Ocupação do dia (docs/12-plano-agendamentos.md): vazio é branco, cheio é
+     bordô e "com espaço" fica entre os dois. */
+  --load-some: #edcfd6;
 
   --card: var(--surface);
   --card-foreground: var(--foreground);
@@ -44,6 +47,7 @@
   --color-primary-deep: var(--primary-deep);
   --color-primary-soft: var(--primary-soft);
   --color-success: var(--success);
+  --color-load-some: var(--load-some);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);

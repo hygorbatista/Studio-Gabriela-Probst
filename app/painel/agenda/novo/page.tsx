@@ -1,12 +1,16 @@
 import { Suspense } from 'react'
-import { isValidDay, todayISO } from '@/lib/agenda'
+import { connection } from 'next/server'
+import { addDays, isValidDay, todayISO } from '@/lib/agenda'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { AppointmentForm } from '../appointment-form'
-import { getFormOptions } from '../data'
+import { getBufferMinutes, getBusy, getClientHabits, getFormOptions } from '../data'
 import { FormSkeleton } from '../../skeletons'
 
 export const metadata = { title: 'Novo agendamento' }
+
+// Quantos dias de agenda vêm junto com a tela; além disso, "Outra data" busca na hora.
+const PRELOAD_DAYS = 60
 
 export default function NovoAgendamentoPage({ searchParams }: PageProps<'/painel/agenda/novo'>) {
   return (
@@ -23,16 +27,34 @@ export default function NovoAgendamentoPage({ searchParams }: PageProps<'/painel
 async function NewAppointment({
   searchParams,
 }: Pick<PageProps<'/painel/agenda/novo'>, 'searchParams'>) {
-  const { d, cliente } = await searchParams
-  const day = typeof d === 'string' && isValidDay(d) ? d : todayISO()
-  const { clients, services } = await getFormOptions()
+  const { d, cliente, s, h } = await searchParams
+  await connection()
+  const today = todayISO()
+  const day = typeof d === 'string' && isValidDay(d) ? d : today
+  const from = day < today ? day : today
+  const to = addDays(day > today ? day : today, PRELOAD_DAYS)
+
+  const [{ clients, services }, busy, buffer, habits] = await Promise.all([
+    getFormOptions(),
+    getBusy(from, to),
+    getBufferMinutes(),
+    getClientHabits(),
+  ])
 
   return (
     <AppointmentForm
       clients={clients}
       services={services}
+      habits={habits}
+      busy={busy}
+      range={{ from, to }}
+      today={today}
+      now={new Date().toISOString()}
+      buffer={buffer}
       defaultDay={day}
       initialClientId={typeof cliente === 'string' ? cliente : undefined}
+      initialServiceId={typeof s === 'string' && services.some((x) => x.id === s) ? s : undefined}
+      initialTime={typeof h === 'string' && /^\d{2}:\d{2}$/.test(h) ? h : undefined}
     />
   )
 }

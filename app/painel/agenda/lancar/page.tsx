@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { formatDayTitle, isValidDay, todayISO } from '@/lib/agenda'
 import { formatPrice, noClient, noService } from '@/lib/format'
 import { BackLink } from '../../back-link'
@@ -29,6 +30,7 @@ export default function LancarPage({ searchParams }: PageProps<'/painel/agenda/l
 
 async function Past({ searchParams }: Pick<PageProps<'/painel/agenda/lancar'>, 'searchParams'>) {
   const { d, n } = await searchParams
+  await connection()
   const today = todayISO()
   const day = typeof d === 'string' && isValidDay(d) && d <= today ? d : today
   const [{ clients, services }, appointments] = await Promise.all([
