@@ -33,10 +33,15 @@ export function ListSkeleton({ count = 5 }: { count?: number }) {
   )
 }
 
-// Agenda: título do dia, faixa da semana e lista.
+// Agenda: visões, botões, título do dia, faixa da semana e lista.
 export function AgendaSkeleton() {
   return (
     <Loading>
+      <Bone className="mb-4 h-12 w-full" />
+      <div className="mb-6 grid grid-cols-2 gap-2">
+        <Bone className="h-12" />
+        <Bone className="h-12" />
+      </div>
       <div className="mb-4 flex items-center justify-between gap-2">
         <Bone className="size-11" />
         <Bone className="h-8 w-48" />
@@ -47,10 +52,7 @@ export function AgendaSkeleton() {
           <Bone key={i} className="h-18" />
         ))}
       </div>
-      <div className="mb-4 flex items-center justify-between">
-        <Bone className="h-8 w-40" />
-        <Bone className="h-12 w-32" />
-      </div>
+      <Bone className="mb-4 h-8 w-40" />
       <div className="flex flex-col gap-2">
         {rows(3).map((i) => (
           <Bone key={i} className="h-24" />
