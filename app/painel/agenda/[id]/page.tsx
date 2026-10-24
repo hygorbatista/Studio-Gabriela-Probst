@@ -5,7 +5,7 @@ import { CalendarClock } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { dayOf, formatDayTitle, formatTime } from '@/lib/agenda'
-import { formatPrice, paymentMethods, type PaymentMethod } from '@/lib/format'
+import { formatPrice, noClient, noService, paymentMethodLabels } from '@/lib/format'
 import { whatsappTo } from '@/lib/phone'
 import { ActionButton } from '../../action-button'
 import { BackLink } from '../../back-link'
@@ -53,10 +53,12 @@ async function Appointment({
 
       <div className="mb-10">
         <StatusBadge status={a.status} />
-        <h1 className="mt-3 font-serif text-4xl">{a.services?.name}</h1>
+        <h1 className="mt-3 font-serif text-4xl">{a.services?.name ?? noService}</h1>
         <p className="mt-2 text-base">
-          {formatDayTitle(day)} · {formatTime(a.starts_at)} às {formatTime(a.ends_at)}
+          {formatDayTitle(day)} ·{' '}
+          {a.time_known ? `${formatTime(a.starts_at)} às ${formatTime(a.ends_at)}` : 'sem horário'}
         </p>
+        {!client && <p className="text-base text-muted-foreground">{noClient}</p>}
         {client && (
           <Link
             href={`/painel/clientes/${client.id}`}
@@ -140,7 +142,7 @@ async function Appointment({
             <h2 className={dataLabel}>Pagamento</h2>
             <p className="mt-2 text-2xl font-semibold">{formatPrice(payment.amount)}</p>
             <p className="text-base text-muted-foreground">
-              {paymentMethods[payment.method as PaymentMethod]}
+              {paymentMethodLabels[payment.method]}
             </p>
           </section>
         )}

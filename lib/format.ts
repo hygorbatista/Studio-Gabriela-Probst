@@ -28,6 +28,22 @@ export function formatDateTime(iso: string) {
   return dateTime.format(new Date(iso))
 }
 
+// Lançamentos antigos podem não ter cliente nem serviço.
+export const noClient = 'Cliente não informada'
+export const noService = 'Serviço não informado'
+
+const dateOnly = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
+// Com horário: "12/10/2026, 09:00". Sem horário (lançamento antigo): "12/10/2026".
+export function formatWhen(iso: string, timeKnown = true) {
+  return timeKnown ? formatDateTime(iso) : dateOnly.format(new Date(iso))
+}
+
 export const statusLabels: Record<string, string> = {
   scheduled: 'Agendado',
   completed: 'Concluído',
@@ -50,3 +66,9 @@ export const paymentMethods = {
 } as const
 
 export type PaymentMethod = keyof typeof paymentMethods
+
+// Para exibir: inclui "Não informado", dos lançamentos em que ela não lembrou.
+export const paymentMethodLabels: Record<string, string> = {
+  ...paymentMethods,
+  unknown: 'Não informado',
+}

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { withFlash } from '@/lib/flash'
-import { dayOf, isValidDay, toTimestamp } from '@/lib/agenda'
+import { dayOf, isValidDay, toTimestamp, todayISO } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
 import type { TablesInsert } from '@/lib/supabase/database.types'
@@ -204,7 +204,8 @@ export async function rescheduleAppointment(
 
   const { data, error } = await supabase
     .from('appointments')
-    .update({ starts_at: toTimestamp(parsed.data.day, parsed.data.time) })
+    // Remarcar define o horário, mesmo num lançamento que estava "sem horário".
+    .update({ starts_at: toTimestamp(parsed.data.day, parsed.data.time), time_known: true })
     .eq('id', id)
     .eq('status', 'scheduled')
     .select('id')
@@ -213,4 +214,116 @@ export async function rescheduleAppointment(
   if (error || !data) return { message: 'Não foi possível remarcar. Tente de novo.' }
 
   redirect(`/painel/agenda/${id}?remarcado=1`)
+}
+
+// Lançar atendimento que já aconteceu ---------------------------------------
+// Só o valor é obrigatório: cliente, serviço, horário e forma de pagamento
+// ficam em branco quando ela não lembra.
+
+const pastSchema = z
+  .object({
+    day: z
+      .string()
+      .refine(isValidDay, 'Data inválida.')
+      .refine((d) => d <= todayISO(), 'A data não pode estar no futuro. Para o futuro, use Agendar.'),
+    amount: z.preprocess(
+      parseMoney,
+      z
+        .number({ error: 'Informe o valor recebido.' })
+        .min(0, 'O valor não pode ser negativo.')
+        .max(10000, 'Valor alto demais.')
+    ),
+    service_id: z.union([z.literal(''), z.uuid()]),
+    time: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
+    method: z.union([z.literal(''), z.literal('unknown'), z.enum(Object.keys(paymentMethods) as [keyof typeof paymentMethods])]),
+    client_id: z.string(),
+    new_client_name: z.string().trim().max(80, 'Use até 80 caracteres.'),
+    new_client_phone: z.string().trim(),
+    notes: z.string().trim().max(500, 'Use até 500 caracteres.'),
+  })
+  .superRefine((v, ctx) => {
+    if (v.client_id === 'new') {
+      if (!v.new_client_name) {
+        ctx.addIssue({ code: 'custom', path: ['new_client_name'], message: 'Informe o nome.' })
+      }
+      if (v.new_client_phone && !normalizePhone(v.new_client_phone)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['new_client_phone'],
+          message: 'Telefone inválido. Use DDD + número.',
+        })
+      }
+    } else if (v.client_id && !idSchema.safeParse(v.client_id).success) {
+      ctx.addIssue({ code: 'custom', path: ['client_id'], message: 'Cliente inválida.' })
+    }
+  })
+
+export type PastFormState = {
+  message?: string
+  errors?: Partial<Record<keyof z.input<typeof pastSchema>, string[]>>
+  values?: Record<string, string>
+} | null
+
+export async function recordPastAppointment(
+  _prev: PastFormState,
+  formData: FormData
+): Promise<PastFormState> {
+  const { supabase } = await requireUser()
+
+  const values = Object.fromEntries([...formData.entries()].map(([k, v]) => [k, String(v)]))
+  const parsed = pastSchema.safeParse({
+    service_id: '',
+    time: '',
+    method: '',
+    client_id: '',
+    new_client_name: '',
+    new_client_phone: '',
+    notes: '',
+    ...values,
+  })
+  if (!parsed.success) {
+    return { errors: z.flattenError(parsed.error).fieldErrors, values }
+  }
+  const v = parsed.data
+
+  let clientId: string | null = v.client_id || null
+  let createdClient = false
+  if (clientId === 'new') {
+    const { data, error } = await supabase
+      .from('clients')
+      .insert({
+        name: v.new_client_name,
+        phone: v.new_client_phone ? normalizePhone(v.new_client_phone) : null,
+      })
+      .select('id')
+      .single()
+    if (error) return { message: 'Não foi possível cadastrar a cliente.', values }
+    clientId = data.id
+    createdClient = true
+  }
+
+  // Sem horário: fica ao meio-dia do dia, sem ocupar a agenda (time_known = false).
+  const { error } = await supabase.rpc('record_past_appointment', {
+    p_starts_at: toTimestamp(v.day, v.time || '12:00'),
+    p_time_known: v.time !== '',
+    // O banco aceita null nestes campos; o tipo gerado não sabe disso.
+    p_client_id: clientId as string,
+    p_service_id: (v.service_id || null) as string,
+    p_amount: v.amount,
+    p_method: (v.method && v.method !== 'unknown' ? v.method : null) as string,
+    p_notes: (v.notes || null) as string,
+  })
+  if (error) {
+    if (createdClient) await supabase.from('clients').delete().eq('id', clientId!)
+    if (error.code === '23P01') {
+      return {
+        message: 'Já tem atendimento nesse horário. Escolha outro horário ou deixe em "Não lembro".',
+        values,
+      }
+    }
+    return { message: 'Não foi possível lançar. Tente de novo.', values }
+  }
+
+  // Volta para a mesma tela, pronta para o próximo lançamento (n zera o formulário).
+  redirect(withFlash(`/painel/agenda/lancar?d=${v.day}&n=${Date.now()}`, 'lancado'))
 }

@@ -1,7 +1,7 @@
 // Números do mês, calculados a partir dos pagamentos e atendimentos.
 // Função pura: recebe os dados e devolve os totais, sem acessar o banco.
 
-import { paymentMethods, type PaymentMethod } from '@/lib/format'
+import { paymentMethodLabels } from '@/lib/format'
 
 type Payment = { amount: number; method: string }
 type Appointment = { status: string; price_charged: number; starts_at: string }
@@ -35,10 +35,10 @@ export function monthSummary({
     (a) => a.status === 'scheduled' && new Date(a.starts_at) < now
   )
 
-  const byMethod = (Object.keys(paymentMethods) as PaymentMethod[])
+  const byMethod = Object.keys(paymentMethodLabels)
     .map((method) => ({
       method,
-      label: paymentMethods[method],
+      label: paymentMethodLabels[method],
       total: payments.filter((p) => p.method === method).reduce((sum, p) => sum + p.amount, 0),
     }))
     .filter((m) => m.total > 0)

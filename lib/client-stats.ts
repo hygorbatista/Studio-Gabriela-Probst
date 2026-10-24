@@ -3,6 +3,8 @@
 
 type Appointment = {
   starts_at: string
+  // false nos lançamentos antigos em que ela não lembrou o horário.
+  time_known?: boolean
   status: string
   price_charged: number
   services: { name: string } | null
@@ -30,10 +32,12 @@ export function clientStats(appointments: Appointment[], now = new Date()) {
     .filter((a) => a.status === 'scheduled' && new Date(a.starts_at) >= now)
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
 
-  const dates = done.map((a) => new Date(a.starts_at))
+  // Só os que têm horário: um lançamento "sem horário" fica ao meio-dia e
+  // distorceria o horário favorito.
+  const dates = done.filter((a) => a.time_known !== false).map((a) => new Date(a.starts_at))
   // Horário favorito só faz sentido a partir de 2 atendimentos.
-  const favoriteDay = done.length >= 2 ? mode(dates.map((d) => weekdayFmt.format(d))) : undefined
-  const favoriteHour = done.length >= 2 ? mode(dates.map((d) => Number(hourFmt.format(d)))) : undefined
+  const favoriteDay = dates.length >= 2 ? mode(dates.map((d) => weekdayFmt.format(d))) : undefined
+  const favoriteHour = dates.length >= 2 ? mode(dates.map((d) => Number(hourFmt.format(d)))) : undefined
 
   return {
     visits: done.length,

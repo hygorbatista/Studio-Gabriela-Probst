@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { CalendarDays, Check, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from 'cn'
 import {
@@ -13,7 +13,7 @@ import {
   weekStart,
 } from '@/lib/agenda'
 import { agendaMoments, needsCompletion, type Moment } from '@/lib/agenda-now'
-import { formatPrice } from '@/lib/format'
+import { formatPrice, noClient, noService } from '@/lib/format'
 import { getDayAppointments, getWeekCounts } from './agenda/data'
 import { EmptyState } from './empty-state'
 import { StatusBadge } from './status-badge'
@@ -163,7 +163,9 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
 
       {appointments.length === 0 ? (
         <EmptyState icon={CalendarDays} title="Nenhum horário marcado">
-          Toque em Agendar para marcar um atendimento neste dia.
+          {day < today
+            ? 'Se teve atendimento neste dia, lance no botão abaixo.'
+            : 'Toque em Agendar para marcar um atendimento neste dia.'}
         </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -186,10 +188,20 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
                   )}
                 >
                   <div className="w-14 shrink-0">
-                    <p className={cn('text-lg leading-tight font-semibold', cancelled && 'line-through')}>
-                      {formatTime(a.starts_at)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{formatTime(a.ends_at)}</p>
+                    {a.time_known ? (
+                      <>
+                        <p className={cn('text-lg leading-tight font-semibold', cancelled && 'line-through')}>
+                          {formatTime(a.starts_at)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{formatTime(a.ends_at)}</p>
+                      </>
+                    ) : (
+                      // Lançamento antigo em que ela não lembrou o horário.
+                      <>
+                        <p className="text-lg leading-tight font-semibold text-muted-foreground">—</p>
+                        <p className="text-sm text-muted-foreground">sem hora</p>
+                      </>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     {/* O link cobre o cartão inteiro; "Concluir" fica por cima dele. */}
@@ -200,9 +212,9 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
                         cancelled && 'line-through'
                       )}
                     >
-                      {a.clients?.name}
+                      {a.clients?.name ?? noClient}
                     </Link>
-                    <p className="text-base text-muted-foreground">{a.services?.name}</p>
+                    <p className="text-base text-muted-foreground">{a.services?.name ?? noService}</p>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       {/* "Não concluído" já diz a situação; nos outros, o status vem antes. */}
                       {moment !== 'late' && <StatusBadge status={a.status} />}
@@ -233,6 +245,17 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
           })}
           {showNow && nowIndex === appointments.length && nowLine}
         </ul>
+      )}
+
+      {/* Atendimento que aconteceu e não foi registrado: lança direto como concluído. */}
+      {day <= today && (
+        <Link
+          href={`/painel/agenda/lancar?d=${day}`}
+          className={buttonVariants({ variant: 'outline', className: 'mt-6 w-full' })}
+        >
+          <History className="size-5" aria-hidden="true" />
+          Lançar atendimento que já aconteceu
+        </Link>
       )}
     </>
   )

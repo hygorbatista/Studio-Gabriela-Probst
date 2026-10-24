@@ -39,7 +39,7 @@ export function ExpenseForm({
               id="description"
               name="description"
               autoComplete="off"
-              placeholder="Ex.: Aluguel do studio"
+              placeholder={dateField?.name === 'expense_date' ? 'Ex.: Esmaltes e lixas' : 'Ex.: Aluguel do studio'}
               defaultValue={value('description', saved?.description)}
               aria-invalid={!!errors.description}
               required

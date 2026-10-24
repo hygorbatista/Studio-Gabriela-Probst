@@ -62,12 +62,13 @@ Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o
 - ✅ Mensagem de WhatsApp pronta (confirmação e aviso de remarcação).
 - ✅ Histórico da cliente e aviso de clientes "sumidas", com convite pronto.
 - ✅ Melhores clientes e serviços mais feitos no Resumo do mês.
+- ✅ Planos de UI/UX e de design ([10](10-plano-ui-ux.md), [11](11-plano-design.md)), incluindo o painel instalável como app no celular (2026-10-14).
+- ✅ Lançar atendimento que já aconteceu, só com o que ela lembrar (só o valor é obrigatório), e mais categorias de despesa (2026-10-24).
 
 ## Fase 5: Futuro (não comprometido)
 
 - Agendamento pelas clientes, com aprovação da Gabriela.
 - Lembretes automáticos por WhatsApp (API, tem custo).
-- Instalar como app no celular (PWA).
 - Outros itens que surgirem com o uso.
 
 ## Dependências e riscos
@@ -75,7 +76,7 @@ Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o
 | Item | Risco | Mitigação |
 | --- | --- | --- |
 | Plano Hobby da Vercel | Os termos restringem uso comercial | Avaliar o plano Pro ou outra hospedagem antes de crescer |
-| Limites dos planos gratuitos | Supabase pausa projetos inativos | Uso diário pelo painel mantém ativo; fazer backup |
+| Limites dos planos gratuitos | Supabase pausa projetos inativos (aconteceu em 2026-10-24, depois de 9 dias sem uso; reativado pelo painel do Supabase, sem perda de dados) e o plano gratuito não guarda backups | Uso diário pelo painel mantém ativo; montar um backup próprio |
 | Cadastro público no Supabase | Qualquer pessoa criaria conta pelo `/login` | Manter *Allow new users to sign up* desligado |
 | Next.js 16 | Mudanças em relação ao que é conhecido | Ler a documentação em `node_modules/next/dist/docs/` antes de implementar |
 | Pendências do roteiro | Respostas em aberto em [01-respostas-descoberta.md](01-respostas-descoberta.md) | Resolver antes da fase correspondente |

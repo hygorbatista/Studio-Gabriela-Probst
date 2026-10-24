@@ -3,6 +3,7 @@
 
 export const flashMessages = {
   agendado: 'Atendimento agendado',
+  lancado: 'Atendimento lançado',
   concluido: 'Atendimento concluído',
   cancelado: 'Atendimento cancelado',
   falta: 'Falta registrada',
