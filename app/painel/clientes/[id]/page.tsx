@@ -7,7 +7,7 @@ import { WhatsAppIcon } from '@/components/icons'
 import { cn } from 'cn'
 import { daysAgo, formatNextVisit } from '@/lib/client-list'
 import { clientStats, formatBirthday } from '@/lib/client-stats'
-import { formatDateTime, formatPrice, statusLabels } from '@/lib/format'
+import { formatPrice, formatWhen, noService, statusLabels } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { BackLink } from '../../back-link'
 import { DeleteButton } from '../../delete-button'
@@ -134,10 +134,10 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
                 >
                   <div className="min-w-0 flex-1">
                     <p className={cn('text-base font-semibold', a.status === 'cancelled' && 'line-through')}>
-                      {a.services?.name}
+                      {a.services?.name ?? noService}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDateTime(a.starts_at)} · {statusLabels[a.status]}
+                      {formatWhen(a.starts_at, a.time_known)} · {statusLabels[a.status]}
                     </p>
                   </div>
                   <p className="text-base">{formatPrice(a.price_charged)}</p>

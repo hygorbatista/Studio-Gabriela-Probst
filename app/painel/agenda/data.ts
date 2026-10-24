@@ -8,7 +8,7 @@ export async function getDayAppointments(day: string) {
   const { start, end } = dayRange(day)
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, starts_at, ends_at, status, price_charged, clients(name), services(name)')
+    .select('id, starts_at, ends_at, time_known, status, price_charged, clients(name), services(name)')
     .gte('starts_at', start)
     .lt('starts_at', end)
     .order('starts_at')

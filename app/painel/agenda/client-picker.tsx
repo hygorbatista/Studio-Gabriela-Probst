@@ -20,12 +20,16 @@ export function ClientPicker({
   values,
   errors,
   initialClientId,
+  optional = false,
 }: {
   clients: Client[]
   values?: Record<string, string>
   errors: Record<string, string[] | undefined>
   initialClientId?: string
+  // No lançamento de atendimento antigo, pode ficar sem cliente.
+  optional?: boolean
 }) {
+  const label = optional ? 'Cliente (opcional)' : 'Cliente'
   const startId = values?.client_id ?? initialClientId ?? ''
   const [selected, setSelected] = useState<Client | 'new' | null>(
     startId === 'new' ? 'new' : (clients.find((c) => c.id === startId) ?? null)
@@ -50,7 +54,7 @@ export function ClientPicker({
   if (selected && selected !== 'new') {
     return (
       <Field>
-        <FieldLabel>Cliente</FieldLabel>
+        <FieldLabel>{label}</FieldLabel>
         <input type="hidden" name="client_id" value={selected.id} />
         <div className="flex min-h-12 items-center justify-between gap-4 border border-primary bg-surface px-4 py-2">
           <div>
@@ -116,7 +120,7 @@ export function ClientPicker({
   // Busca.
   return (
     <Field data-invalid={!!errors.client_id}>
-      <FieldLabel htmlFor="client_search">Cliente</FieldLabel>
+      <FieldLabel htmlFor="client_search">{label}</FieldLabel>
       <div className="relative">
         <Search
           className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground"
