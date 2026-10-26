@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { formatDuration } from '@/lib/format'
 import type { Service } from '@/lib/services'
@@ -113,6 +113,24 @@ export function ServiceForm({
             />
             A duração é um máximo (&quot;até 2 h&quot;)
           </label>
+
+          <Field data-invalid={!!errors.return_days}>
+            <FieldLabel htmlFor="return_days">Retorno em (dias)</FieldLabel>
+            <Input
+              id="return_days"
+              name="return_days"
+              inputMode="numeric"
+              placeholder="Sem retorno"
+              defaultValue={value('return_days', service ? (service.return_days ?? '') : 30)}
+              aria-invalid={!!errors.return_days}
+              className="max-w-32"
+            />
+            <FieldDescription>
+              Depois de concluir, o painel sugere agendar a volta da cliente nesse prazo. Deixe vazio
+              para serviço avulso.
+            </FieldDescription>
+            <FieldError>{errors.return_days?.[0]}</FieldError>
+          </Field>
         </FormCard>
 
         {state?.message && (
