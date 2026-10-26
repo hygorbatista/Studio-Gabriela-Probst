@@ -24,8 +24,25 @@ export async function getAppointment(id: string) {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
-    .select('*, clients(id, name, phone), services(name), payments(amount, method)')
+    .select('*, clients(id, name, phone), services(id, name, return_days), payments(amount, method)')
     .eq('id', id)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+// Próximo horário já marcado da cliente depois de um momento: se existe, o
+// retorno já está agendado.
+export async function getNextScheduled(clientId: string, after: string) {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, starts_at')
+    .eq('client_id', clientId)
+    .eq('status', 'scheduled')
+    .gt('starts_at', after)
+    .order('starts_at')
+    .limit(1)
     .maybeSingle()
   if (error) throw error
   return data
