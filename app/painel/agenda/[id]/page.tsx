@@ -13,6 +13,8 @@ import { BackLink } from '../../back-link'
 import { StatusBadge } from '../../status-badge'
 import { reopenAppointment, setAppointmentStatus } from '../actions'
 import { CompleteForm } from '../complete-form'
+import { ConfirmToggle } from '../confirm-toggle'
+import { ConfirmedBadge } from '../confirmed-badge'
 import { getAppointment, getNextScheduled } from '../data'
 import { DetailSkeleton } from '../../skeletons'
 import { card, dataLabel, sectionTitle } from '../../styles'
@@ -53,7 +55,7 @@ async function Appointment({
       <BackLink href={`/painel?d=${day}`} label="Agenda" />
 
       <div className="mb-10">
-        <StatusBadge status={a.status} />
+        {a.status === 'scheduled' && a.confirmed_at ? <ConfirmedBadge /> : <StatusBadge status={a.status} />}
         <h1 className="mt-3 font-serif text-4xl">{a.services?.name ?? noService}</h1>
         <p className="mt-2 text-base">
           {formatDayTitle(day)} ·{' '}
@@ -97,6 +99,8 @@ async function Appointment({
                   {rescheduled ? 'Avisar da nova data' : 'Enviar confirmação'}
                 </a>
               )}
+              {/* A cliente respondeu: marca como confirmado. */}
+              <ConfirmToggle key={String(!!a.confirmed_at)} id={a.id} confirmed={!!a.confirmed_at} />
               <Link
                 href={`/painel/agenda/${a.id}/remarcar`}
                 className={buttonVariants({ variant: 'outline', className: 'w-full' })}
