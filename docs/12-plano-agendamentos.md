@@ -124,7 +124,7 @@ Lembretes automáticos (sem ela tocar em nada) precisam da API paga do WhatsApp 
 
 ## Ordem sugerida
 
-Plano aprovado em 2026-10-24.
+Plano aprovado em 2026-10-24. Feito: etapas 1, 2 e 3 (2026-10-24), 4.1 e 4.2 (2026-10-26).
 
 1. **Etapa 1 (agendar sem errar)** e **Etapa 2 (tem horário?)**: atacam a dor que ela relatou e compartilham a mesma base (o cálculo de horários livres). Fazer juntas.
 2. **Etapa 3 (visões dia, semana, mês e lista, com cores)**: pedido do Hygor; usa a mesma base.
