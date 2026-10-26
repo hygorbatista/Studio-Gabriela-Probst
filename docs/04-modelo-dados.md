@@ -28,6 +28,7 @@ erDiagram
         numeric price
         int duration_minutes
         boolean duration_up_to
+        int return_days
         boolean active
         int sort_order
     }
@@ -76,7 +77,7 @@ erDiagram
 ## Tabelas
 
 - **clients:** nome, telefone (guardado só com dígitos, com DDI), data de nascimento (opcional, para aniversários e campanhas futuras) e preferências. Sem e-mail nem senha. Gasto total, serviço e horário favoritos **não são colunas**: são calculados dos atendimentos (`lib/client-stats.ts`).
-- **services:** os 7 serviços atuais. `category` é o grupo da landing page ("Fibra e gel", "Tradicional"). `duration_up_to` indica duração máxima ("até 2 h"). Serviço usado em atendimentos antigos é **desativado**, nunca apagado, para preservar o histórico.
+- **services:** os 7 serviços atuais. `category` é o grupo da landing page ("Fibra e gel", "Tradicional"). `duration_up_to` indica duração máxima ("até 2 h"). `return_days` é o prazo de retorno sugerido depois de concluir (30 por padrão; vazio = serviço avulso, sem sugestão). Serviço usado em atendimentos antigos é **desativado**, nunca apagado, para preservar o histórico.
 - **appointments:** `status` em `scheduled | completed | cancelled | no_show`. `price_charged` guarda o valor cobrado na hora, de modo que mudar o preço do serviço não altera o passado. Um gatilho (`appointments_fill`) preenche sozinho:
   - `ends_at` = `starts_at` + duração do serviço, se não for informado. Ao remarcar, mantém a duração; ao trocar o serviço, recalcula.
   - `blocked_until` = `ends_at` + intervalo das configurações.

@@ -22,6 +22,16 @@ const serviceSchema = z.object({
     .min(15, 'Escolha a duração.')
     .max(600),
   duration_up_to: z.preprocess((v) => v === 'on', z.boolean()),
+  // Vazio: serviço avulso, sem sugestão de retorno.
+  return_days: z.preprocess(
+    (v) => (v === '' || v === undefined ? null : Number(v)),
+    z
+      .number({ error: 'Use só números.' })
+      .int('Use só números.')
+      .min(1, 'Use de 1 a 365 dias.')
+      .max(365, 'Use de 1 a 365 dias.')
+      .nullable()
+  ),
 })
 
 type Fields = keyof z.infer<typeof serviceSchema>
