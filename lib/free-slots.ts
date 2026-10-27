@@ -21,6 +21,8 @@ export type BusyItem = Busy & {
   // false nos lançamentos antigos sem horário: não ocupam a agenda.
   time_known: boolean
   status: string
+  // A cliente confirmou o lembrete da véspera.
+  confirmed: boolean
   client: string | null
   service: string | null
 }

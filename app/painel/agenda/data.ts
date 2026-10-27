@@ -11,7 +11,7 @@ export async function getDayAppointments(day: string) {
   const { data, error } = await supabase
     .from('appointments')
     .select(
-      'id, starts_at, ends_at, blocked_until, time_known, status, price_charged, clients(name), services(name)'
+      'id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, price_charged, clients(name), services(name)'
     )
     .gte('starts_at', start)
     .lt('starts_at', end)
@@ -64,13 +64,34 @@ export async function getFormOptions() {
   return { clients: clients.data, services: services.data }
 }
 
+// Agendados de um dia, para confirmar com as clientes (lembrete da véspera).
+export async function getToConfirm(day: string) {
+  const { supabase } = await requireUser()
+  const { start, end } = dayRange(day)
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, starts_at, confirmed_at, clients(name, phone), services(name)')
+    .eq('status', 'scheduled')
+    .gte('starts_at', start)
+    .lt('starts_at', end)
+    .order('starts_at')
+  if (error) throw error
+  return data
+}
+
+// Quantos agendados há num dia e quantos faltam confirmar.
+export async function getConfirmCount(day: string) {
+  const list = await getToConfirm(day)
+  return { total: list.length, pending: list.filter((a) => !a.confirmed_at).length }
+}
+
 // Atendimentos que ocupam a agenda (agendados e concluídos) de "from" até "to",
 // inclusive, numa consulta só. Base dos horários livres e da ocupação.
 export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, starts_at, ends_at, blocked_until, time_known, status, clients(name), services(name)')
+    .select('id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, clients(name), services(name)')
     .in('status', ['scheduled', 'completed'])
     .gte('starts_at', dayRange(from).start)
     .lt('starts_at', dayRange(to).end)
@@ -83,6 +104,7 @@ export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
     blocked_until: a.blocked_until,
     time_known: a.time_known,
     status: a.status,
+    confirmed: !!a.confirmed_at,
     client: a.clients?.name ?? null,
     service: a.services?.name ?? null,
   }))

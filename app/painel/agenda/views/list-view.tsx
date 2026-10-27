@@ -3,6 +3,7 @@ import { CalendarDays } from 'lucide-react'
 import { cn } from 'cn'
 import { addDays, dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
 import { noClient, noService } from '@/lib/format'
+import { ConfirmedBadge } from '../confirmed-badge'
 import { getBusy, summarizeDays } from '../data'
 import { loadClass, loadLabel } from '../load'
 import { EmptyState } from '../../empty-state'
@@ -70,6 +71,7 @@ export async function ListView() {
                             </span>
                           </span>
                           {a.status === 'completed' && <StatusBadge status={a.status} />}
+                          {a.status === 'scheduled' && a.confirmed && <ConfirmedBadge />}
                         </Link>
                       </li>
                     ))}

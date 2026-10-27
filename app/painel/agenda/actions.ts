@@ -1,5 +1,6 @@
 'use server'
 
+import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
@@ -115,6 +116,25 @@ export async function loadBusy(from: string) {
   return getBusy(from, addDays(from, 13))
 }
 
+// A cliente respondeu o lembrete: marca (ou desmarca) "Confirmado" e
+// atualiza a tela sem sair dela, para confirmar várias seguidas.
+export async function setConfirmed(id: string, confirmed: boolean): Promise<ActionState> {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success) return { message: 'Atendimento inválido.' }
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .update({ confirmed_at: confirmed ? new Date().toISOString() : null })
+    .eq('id', id)
+    .eq('status', 'scheduled')
+    .select('id')
+    .maybeSingle()
+  if (error || !data) return { message: 'Não foi possível salvar. Tente de novo.' }
+
+  refresh()
+  return null
+}
+
 // Cancelar ou marcar falta.
 export async function setAppointmentStatus(
   id: string,
@@ -213,7 +233,12 @@ export async function rescheduleAppointment(
   const { data, error } = await supabase
     .from('appointments')
     // Remarcar define o horário, mesmo num lançamento que estava "sem horário".
-    .update({ starts_at: toTimestamp(parsed.data.day, parsed.data.time), time_known: true })
+    // A confirmação era do horário antigo: volta a ficar pendente.
+    .update({
+      starts_at: toTimestamp(parsed.data.day, parsed.data.time),
+      time_known: true,
+      confirmed_at: null,
+    })
     .eq('id', id)
     .eq('status', 'scheduled')
     .select('id')

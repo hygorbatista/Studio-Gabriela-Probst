@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarDays, Check, History, Plus } from 'lucide-react'
+import { CalendarCheck, CalendarDays, Check, ChevronRight, History, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from 'cn'
 import {
@@ -13,7 +13,8 @@ import {
 import { agendaMoments, needsCompletion, type Moment } from '@/lib/agenda-now'
 import { formatPrice, noClient, noService } from '@/lib/format'
 import { freeGaps } from '@/lib/free-slots'
-import { getDayAppointments, getWeekSummary } from '../data'
+import { ConfirmedBadge } from '../confirmed-badge'
+import { getConfirmCount, getDayAppointments, getWeekSummary } from '../data'
 import { loadClass, loadLabel } from '../load'
 import { EmptyState } from '../../empty-state'
 import { StatusBadge } from '../../status-badge'
@@ -41,7 +42,12 @@ const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.
 export async function DayView({ day }: { day: string }) {
   const today = todayISO()
   const start = weekStart(day)
-  const [appointments, week] = await Promise.all([getDayAppointments(day), getWeekSummary(start)])
+  const tomorrow = addDays(today, 1)
+  const [appointments, week, toConfirm] = await Promise.all([
+    getDayAppointments(day),
+    getWeekSummary(start),
+    getConfirmCount(tomorrow),
+  ])
 
   const active = appointments.filter((a) => a.status === 'scheduled' || a.status === 'completed')
   const expected = active.reduce((sum, a) => sum + a.price_charged, 0)
@@ -91,6 +97,32 @@ export async function DayView({ day }: { day: string }) {
 
   return (
     <>
+      {/* Lembrete da véspera: só some quando todas de amanhã confirmaram. */}
+      {toConfirm.total > 0 && (
+        <Link
+          href="/painel/agenda/confirmar"
+          className={cn(
+            'mb-6 flex min-h-12 items-center gap-3 px-4 py-3 text-base',
+            toConfirm.pending > 0
+              ? 'bg-primary-soft text-primary hover:bg-primary-soft/70'
+              : 'border border-border bg-surface text-muted-foreground'
+          )}
+        >
+          <CalendarCheck className="size-5 shrink-0" aria-hidden="true" />
+          <span className="flex-1">
+            {toConfirm.pending > 0 ? (
+              <>
+                <strong className="font-semibold">Amanhã:</strong> {toConfirm.pending}{' '}
+                {toConfirm.pending === 1 ? 'atendimento para confirmar' : 'atendimentos para confirmar'}
+              </>
+            ) : (
+              `Amanhã: ${toConfirm.total === 1 ? 'o atendimento está confirmado' : `todos os ${toConfirm.total} confirmados`}`
+            )}
+          </span>
+          <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
+        </Link>
+      )}
+
       <PeriodNav
         title={formatDayTitle(day)}
         prev={{ href: agendaHref('dia', addDays(day, -7)), label: 'Semana anterior' }}
@@ -212,7 +244,12 @@ export async function DayView({ day }: { day: string }) {
                     <p className="text-base text-muted-foreground">{a.services?.name ?? noService}</p>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       {/* "Não concluído" já diz a situação; nos outros, o status vem antes. */}
-                      {moment !== 'late' && <StatusBadge status={a.status} />}
+                      {moment !== 'late' &&
+                        (a.status === 'scheduled' && a.confirmed_at ? (
+                          <ConfirmedBadge />
+                        ) : (
+                          <StatusBadge status={a.status} />
+                        ))}
                       {moment && (
                         <span
                           className={cn(

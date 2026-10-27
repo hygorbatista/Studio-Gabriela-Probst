@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           blocked_until: string
           client_id: string | null
+          confirmed_at: string | null
           created_at: string
           ends_at: string
           id: string
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           blocked_until: string
           client_id?: string | null
+          confirmed_at?: string | null
           created_at?: string
           ends_at: string
           id?: string
@@ -44,6 +46,7 @@ export type Database = {
         Update: {
           blocked_until?: string
           client_id?: string | null
+          confirmed_at?: string | null
           created_at?: string
           ends_at?: string
           id?: string

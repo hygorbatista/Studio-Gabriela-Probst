@@ -42,6 +42,8 @@ erDiagram
         text status
         numeric price_charged
         text notes
+        boolean time_known
+        timestamptz confirmed_at
     }
     payments {
         uuid id PK
@@ -84,6 +86,7 @@ erDiagram
   - `price_charged` = preço atual do serviço, se não for informado.
   - Sem serviço, a duração padrão é de 1 hora.
 - **Lançamento de atendimento antigo** (desde 2026-10-24): `client_id` e `service_id` podem ser nulos, e `time_known = false` marca o atendimento em que ela não lembra o horário (fica ao meio-dia do dia e **não ocupa a agenda**). A função `record_past_appointment` grava o atendimento já concluído e o pagamento numa transação só e recusa datas futuras. O agendamento normal continua exigindo cliente e serviço (validação na tela).
+- **Confirmação da véspera** (desde 2026-10-26): `confirmed_at` guarda quando a cliente confirmou o lembrete; vazio = ainda não confirmou. Remarcar limpa a confirmação.
 - **payments:** um pagamento por atendimento concluído. `method` em `pix | cash | debit | credit | unknown` (`unknown` = "Não informado", só nos lançamentos antigos). `paid_at` é a data do atendimento, para o faturamento contar no dia do serviço. Gravado pela função `complete_appointment`, que conclui e registra o pagamento numa transação só; `reopen_appointment` desfaz.
 - **expenses:** despesas **do dia a dia** (na tela; "avulsas" no código), com data. `category` em `rent | bills | mei | materials | equipment | courses | transport | food | marketing | other`, com os nomes em `lib/expenses.ts`.
 - **recurring_expenses:** despesas **fixas** (aluguel, MEI), que entram em todo mês entre `starts_on` e `ends_on` (meses guardados como o dia 1). Mudar o valor encerra a versão antiga no mês anterior e cria uma nova a partir do mês atual: os meses passados não mudam.
