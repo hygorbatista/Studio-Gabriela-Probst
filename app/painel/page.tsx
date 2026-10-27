@@ -4,7 +4,7 @@ import { isValidDay, todayISO } from '@/lib/agenda'
 import { DayView } from './agenda/views/day-view'
 import { ListView } from './agenda/views/list-view'
 import { MonthView } from './agenda/views/month-view'
-import { AgendaActions, isView, ViewSwitch } from './agenda/views/shared'
+import { AgendaActions, AgendaSearch, isView, ViewSwitch } from './agenda/views/shared'
 import { WeekView } from './agenda/views/week-view'
 import { AgendaSkeleton } from './skeletons'
 
@@ -32,6 +32,7 @@ async function Agenda({ searchParams }: Pick<PageProps<'/painel'>, 'searchParams
     <>
       <ViewSwitch view={view} day={day} />
       <AgendaActions day={day < today ? today : day} />
+      <AgendaSearch />
       {view === 'dia' && <DayView day={day} />}
       {view === 'semana' && <WeekView day={day} />}
       {view === 'mes' && <MonthView day={day} />}

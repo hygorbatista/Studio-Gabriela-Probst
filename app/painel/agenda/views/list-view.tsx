@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Lock } from 'lucide-react'
 import { cn } from 'cn'
 import { addDays, dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
 import { noClient, noService } from '@/lib/format'
@@ -18,13 +18,14 @@ export async function ListView() {
   const items = await getBusy(today, addDays(today, DAYS - 1))
   const summary = summarizeDays(items)
   const days = [...new Set(items.map((a) => dayOf(a.starts_at)))]
+  const total = items.filter((a) => a.kind === 'appointment').length
 
   return (
     <>
       <div className="mb-4 text-center">
         <h1 className="font-serif text-2xl leading-tight sm:text-3xl">Próximos {DAYS} dias</h1>
         <p className="text-sm text-muted-foreground">
-          {items.length} {items.length === 1 ? 'atendimento' : 'atendimentos'}
+          {total} {total === 1 ? 'atendimento' : 'atendimentos'}
         </p>
       </div>
 
@@ -55,7 +56,19 @@ export async function ListView() {
                 <ul className="flex flex-col gap-1.5">
                   {items
                     .filter((a) => dayOf(a.starts_at) === d)
-                    .map((a) => (
+                    .map((a) =>
+                      a.kind === 'block' ? (
+                        <li
+                          key={a.id}
+                          className="flex items-center gap-4 border border-border bg-muted/60 px-4 py-3 text-muted-foreground"
+                        >
+                          <span className="w-12 shrink-0 text-base font-semibold">{formatTime(a.starts_at)}</span>
+                          <span className="flex min-w-0 flex-1 items-center gap-2">
+                            <Lock className="size-4 shrink-0" aria-hidden="true" />
+                            <span className="truncate">Bloqueado{a.service ? ` · ${a.service}` : ''}</span>
+                          </span>
+                        </li>
+                      ) : (
                       <li key={a.id}>
                         <Link
                           href={`/painel/agenda/${a.id}`}
@@ -74,7 +87,8 @@ export async function ListView() {
                           {a.status === 'scheduled' && a.confirmed && <ConfirmedBadge />}
                         </Link>
                       </li>
-                    ))}
+                      )
+                    )}
                 </ul>
               </section>
             )

@@ -13,7 +13,7 @@ import type { ActionState } from '../action-button'
 import { getBusy } from './data'
 
 const CONFLICT =
-  'Esse horário conflita com outro atendimento (contando o intervalo de 15 minutos).'
+  'Esse horário conflita com outro atendimento ou com um horário bloqueado (contando o intervalo de 15 minutos).'
 
 const idSchema = z.uuid()
 
@@ -247,6 +247,86 @@ export async function rescheduleAppointment(
   if (error || !data) return { message: 'Não foi possível remarcar. Tente de novo.' }
 
   redirect(`/painel/agenda/${id}?remarcado=1`)
+}
+
+// Bloquear horário (folga, médico, almoço) ---------------------------------
+// Um bloqueio por dia: "até o dia" repete o mesmo horário em cada dia (férias).
+
+const MAX_BLOCK_DAYS = 31
+
+const blockSchema = z
+  .object({
+    day: z.string().refine(isValidDay, 'Data inválida.'),
+    until: z.union([z.literal(''), z.string().refine(isValidDay, 'Data inválida.')]),
+    all_day: z.preprocess((v) => v === 'on', z.boolean()),
+    from: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
+    to: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
+    reason: z.string().trim().max(80, 'Use até 80 caracteres.'),
+  })
+  .superRefine((v, ctx) => {
+    if (v.until && v.until < v.day) {
+      ctx.addIssue({ code: 'custom', path: ['until'], message: 'Tem que ser depois do primeiro dia.' })
+    } else if (v.until && v.until > addDays(v.day, MAX_BLOCK_DAYS - 1)) {
+      ctx.addIssue({ code: 'custom', path: ['until'], message: `Bloqueie até ${MAX_BLOCK_DAYS} dias de uma vez.` })
+    }
+    if (!v.all_day) {
+      if (!v.from) ctx.addIssue({ code: 'custom', path: ['from'], message: 'Informe o início.' })
+      if (!v.to) ctx.addIssue({ code: 'custom', path: ['to'], message: 'Informe o fim.' })
+      if (v.from && v.to && v.to <= v.from) {
+        ctx.addIssue({ code: 'custom', path: ['to'], message: 'O fim tem que ser depois do início.' })
+      }
+    }
+  })
+
+export type BlockFormState = {
+  message?: string
+  errors?: Partial<Record<keyof z.input<typeof blockSchema>, string[]>>
+  values?: Record<string, string>
+} | null
+
+export async function createBlock(_prev: BlockFormState, formData: FormData): Promise<BlockFormState> {
+  const { supabase } = await requireUser()
+
+  const values = Object.fromEntries([...formData.entries()].map(([k, v]) => [k, String(v)]))
+  const parsed = blockSchema.safeParse({ until: '', from: '', to: '', reason: '', ...values })
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors, values }
+  const v = parsed.data
+
+  const days: string[] = []
+  for (let d = v.day; d <= (v.until || v.day); d = addDays(d, 1)) days.push(d)
+  const rows = days.map((d) => ({
+    // Dia inteiro: da meia-noite à meia-noite seguinte.
+    starts_at: toTimestamp(d, v.all_day ? '00:00' : v.from),
+    ends_at: v.all_day ? toTimestamp(addDays(d, 1), '00:00') : toTimestamp(d, v.to),
+    reason: v.reason || null,
+  }))
+
+  // Um insert só: se um dos dias tiver atendimento, nenhum é bloqueado.
+  const { error } = await supabase.from('time_blocks').insert(rows)
+  if (error?.code === '23P01') {
+    return {
+      message: 'Já tem atendimento nesse horário. Remarque ou cancele o atendimento antes de bloquear.',
+      values,
+    }
+  }
+  if (error) return { message: 'Não foi possível bloquear. Tente de novo.', values }
+
+  redirect(withFlash(`/painel?d=${v.day}`, 'bloqueado'))
+}
+
+export async function deleteBlock(id: string): Promise<ActionState> {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success) return { message: 'Bloqueio inválido.' }
+
+  const { data, error } = await supabase
+    .from('time_blocks')
+    .delete()
+    .eq('id', id)
+    .select('starts_at')
+    .maybeSingle()
+  if (error || !data) return { message: 'Não foi possível desbloquear. Tente de novo.' }
+
+  redirect(withFlash(`/painel?d=${dayOf(data.starts_at)}`, 'desbloqueado'))
 }
 
 // Lançar atendimento que já aconteceu ---------------------------------------

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import { cn } from 'cn'
 import { addDays, dayOf, formatShortWeekday, formatTime, todayISO, weekStart } from '@/lib/agenda'
 import { noClient, noService } from '@/lib/format'
@@ -27,19 +28,24 @@ export async function WeekView({ day }: { day: string }) {
   const summary = summarizeDays(items)
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i))
   const timed = items.filter((a) => a.time_known)
+  const appointmentsOnly = timed.filter((a) => a.kind === 'appointment')
 
-  // A grade vai das 7h às 21h e cresce se tiver atendimento fora disso.
-  const firstHour = Math.min(7, ...timed.map((a) => Math.floor(minutesOf(a.starts_at, dayOf(a.starts_at)) / 60)))
+  // A grade vai das 7h às 21h e cresce se tiver atendimento fora disso. Os
+  // bloqueios não esticam a grade (uma folga de dia inteiro é cortada nela).
+  const firstHour = Math.min(
+    7,
+    ...appointmentsOnly.map((a) => Math.floor(minutesOf(a.starts_at, dayOf(a.starts_at)) / 60))
+  )
   const lastHour = Math.max(
     21,
-    ...timed.map((a) => Math.ceil(minutesOf(a.ends_at, dayOf(a.starts_at)) / 60))
+    ...appointmentsOnly.map((a) => Math.ceil(minutesOf(a.ends_at, dayOf(a.starts_at)) / 60))
   )
   const hours = Array.from({ length: lastHour - firstHour }, (_, i) => firstHour + i)
   const top = (minutes: number) => ((minutes - firstHour * 60) / 60) * HOUR
 
   const now = new Date()
   const nowMinutes = minutesOf(now.toISOString(), today)
-  const total = items.length
+  const total = items.filter((a) => a.kind === 'appointment').length
 
   return (
     <>
@@ -122,6 +128,22 @@ export async function WeekView({ day }: { day: string }) {
 
                 {/* Atendimentos: o bloco escuro é o atendimento; o claro, o intervalo depois. */}
                 {dayItems.map((a) => {
+                  if (a.kind === 'block') {
+                    const s = Math.max(minutesOf(a.starts_at, d), firstHour * 60)
+                    const e = Math.min(minutesOf(a.ends_at, d), lastHour * 60)
+                    return (
+                      <div
+                        key={a.id}
+                        role="img"
+                        aria-label={`Bloqueado${a.service ? `, ${a.service}` : ''}, ${formatTime(a.starts_at)} às ${formatTime(a.ends_at)}`}
+                        className="absolute inset-x-0 z-10 overflow-hidden border border-border bg-muted bg-[repeating-linear-gradient(135deg,transparent_0_6px,rgb(0_0_0/0.05)_6px_12px)] px-1 py-0.5 text-[11px] leading-tight text-muted-foreground"
+                        style={{ top: top(s), height: Math.max(top(e) - top(s), 20) }}
+                      >
+                        <Lock className="size-3" aria-hidden="true" />
+                        <span className="block truncate">{a.service ?? 'Bloqueado'}</span>
+                      </div>
+                    )
+                  }
                   const s = minutesOf(a.starts_at, d)
                   const e = minutesOf(a.ends_at, d)
                   const b = minutesOf(a.blocked_until, d)
@@ -173,6 +195,9 @@ export async function WeekView({ day }: { day: string }) {
           </li>
           <li className="flex items-center gap-1.5">
             <span aria-hidden="true" className="size-3.5 bg-primary/25" /> Intervalo
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="size-3.5 border border-border bg-muted" /> Bloqueado
           </li>
         </ul>
       </div>

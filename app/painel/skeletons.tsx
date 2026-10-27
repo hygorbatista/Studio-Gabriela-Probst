@@ -42,6 +42,7 @@ export function AgendaSkeleton() {
         <Bone className="h-12" />
         <Bone className="h-12" />
       </div>
+      <Bone className="mb-6 h-12 w-full" />
       <div className="mb-4 flex items-center justify-between gap-2">
         <Bone className="size-11" />
         <Bone className="h-8 w-48" />

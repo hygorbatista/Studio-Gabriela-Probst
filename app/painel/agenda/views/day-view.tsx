@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarCheck, CalendarDays, Check, ChevronRight, History, Plus } from 'lucide-react'
+import { CalendarCheck, CalendarDays, Check, ChevronRight, History, Lock, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from 'cn'
 import {
@@ -14,7 +14,9 @@ import { agendaMoments, needsCompletion, type Moment } from '@/lib/agenda-now'
 import { formatPrice, noClient, noService } from '@/lib/format'
 import { freeGaps } from '@/lib/free-slots'
 import { ConfirmedBadge } from '../confirmed-badge'
-import { getConfirmCount, getDayAppointments, getWeekSummary } from '../data'
+import { deleteBlock } from '../actions'
+import { getConfirmCount, getDayAppointments, getDayBlocks, getWeekSummary } from '../data'
+import { ActionButton } from '../../action-button'
 import { loadClass, loadLabel } from '../load'
 import { EmptyState } from '../../empty-state'
 import { StatusBadge } from '../../status-badge'
@@ -43,8 +45,9 @@ export async function DayView({ day }: { day: string }) {
   const today = todayISO()
   const start = weekStart(day)
   const tomorrow = addDays(today, 1)
-  const [appointments, week, toConfirm] = await Promise.all([
+  const [appointments, blocks, week, toConfirm] = await Promise.all([
     getDayAppointments(day),
+    getDayBlocks(day),
     getWeekSummary(start),
     getConfirmCount(tomorrow),
   ])
@@ -54,8 +57,11 @@ export async function DayView({ day }: { day: string }) {
   const now = new Date()
   const { moments, nowIndex } = agendaMoments(appointments, now)
   const showNow = day === today && appointments.length > 0
-  // Espaços vagos entre os atendimentos, hoje e nos próximos dias.
-  const gaps = active.length > 0 ? freeGaps({ day, busy: active.filter((a) => a.time_known), now }) : []
+  // Espaços vagos entre os atendimentos e bloqueios, hoje e nos próximos dias.
+  const gaps =
+    active.length + blocks.length > 0
+      ? freeGaps({ day, busy: [...active.filter((a) => a.time_known), ...blocks], now })
+      : []
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i))
 
   const nowLine = (
@@ -84,13 +90,48 @@ export async function DayView({ day }: { day: string }) {
     </li>
   )
 
-  // Cada espaço vago entra antes do primeiro atendimento que começa depois dele.
-  let gapIndex = 0
+  const blockRow = (b: (typeof blocks)[number]) => {
+    const allDay = Date.parse(b.ends_at) - Date.parse(b.starts_at) >= 24 * 60 * 60000
+    return (
+      <li
+        key={`block-${b.id}`}
+        className="flex items-center gap-4 border border-border bg-muted/60 bg-[repeating-linear-gradient(135deg,transparent_0_8px,rgb(0_0_0/0.03)_8px_16px)] py-3 pr-2 pl-4"
+      >
+        <Lock className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold">Bloqueado{b.service ? ` · ${b.service}` : ''}</p>
+          <p className="text-sm text-muted-foreground">
+            {allDay ? 'Dia inteiro' : `${formatTime(b.starts_at)} às ${formatTime(b.ends_at)}`}
+          </p>
+        </div>
+        <ActionButton
+          action={deleteBlock.bind(null, b.id)}
+          label="Desbloquear"
+          pendingLabel="..."
+          variant="link"
+          className="h-11 px-2 text-sm"
+          confirm={{
+            title: 'Desbloquear este horário?',
+            description: 'Ele volta a aparecer nos horários livres.',
+            confirmLabel: 'Desbloquear',
+          }}
+        />
+      </li>
+    )
+  }
+
+  // Espaços vagos e bloqueios entram, em ordem de horário, antes do primeiro
+  // atendimento que começa depois deles.
+  const extras = [
+    ...gaps.map((g) => ({ at: toMinutes(g.from), node: gapRow(g) })),
+    ...blocks.map((b) => ({ at: minutesOf(b.starts_at), node: blockRow(b) })),
+  ].sort((a, b) => a.at - b.at)
+  let extraIndex = 0
   const gapsBefore = (startMinutes: number) => {
     const out = []
-    while (gapIndex < gaps.length && toMinutes(gaps[gapIndex].to) <= startMinutes) {
-      out.push(gapRow(gaps[gapIndex]))
-      gapIndex++
+    while (extraIndex < extras.length && extras[extraIndex].at < startMinutes) {
+      out.push(extras[extraIndex].node)
+      extraIndex++
     }
     return out
   }
@@ -165,7 +206,8 @@ export async function DayView({ day }: { day: string }) {
                   )}
                   <span className="text-xs font-semibold uppercase">{formatShortWeekday(d)}</span>
                   <span className="text-lg leading-none font-semibold">{Number(d.slice(8))}</span>
-                  <span aria-hidden="true" className="h-4 text-xs font-semibold">
+                  <span aria-hidden="true" className="flex h-4 items-center gap-0.5 text-xs font-semibold">
+                    {summary?.blocked && <Lock className="size-3" />}
                     {count > 0 ? count : ''}
                   </span>
                 </Link>
@@ -178,13 +220,15 @@ export async function DayView({ day }: { day: string }) {
       <div className="mb-4">
         <p className="font-serif text-2xl leading-tight">
           {active.length === 0
-            ? 'Dia livre'
+            ? blocks.length > 0
+              ? 'Sem atendimentos'
+              : 'Dia livre'
             : `${active.length} ${active.length === 1 ? 'atendimento' : 'atendimentos'}`}
         </p>
         {active.length > 0 && <p className="text-sm text-muted-foreground">{formatPrice(expected)} no dia</p>}
       </div>
 
-      {appointments.length === 0 ? (
+      {appointments.length === 0 && blocks.length === 0 ? (
         <EmptyState icon={CalendarDays} title="Nenhum horário marcado">
           {day < today
             ? 'Se teve atendimento neste dia, lance no botão abaixo.'
@@ -288,6 +332,17 @@ export async function DayView({ day }: { day: string }) {
         >
           <History className="size-5" aria-hidden="true" />
           Lançar atendimento que já aconteceu
+        </Link>
+      )}
+
+      {/* Folga, médico, almoço: o horário some dos livres. */}
+      {day >= today && (
+        <Link
+          href={`/painel/agenda/bloquear?d=${day}`}
+          className={buttonVariants({ variant: 'outline', className: 'mt-6 w-full' })}
+        >
+          <Lock className="size-5" aria-hidden="true" />
+          Bloquear horário
         </Link>
       )}
     </>

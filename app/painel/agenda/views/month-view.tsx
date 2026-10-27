@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import { cn } from 'cn'
 import {
   addDays,
@@ -80,7 +81,10 @@ export async function MonthView({ day }: { day: string }) {
               <span className={cn('text-base leading-none font-semibold', d === today && 'underline underline-offset-4')}>
                 {Number(d.slice(8))}
               </span>
-              {count > 0 && <span className="self-end text-xs font-semibold">{count}</span>}
+              <span className="flex items-center justify-between text-xs font-semibold">
+                {s?.blocked ? <Lock className="size-3" aria-label="Tem horário bloqueado" /> : <span />}
+                {count > 0 && count}
+              </span>
             </Link>
           )
         })}

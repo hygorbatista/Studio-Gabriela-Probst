@@ -256,6 +256,30 @@ export type Database = {
         }
         Relationships: []
       }
+      time_blocks: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          reason: string | null
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          reason?: string | null
+          starts_at: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          reason?: string | null
+          starts_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
