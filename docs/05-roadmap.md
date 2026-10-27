@@ -68,6 +68,7 @@ Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o
 - ✅ "Agendar o retorno?" ao concluir, com prazo de retorno por serviço (30 dias por padrão) (2026-10-26).
 - ✅ Confirmar os horários de amanhã: aviso na Agenda, lembrete pronto no WhatsApp para cada cliente e selo "Confirmado" (2026-10-26).
 - ✅ Buscar cliente direto na Agenda e bloquear horário (folga, médico, férias) (2026-10-27).
+- ✅ "Hora de voltar": clientes com o retorno vencendo e nada marcado, com convite pronto; substitui a lista de "sumidas" (2026-10-27).
 
 ## Fase 5: Futuro (não comprometido)
 
