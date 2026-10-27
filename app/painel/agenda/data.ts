@@ -2,6 +2,7 @@ import 'server-only'
 import { requireUser } from '@/lib/auth'
 import { addDays, dayOf, dayRange } from '@/lib/agenda'
 import { clientHabits } from '@/lib/client-stats'
+import { dueClients } from '@/lib/return-due'
 import { busyMinutes, dayLoad, type BusyItem, type Load } from '@/lib/free-slots'
 
 // Atendimentos de um dia (horário de Brasília), em ordem de horário.
@@ -86,6 +87,20 @@ export async function searchAgenda(term: string) {
   const { data, error } = await query
   if (error) throw error
   return data
+}
+
+// "Hora de voltar": clientes com o retorno chegando ou vencido e nada marcado.
+export async function getReturnList() {
+  const { supabase } = await requireUser()
+  const [clients, settings] = await Promise.all([
+    supabase
+      .from('clients')
+      .select('id, name, phone, appointments(starts_at, status, services(id, name, return_days))'),
+    supabase.from('settings').select('inactive_days_threshold').eq('id', 1).single(),
+  ])
+  if (clients.error) throw clients.error
+  if (settings.error) throw settings.error
+  return dueClients(clients.data, settings.data.inactive_days_threshold)
 }
 
 // Agendados de um dia, para confirmar com as clientes (lembrete da véspera).
