@@ -45,6 +45,12 @@ erDiagram
         boolean time_known
         timestamptz confirmed_at
     }
+    time_blocks {
+        uuid id PK
+        timestamptz starts_at
+        timestamptz ends_at
+        text reason
+    }
     payments {
         uuid id PK
         uuid appointment_id FK
@@ -95,6 +101,7 @@ erDiagram
 ## Regras de integridade
 
 - **Conflito de horário barrado no banco:** dois atendimentos `scheduled` ou `completed` não podem ocupar o mesmo período de `starts_at` a `blocked_until` (restrição de exclusão `appointments_no_overlap`, erro `23P01`). Cancelados, faltas e lançamentos sem horário (`time_known = false`) liberam o horário. A tela traduz o erro para uma mensagem amigável.
+- **Bloqueios de horário** (desde 2026-10-27): `time_blocks` guarda folgas e compromissos (`reason` opcional; dia inteiro = da meia-noite à meia-noite seguinte). Tabela separada para não entrar em nenhuma conta de atendimentos. Dois gatilhos mantêm a regra nos dois sentidos, com o mesmo erro `23P01`: `appointments_not_blocked` recusa atendimento ativo (com o intervalo) que cai num bloqueio, e `time_blocks_free` recusa bloquear em cima de atendimento ativo.
 - Clientes e serviços com atendimentos não podem ser apagados (`on delete restrict`).
 - Telefone guardado só com dígitos e DDI (12 ou 13 dígitos).
 - Valores monetários em `numeric(10,2)`.

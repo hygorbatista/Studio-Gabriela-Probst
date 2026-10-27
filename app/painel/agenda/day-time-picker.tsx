@@ -119,6 +119,7 @@ export function DayTimePicker({
               const items = itemsOf(d) ?? []
               const load = dayLoad(busyMinutes(d, items.filter((a) => a.time_known)))
               const noRoom = duration !== null && slotsOf(d).length === 0
+              const count = items.filter((a) => a.kind === 'appointment').length
               const selected = d === day
               const label = i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : formatShortWeekday(d)
               return (
@@ -127,7 +128,7 @@ export function DayTimePicker({
                     type="button"
                     onClick={() => chooseDay(d)}
                     aria-pressed={selected}
-                    aria-label={`${formatDayTitle(d)}: ${items.length} ${items.length === 1 ? 'atendimento' : 'atendimentos'}${noRoom ? ', sem vaga para esse serviço' : ''}`}
+                    aria-label={`${formatDayTitle(d)}: ${count} ${count === 1 ? 'atendimento' : 'atendimentos'}${noRoom ? ', sem vaga para esse serviço' : ''}`}
                     className={cn(
                       'flex h-16 w-14 flex-col items-center justify-center gap-0.5 border',
                       loadClass[load],
@@ -187,8 +188,17 @@ export function DayTimePicker({
             />
             {conflict && (
               <p role="alert" className="text-base text-destructive">
-                Encavala com {conflict.client ?? noClient} ({formatTime(conflict.starts_at)} às{' '}
-                {formatTime(conflict.ends_at)}, mais {buffer} min de intervalo).
+                {conflict.kind === 'block' ? (
+                  <>
+                    Cai num horário bloqueado{conflict.service ? ` (${conflict.service})` : ''}:{' '}
+                    {formatTime(conflict.starts_at)} às {formatTime(conflict.ends_at)}.
+                  </>
+                ) : (
+                  <>
+                    Encavala com {conflict.client ?? noClient} ({formatTime(conflict.starts_at)} às{' '}
+                    {formatTime(conflict.ends_at)}, mais {buffer} min de intervalo).
+                  </>
+                )}
               </p>
             )}
             <button
@@ -314,7 +324,9 @@ export function DayTimePicker({
                     {a.time_known ? `${formatTime(a.starts_at)} às ${formatTime(a.ends_at)}` : 'sem hora'}
                   </span>
                   <span className="min-w-0 truncate">
-                    {a.client ?? noClient} · {a.service ?? noService}
+                    {a.kind === 'block'
+                      ? `Bloqueado${a.service ? ` · ${a.service}` : ''}`
+                      : `${a.client ?? noClient} · ${a.service ?? noService}`}
                   </span>
                 </li>
               ))}

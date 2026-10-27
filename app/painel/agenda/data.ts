@@ -64,6 +64,30 @@ export async function getFormOptions() {
   return { clients: clients.data, services: services.data }
 }
 
+// Busca de cliente na Agenda: nome ou telefone, com os atendimentos dela.
+export async function searchAgenda(term: string) {
+  const { supabase } = await requireUser()
+  // Vírgulas e parênteses têm significado no filtro do Supabase: saem do termo.
+  const text = term.replace(/[,()*%\\]/g, ' ').trim()
+  const digits = text.replace(/\D/g, '')
+  if (!text) return []
+
+  let query = supabase
+    .from('clients')
+    .select('id, name, phone, appointments(id, starts_at, time_known, status, confirmed_at, services(name))')
+    .order('name')
+    .order('starts_at', { referencedTable: 'appointments' })
+    .limit(20)
+  query =
+    digits.length >= 3
+      ? query.or(`name.ilike.%${text}%,phone.ilike.%${digits}%`)
+      : query.ilike('name', `%${text}%`)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}
+
 // Agendados de um dia, para confirmar com as clientes (lembrete da véspera).
 export async function getToConfirm(day: string) {
   const { supabase } = await requireUser()
@@ -85,20 +109,25 @@ export async function getConfirmCount(day: string) {
   return { total: list.length, pending: list.filter((a) => !a.confirmed_at).length }
 }
 
-// Atendimentos que ocupam a agenda (agendados e concluídos) de "from" até "to",
-// inclusive, numa consulta só. Base dos horários livres e da ocupação.
+// O que ocupa a agenda de "from" até "to", inclusive: atendimentos agendados e
+// concluídos, e os bloqueios. Base dos horários livres e da ocupação.
 export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
   const { supabase } = await requireUser()
-  const { data, error } = await supabase
-    .from('appointments')
-    .select('id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, clients(name), services(name)')
-    .in('status', ['scheduled', 'completed'])
-    .gte('starts_at', dayRange(from).start)
-    .lt('starts_at', dayRange(to).end)
-    .order('starts_at')
-  if (error) throw error
-  return data.map((a) => ({
+  const range = { start: dayRange(from).start, end: dayRange(to).end }
+  const [appointments, blocks] = await Promise.all([
+    supabase
+      .from('appointments')
+      .select('id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, clients(name), services(name)')
+      .in('status', ['scheduled', 'completed'])
+      .gte('starts_at', range.start)
+      .lt('starts_at', range.end),
+    getBlocks(range.start, range.end),
+  ])
+  if (appointments.error) throw appointments.error
+
+  const items: BusyItem[] = appointments.data.map((a) => ({
     id: a.id,
+    kind: 'appointment',
     starts_at: a.starts_at,
     ends_at: a.ends_at,
     blocked_until: a.blocked_until,
@@ -108,12 +137,44 @@ export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
     client: a.clients?.name ?? null,
     service: a.services?.name ?? null,
   }))
+  return [...items, ...blocks].sort((a, b) => a.starts_at.localeCompare(b.starts_at))
 }
 
-export type DaySummary = { count: number; minutes: number; load: Load }
+// Bloqueios que começam entre dois momentos, no mesmo formato dos atendimentos.
+// O motivo vai em "service", que é o texto que a agenda mostra embaixo.
+async function getBlocks(start: string, end: string): Promise<BusyItem[]> {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase
+    .from('time_blocks')
+    .select('id, starts_at, ends_at, reason')
+    .gte('starts_at', start)
+    .lt('starts_at', end)
+  if (error) throw error
+  return data.map((b) => ({
+    id: b.id,
+    kind: 'block',
+    starts_at: b.starts_at,
+    ends_at: b.ends_at,
+    blocked_until: b.ends_at,
+    time_known: true,
+    status: 'block',
+    confirmed: false,
+    client: null,
+    service: b.reason,
+  }))
+}
+
+// Bloqueios de um dia, para a agenda do dia.
+export async function getDayBlocks(day: string) {
+  const { start, end } = dayRange(day)
+  return getBlocks(start, end)
+}
+
+export type DaySummary = { count: number; minutes: number; load: Load; blocked: boolean }
 
 // Por dia: quantos atendimentos e quanto do dia está ocupado. Lançamentos
-// "sem horário" contam como atendimento, mas não ocupam a agenda.
+// "sem horário" contam como atendimento, mas não ocupam a agenda. Bloqueios
+// ocupam a agenda, mas não contam como atendimento.
 export function summarizeDays(items: BusyItem[]) {
   const byDay = new Map<string, BusyItem[]>()
   for (const a of items) {
@@ -123,7 +184,12 @@ export function summarizeDays(items: BusyItem[]) {
   const days = new Map<string, DaySummary>()
   for (const [day, list] of byDay) {
     const minutes = busyMinutes(day, list.filter((a) => a.time_known))
-    days.set(day, { count: list.length, minutes, load: dayLoad(minutes) })
+    days.set(day, {
+      count: list.filter((a) => a.kind === 'appointment').length,
+      minutes,
+      load: dayLoad(minutes),
+      blocked: list.some((a) => a.kind === 'block'),
+    })
   }
   return days
 }

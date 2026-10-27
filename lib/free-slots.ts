@@ -17,6 +17,8 @@ export type Busy = { starts_at: string; blocked_until: string }
 // O que a agenda mostra de cada atendimento que ocupa horário.
 export type BusyItem = Busy & {
   id: string
+  // Bloqueio (folga, médico): ocupa a agenda, mas não é atendimento.
+  kind: 'appointment' | 'block'
   ends_at: string
   // false nos lançamentos antigos sem horário: não ocupam a agenda.
   time_known: boolean

@@ -67,6 +67,7 @@ Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o
 - ✅ [Plano de agendamentos](12-plano-agendamentos.md), etapas 1 a 3: agendar e remarcar com horários livres, tela "Horários livres" com mensagem para o WhatsApp, e agenda em Dia, Semana, Mês e Lista com cores de ocupação (2026-10-24).
 - ✅ "Agendar o retorno?" ao concluir, com prazo de retorno por serviço (30 dias por padrão) (2026-10-26).
 - ✅ Confirmar os horários de amanhã: aviso na Agenda, lembrete pronto no WhatsApp para cada cliente e selo "Confirmado" (2026-10-26).
+- ✅ Buscar cliente direto na Agenda e bloquear horário (folga, médico, férias) (2026-10-27).
 
 ## Fase 5: Futuro (não comprometido)
 

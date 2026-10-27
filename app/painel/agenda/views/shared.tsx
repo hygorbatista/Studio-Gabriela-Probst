@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Clock, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, Plus, Search } from 'lucide-react'
 import { cn } from 'cn'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -62,6 +62,30 @@ export function AgendaActions({ day }: { day: string }) {
         Agendar
       </Link>
     </div>
+  )
+}
+
+// Buscar cliente direto da Agenda. Formulário simples (GET): funciona antes
+// de o JavaScript carregar.
+export function AgendaSearch({ defaultValue = '', autoFocus = false }: { defaultValue?: string; autoFocus?: boolean }) {
+  return (
+    <form action="/painel/agenda/buscar" role="search" className="relative mb-6">
+      <Search
+        className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <input
+        type="search"
+        name="q"
+        defaultValue={defaultValue}
+        autoFocus={autoFocus}
+        autoComplete="off"
+        enterKeyHint="search"
+        placeholder="Buscar cliente na agenda"
+        aria-label="Buscar cliente na agenda"
+        className="h-12 w-full border border-input bg-surface pr-4 pl-12 text-base outline-none focus-visible:border-primary"
+      />
+    </form>
   )
 }
 
