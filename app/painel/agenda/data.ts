@@ -26,7 +26,10 @@ export async function getAppointment(id: string) {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
-    .select('*, clients(id, name, phone), services(id, name, return_days), payments(amount, method)')
+    .select(
+      '*, clients(id, name, phone), services(id, name, return_days), payments(amount, method), appointment_services(service_id, position, price, services(name, return_days))'
+    )
+    .order('position', { referencedTable: 'appointment_services' })
     .eq('id', id)
     .maybeSingle()
   if (error) throw error
@@ -66,6 +69,24 @@ export async function getFormOptions() {
   return { clients: clients.data, services: services.data }
 }
 
+// Para o Editar: clientes, serviços ativos e os desativados que já estão no
+// atendimento (para não sumirem ao salvar).
+export async function getEditOptions(currentServiceIds: string[]) {
+  const { supabase } = await requireUser()
+  const ids = currentServiceIds.length ? currentServiceIds.join(',') : '00000000-0000-0000-0000-000000000000'
+  const [clients, services] = await Promise.all([
+    supabase.from('clients').select('id, name, phone').order('name'),
+    supabase
+      .from('services')
+      .select('id, name, price, promo_price, promo_until, duration_minutes, duration_up_to, active')
+      .or(`active.eq.true,id.in.(${ids})`)
+      .order('sort_order'),
+  ])
+  if (clients.error) throw clients.error
+  if (services.error) throw services.error
+  return { clients: clients.data, services: services.data }
+}
+
 // Busca de cliente na Agenda: nome ou telefone, com os atendimentos dela.
 export async function searchAgenda(term: string) {
   const { supabase } = await requireUser()
@@ -93,12 +114,19 @@ export async function searchAgenda(term: string) {
 }
 
 // "Hora de voltar": clientes com o retorno chegando ou vencido e nada marcado.
+// Só os atendimentos dos últimos 400 dias (abre a Agenda toda vez; não precisa
+// carregar o histórico inteiro). Quem não vem há mais que isso não aparece.
 export async function getReturnList() {
   const { supabase } = await requireUser()
+  const since = new Date(Date.now() - 400 * 86400000).toISOString()
   const [clients, settings] = await Promise.all([
     supabase
       .from('clients')
-      .select('id, name, phone, appointments(starts_at, status, services(id, name, return_days))'),
+      .select(
+        'id, name, phone, appointments(starts_at, status, services(id, name, return_days), appointment_services(position, services(id, name, return_days)))'
+      )
+      .gte('appointments.starts_at', since)
+      .in('appointments.status', ['scheduled', 'completed']),
     supabase.from('settings').select('inactive_days_threshold').eq('id', 1).single(),
   ])
   if (clients.error) throw clients.error
@@ -235,7 +263,7 @@ export async function getClientHabits() {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
-    .select('client_id, service_id, starts_at, time_known')
+    .select('client_id, service_id, starts_at, time_known, appointment_services(service_id, position)')
     .eq('status', 'completed')
     .gte('starts_at', new Date(Date.now() - 365 * 86400000).toISOString())
     .order('starts_at', { ascending: false })

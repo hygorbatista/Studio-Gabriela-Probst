@@ -70,6 +70,7 @@ Prioridade: o que a Gabriela usa várias vezes por dia. **Facilidade de uso é o
 - ✅ Buscar cliente direto na Agenda e bloquear horário (folga, médico, férias) (2026-10-27).
 - ✅ "Hora de voltar": clientes com o retorno vencendo e nada marcado, com convite pronto; substitui a lista de "sumidas" (2026-10-27).
 - ✅ Vários serviços num atendimento (mãos e pés), preço promocional por serviço, intervalo de 15 min só como aviso, dia cheio = 3 atendimentos e tabela de serviços nova (2026-10-27).
+- ✅ Auditoria da lógica (15 itens corrigidos) e **Editar atendimento**, inclusive os antigos (2026-10-28).
 
 ## Fase 5: Futuro (não comprometido)
 

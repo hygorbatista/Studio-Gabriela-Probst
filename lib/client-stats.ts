@@ -8,6 +8,7 @@ type Appointment = {
   status: string
   price_charged: number
   services: { name: string } | null
+  services_label?: string | null
 }
 
 const tz = 'America/Sao_Paulo'
@@ -45,7 +46,8 @@ export function clientStats(appointments: Appointment[], now = new Date()) {
     averageTicket: done.length ? done.reduce((sum, a) => sum + a.price_charged, 0) / done.length : 0,
     lastVisit: done.length ? done.map((a) => a.starts_at).sort().at(-1) : undefined,
     nextVisit: upcoming[0]?.starts_at,
-    favoriteService: mode(done.map((a) => a.services?.name).filter(Boolean)),
+    // "Manicure + Pedicure" conta como uma combinação.
+    favoriteService: mode(done.map((a) => a.services_label ?? a.services?.name).filter(Boolean)),
     // "terça-feira" + 14 → "Terças, por volta das 14h"
     favoriteTime:
       favoriteDay && favoriteHour !== undefined
@@ -59,10 +61,20 @@ type Visit = {
   service_id: string | null
   starts_at: string
   time_known: boolean
+  // Os serviços do atendimento, em ordem (mãos e pés). Vazio nos sem serviço.
+  appointment_services?: { service_id: string; position: number }[]
 }
 
-// Serviço e hora de costume de cada cliente, para o Agendar já vir sugerido.
-// A hora só conta a partir de 2 atendimentos com horário, como em clientStats.
+// Serviços de um atendimento, na ordem em que foram marcados.
+function visitServices(v: Visit) {
+  const items = [...(v.appointment_services ?? [])].sort((a, b) => a.position - b.position)
+  if (items.length) return items.map((i) => i.service_id)
+  return v.service_id ? [v.service_id] : []
+}
+
+// Serviços e hora de costume de cada cliente, para o Agendar já vir sugerido.
+// Os serviços são a combinação mais frequente (ex.: Manicure + Pedicure). A
+// hora só conta a partir de 2 atendimentos com horário, como em clientStats.
 export function clientHabits(visits: Visit[]) {
   const byClient = new Map<string, Visit[]>()
   for (const v of visits) {
@@ -70,11 +82,12 @@ export function clientHabits(visits: Visit[]) {
     byClient.set(v.client_id, [...(byClient.get(v.client_id) ?? []), v])
   }
 
-  const habits: Record<string, { serviceId?: string; hour?: number }> = {}
+  const habits: Record<string, { serviceIds?: string[]; hour?: number }> = {}
   for (const [clientId, list] of byClient) {
     const hours = list.filter((v) => v.time_known).map((v) => Number(hourFmt.format(new Date(v.starts_at))))
+    const combo = mode(list.map((v) => visitServices(v).join(',')).filter(Boolean))
     habits[clientId] = {
-      serviceId: mode(list.map((v) => v.service_id).filter((id): id is string => !!id)),
+      serviceIds: combo ? combo.split(',') : undefined,
       hour: hours.length >= 2 ? mode(hours) : undefined,
     }
   }

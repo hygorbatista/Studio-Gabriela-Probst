@@ -59,6 +59,8 @@ Pedidos do Hygor depois das primeiras semanas:
 - **Dia cheio = 3 atendimentos.**
 - **Tabela de serviços nova:** Aplicação até 3 h (promoção por R$ 100 até 31/10), Manutenção 2 h, Banho de gel 2 h por R$ 100, Esmaltação em gel 1h30, Manicure e Pedicure 40 min. A Blindagem saiu.
 
+Depois da auditoria (2026-10-28): **Editar atendimento** (cliente, serviços, valor, dia, horário e, no concluído, o pagamento), promoção mantida no atendimento marcado com ela, agendamentos futuros atualizados para a tabela nova, e bloqueios sem o aviso de "colado".
+
 ## Etapas
 
 ### Etapa 1: agendar sem errar (a maior dor)

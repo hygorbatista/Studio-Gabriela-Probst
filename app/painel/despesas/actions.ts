@@ -118,22 +118,16 @@ export async function saveRecurringExpense(
     if (error) return { message: 'Não foi possível salvar. Tente de novo.', values }
   } else {
     // Já valeu em meses passados: encerra a versão antiga no mês anterior e cria
-    // a nova a partir deste mês, para o passado não mudar.
-    const previous = monthStart(addMonths(monthISO(), -1))
-    const { error: endError } = await supabase
-      .from('recurring_expenses')
-      .update({ ends_on: previous })
-      .eq('id', id)
-    if (endError) return { message: 'Não foi possível salvar. Tente de novo.', values }
-
-    const { error } = await supabase
-      .from('recurring_expenses')
-      .insert({ ...data, starts_on: current, ends_on: existing.ends_on })
-    if (error) {
-      // Desfaz o encerramento para não perder a despesa.
-      await supabase.from('recurring_expenses').update({ ends_on: existing.ends_on }).eq('id', id)
-      return { message: 'Não foi possível salvar. Tente de novo.', values }
-    }
+    // a nova a partir deste mês, para o passado não mudar. Numa transação só.
+    const { error } = await supabase.rpc('revise_recurring_expense', {
+      p_id: id,
+      p_description: data.description,
+      p_category: data.category,
+      p_amount: data.amount,
+      p_current: current,
+      p_previous: monthStart(addMonths(monthISO(), -1)),
+    })
+    if (error) return { message: 'Não foi possível salvar. Tente de novo.', values }
   }
 
   redirect(withFlash('/painel/despesas', 'despesa-salva'))

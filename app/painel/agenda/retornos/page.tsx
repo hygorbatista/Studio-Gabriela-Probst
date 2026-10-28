@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { formatDayTitle } from '@/lib/agenda'
 import { whatsappTo } from '@/lib/phone'
-import { dueLabel, returnMessage } from '@/lib/return-due'
+import { dueLabel, returnMessage, servicesName } from '@/lib/return-due'
 import { BackLink } from '../../back-link'
 import { EmptyState } from '../../empty-state'
 import { PageHeader } from '../../page-header'
@@ -64,7 +64,8 @@ function Group({ items }: { items: Awaited<ReturnType<typeof getReturnList>> }) 
     <ul className="flex flex-col gap-3">
       {items.map((c) => {
         const params = new URLSearchParams({ cliente: c.id })
-        if (c.service) params.set('s', c.service.id)
+        const ids = c.services.map((s) => s.id).join(',')
+        if (ids) params.set('s', ids)
         return (
           <li
             key={c.id}
@@ -77,7 +78,7 @@ function Group({ items }: { items: Awaited<ReturnType<typeof getReturnList>> }) 
               </span>
               <span className="block text-sm text-muted-foreground">
                 Última vez: {formatDayTitle(c.lastDay).toLowerCase()}
-                {c.service && `, ${c.service.name.toLowerCase()}`}
+                {c.services.length > 0 && `, ${servicesName(c.services).toLowerCase()}`}
               </span>
             </Link>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -99,9 +100,9 @@ function Group({ items }: { items: Awaited<ReturnType<typeof getReturnList>> }) 
                 Agendar
               </Link>
             </div>
-            {c.service && (
+            {ids && (
               <Link
-                href={`/painel/agenda/livres?s=${c.service.id}`}
+                href={`/painel/agenda/livres?s=${ids}`}
                 className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary underline underline-offset-4"
               >
                 <Clock className="size-4" aria-hidden="true" />

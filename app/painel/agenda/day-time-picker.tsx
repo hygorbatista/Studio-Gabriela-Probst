@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { CalendarDays, Clock, Star } from 'lucide-react'
 import { cn } from 'cn'
 import { FieldError } from '@/components/ui/field'
@@ -174,6 +175,17 @@ export function DayTimePicker({
           </button>
         )}
         <FieldError>{errors.day?.[0]}</FieldError>
+        {/* Agendar no passado é permitido (ajustes), mas raramente é o que ela quer. */}
+        {day < today && (
+          <p role="status" className="border-l-3 border-l-amber-500 bg-amber-50 px-3 py-2 text-base text-amber-900">
+            Esse dia já passou: o atendimento vai aparecer como não concluído. Para registrar algo que já
+            aconteceu, use{' '}
+            <Link href={`/painel/agenda/lancar?d=${day}`} className="font-semibold underline underline-offset-4">
+              Lançar atendimento
+            </Link>
+            .
+          </p>
+        )}
       </div>
 
       {/* Horários --------------------------------------------------------- */}

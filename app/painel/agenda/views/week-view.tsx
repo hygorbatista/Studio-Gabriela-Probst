@@ -45,7 +45,9 @@ export async function WeekView({ day }: { day: string }) {
 
   const now = new Date()
   const nowMinutes = minutesOf(now.toISOString(), today)
-  const total = items.filter((a) => a.kind === 'appointment').length
+  // O total bate com os blocos da grade; lançamentos sem horário vêm à parte.
+  const total = appointmentsOnly.length
+  const untimed = items.filter((a) => a.kind === 'appointment' && !a.time_known).length
 
   return (
     <>
@@ -60,6 +62,7 @@ export async function WeekView({ day }: { day: string }) {
 
       <p className="mb-3 text-base text-muted-foreground">
         {total === 0 ? 'Nenhum atendimento nesta semana.' : `${total} ${total === 1 ? 'atendimento' : 'atendimentos'} na semana.`}{' '}
+        {untimed > 0 && `(Mais ${untimed} lançado${untimed === 1 ? '' : 's'} sem horário, que aparece${untimed === 1 ? '' : 'm'} no dia.) `}
         Toque num espaço vazio para agendar.
       </p>
 

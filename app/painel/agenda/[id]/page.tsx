@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CalendarCheck, CalendarClock, CalendarPlus } from 'lucide-react'
+import { CalendarCheck, CalendarClock, CalendarPlus, Pencil } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
-import { suggestReturn } from '@/lib/return-visit'
+import { returnDaysOf, suggestReturn } from '@/lib/return-visit'
 import { formatPrice, noClient, noService, paymentMethodLabels, serviceLabel } from '@/lib/format'
 import { whatsappTo } from '@/lib/phone'
 import { ActionButton } from '../../action-button'
@@ -47,6 +47,15 @@ async function Appointment({
   const payment = a.payments
   const firstName = client?.name.split(' ')[0]
   const label = serviceLabel(a)?.toLowerCase()
+  // Todos os serviços do atendimento (antigos têm só o principal).
+  const serviceIds = a.appointment_services.length
+    ? a.appointment_services.map((i) => i.service_id)
+    : a.service_id
+      ? [a.service_id]
+      : []
+  const returnDays = a.appointment_services.length
+    ? returnDaysOf(a.appointment_services.map((i) => ({ return_days: i.services?.return_days ?? null })))
+    : (a.services?.return_days ?? null)
   const confirmation = rescheduled
     ? `Olá, ${firstName}! Seu horário de ${label} foi remarcado para ${when.slice(3)}. Até lá!`
     : `Olá, ${firstName}! Confirmando seu horário de ${label} ${when}. Até lá!`
@@ -109,6 +118,13 @@ async function Appointment({
                 <CalendarClock className="size-5" aria-hidden="true" />
                 Remarcar
               </Link>
+              <Link
+                href={`/painel/agenda/${a.id}/editar`}
+                className={buttonVariants({ variant: 'outline', className: 'w-full' })}
+              >
+                <Pencil className="size-5" aria-hidden="true" />
+                Editar
+              </Link>
             </div>
 
             {/* Alvo do "Concluir" da agenda (#concluir). */}
@@ -147,9 +163,9 @@ async function Appointment({
           <ReturnVisit
             clientId={client.id}
             firstName={firstName ?? ''}
-            serviceId={a.services?.id}
+            serviceIds={serviceIds}
             serviceName={serviceLabel(a) ?? undefined}
-            returnDays={a.services?.return_days}
+            returnDays={returnDays}
             day={day}
             time={a.time_known ? formatTime(a.starts_at) : null}
             startsAt={a.starts_at}
@@ -166,7 +182,20 @@ async function Appointment({
           </section>
         )}
 
+        {/* Corrigir cliente, serviços, valor, dia ou pagamento, mesmo de antigos. */}
         {a.status !== 'scheduled' && (
+          <Link
+            href={`/painel/agenda/${a.id}/editar`}
+            className={buttonVariants({ variant: 'outline', className: 'w-full' })}
+          >
+            <Pencil className="size-5" aria-hidden="true" />
+            Editar atendimento
+          </Link>
+        )}
+
+        {/* Lançamento sem cliente ou sem horário reaberto viraria um agendamento
+            sem cliente ao meio-dia: nesses, corrige-se pelo Editar. */}
+        {a.status !== 'scheduled' && !(a.status === 'completed' && (!a.time_known || !client)) && (
           <ActionButton
             action={reopenAppointment.bind(null, a.id)}
             label="Reabrir atendimento"
@@ -193,7 +222,7 @@ async function Appointment({
 async function ReturnVisit({
   clientId,
   firstName,
-  serviceId,
+  serviceIds,
   serviceName,
   returnDays,
   day,
@@ -202,7 +231,7 @@ async function ReturnVisit({
 }: {
   clientId: string
   firstName: string
-  serviceId?: string
+  serviceIds: string[]
   serviceName?: string
   returnDays?: number | null
   day: string
@@ -228,9 +257,9 @@ async function ReturnVisit({
   }
 
   const suggestion = suggestReturn({ day, time, returnDays, today: todayISO() })
-  if (!suggestion || !serviceId) return null
+  if (!suggestion || serviceIds.length === 0) return null
 
-  const params = new URLSearchParams({ cliente: clientId, s: serviceId, d: suggestion.day })
+  const params = new URLSearchParams({ cliente: clientId, s: serviceIds.join(','), d: suggestion.day })
   if (suggestion.time) params.set('h', suggestion.time)
 
   return (
@@ -250,7 +279,7 @@ async function ReturnVisit({
           Agendar o retorno
         </Link>
         <Link
-          href={`/painel/agenda/novo?cliente=${clientId}&s=${serviceId}`}
+          href={`/painel/agenda/novo?cliente=${clientId}&s=${serviceIds.join(',')}`}
           className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline underline-offset-4"
         >
           Escolher outra data

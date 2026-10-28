@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { withFlash } from '@/lib/flash'
-import { addDays, dayOf, isValidDay, toTimestamp, todayISO } from '@/lib/agenda'
+import { addDays, dayOf, isValidDay, TIME_RE, toTimestamp, todayISO } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
 import type { ActionState } from '../action-button'
@@ -33,7 +33,7 @@ const appointmentSchema = z
         .max(10000, 'Valor alto demais.')
     ),
     day: z.string().refine(isValidDay, 'Data inválida.'),
-    time: z.string().regex(/^\d{2}:\d{2}$/, 'Escolha o horário.'),
+    time: z.string().regex(TIME_RE, 'Escolha o horário.'),
     notes: z.string().trim().max(500, 'Use até 500 caracteres.'),
   })
   .superRefine((v, ctx) => {
@@ -220,7 +220,7 @@ export async function reopenAppointment(id: string): Promise<ActionState> {
 
 const rescheduleSchema = z.object({
   day: z.string().refine(isValidDay, 'Data inválida.'),
-  time: z.string().regex(/^\d{2}:\d{2}$/, 'Escolha o horário.'),
+  time: z.string().regex(TIME_RE, 'Escolha o horário.'),
 })
 
 export type RescheduleState = {
@@ -259,6 +259,114 @@ export async function rescheduleAppointment(
   redirect(`/painel/agenda/${id}?remarcado=1`)
 }
 
+// Editar atendimento (inclusive os antigos) ---------------------------------
+// Agendado exige cliente, serviço e horário. Concluído (às vezes lançado sem
+// lembrar de tudo) pode ficar sem cliente, sem serviço e sem horário, e também
+// corrige a forma de pagamento.
+
+const editSchema = z.object({
+  client_id: z.string(),
+  new_client_name: z.string().trim().max(80, 'Use até 80 caracteres.'),
+  new_client_phone: z.string().trim(),
+  service_ids: z
+    .string()
+    .transform((v) => [...new Set(v.split(',').filter(Boolean))])
+    .pipe(z.array(z.uuid()).max(6, 'Escolha até 6 serviços.')),
+  price: z.preprocess(
+    parseMoney,
+    z.number({ error: 'Informe o valor.' }).min(0, 'O valor não pode ser negativo.').max(10000, 'Valor alto demais.')
+  ),
+  day: z.string().refine(isValidDay, 'Data inválida.'),
+  time: z.union([z.literal(''), z.string().regex(TIME_RE, 'Horário inválido.')]),
+  method: z.union([
+    z.literal(''),
+    z.literal('unknown'),
+    z.enum(Object.keys(paymentMethods) as [keyof typeof paymentMethods]),
+  ]),
+  notes: z.string().trim().max(500, 'Use até 500 caracteres.'),
+})
+
+export type EditFormState = {
+  message?: string
+  errors?: Partial<Record<keyof z.input<typeof editSchema>, string[]>>
+  values?: Record<string, string>
+} | null
+
+export async function updateAppointment(
+  id: string,
+  _prev: EditFormState,
+  formData: FormData
+): Promise<EditFormState> {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success) return { message: 'Atendimento inválido.' }
+
+  const values = Object.fromEntries([...formData.entries()].map(([k, v]) => [k, String(v)]))
+  const parsed = editSchema.safeParse({
+    client_id: '',
+    new_client_name: '',
+    new_client_phone: '',
+    service_ids: '',
+    time: '',
+    method: '',
+    notes: '',
+    ...values,
+  })
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors, values }
+  const v = parsed.data
+
+  const { data: current } = await supabase.from('appointments').select('status').eq('id', id).maybeSingle()
+  if (!current) return { message: 'Atendimento não encontrado.', values }
+  // Só o concluído pode ficar incompleto (lançamentos de quando ela não lembrava).
+  const loose = current.status === 'completed'
+
+  const errors: NonNullable<EditFormState>['errors'] = {}
+  if (v.client_id === 'new') {
+    if (!v.new_client_name) errors.new_client_name = ['Informe o nome.']
+    if (v.new_client_phone && !normalizePhone(v.new_client_phone)) {
+      errors.new_client_phone = ['Telefone inválido. Use DDD + número.']
+    }
+  } else if (v.client_id ? !idSchema.safeParse(v.client_id).success : !loose) {
+    errors.client_id = ['Escolha a cliente.']
+  }
+  if (!loose && v.service_ids.length === 0) errors.service_ids = ['Escolha pelo menos um serviço.']
+  if (!loose && !v.time) errors.time = ['Informe o horário.']
+  if (Object.keys(errors).length) return { errors, values }
+
+  let clientId: string | null = v.client_id || null
+  let createdClient = false
+  if (clientId === 'new') {
+    const { data, error } = await supabase
+      .from('clients')
+      .insert({ name: v.new_client_name, phone: v.new_client_phone ? normalizePhone(v.new_client_phone) : null })
+      .select('id')
+      .single()
+    if (error) return { message: 'Não foi possível cadastrar a cliente.', values }
+    clientId = data.id
+    createdClient = true
+  }
+
+  // Uma transação no banco: atendimento, serviços e (no concluído) o pagamento.
+  const { error } = await supabase.rpc('update_appointment', {
+    p_id: id,
+    // O banco aceita null nestes campos; o tipo gerado não sabe disso.
+    p_client_id: clientId as string,
+    p_service_ids: v.service_ids,
+    p_price: v.price,
+    p_notes: (v.notes || null) as string,
+    // Sem horário: fica ao meio-dia, sem ocupar a agenda.
+    p_starts_at: toTimestamp(v.day, v.time || '12:00'),
+    p_time_known: v.time !== '',
+    p_method: (loose && v.method ? v.method : null) as string,
+  })
+  if (error) {
+    if (createdClient) await supabase.from('clients').delete().eq('id', clientId!)
+    if (error.code === '23P01') return { message: CONFLICT, values }
+    return { message: 'Não foi possível salvar. Tente de novo.', values }
+  }
+
+  redirect(withFlash(`/painel/agenda/${id}`, 'editado'))
+}
+
 // Bloquear horário (folga, médico, almoço) ---------------------------------
 // Um bloqueio por dia: "até o dia" repete o mesmo horário em cada dia (férias).
 
@@ -269,8 +377,8 @@ const blockSchema = z
     day: z.string().refine(isValidDay, 'Data inválida.'),
     until: z.union([z.literal(''), z.string().refine(isValidDay, 'Data inválida.')]),
     all_day: z.preprocess((v) => v === 'on', z.boolean()),
-    from: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
-    to: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
+    from: z.union([z.literal(''), z.string().regex(TIME_RE)]),
+    to: z.union([z.literal(''), z.string().regex(TIME_RE)]),
     reason: z.string().trim().max(80, 'Use até 80 caracteres.'),
   })
   .superRefine((v, ctx) => {
@@ -357,7 +465,7 @@ const pastSchema = z
         .max(10000, 'Valor alto demais.')
     ),
     service_id: z.union([z.literal(''), z.uuid()]),
-    time: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]),
+    time: z.union([z.literal(''), z.string().regex(TIME_RE)]),
     method: z.union([z.literal(''), z.literal('unknown'), z.enum(Object.keys(paymentMethods) as [keyof typeof paymentMethods])]),
     client_id: z.string(),
     new_client_name: z.string().trim().max(80, 'Use até 80 caracteres.'),

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { withFlash } from '@/lib/flash'
+import { todayISO } from '@/lib/agenda'
 import { normalizePhone } from '@/lib/phone'
 import type { DeleteState } from '../delete-button'
 
@@ -31,7 +32,8 @@ const clientSchema = z.object({
         v === '' ||
         (/^\d{4}-\d{2}-\d{2}$/.test(v) &&
           v >= '1900-01-01' &&
-          v <= new Date().toISOString().slice(0, 10)),
+          // Hoje em Brasília (em UTC, depois das 21h já seria amanhã).
+          v <= todayISO()),
       'Data inválida.'
     )
     .transform((v) => v || null),

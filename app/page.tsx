@@ -54,7 +54,6 @@ const navLinks = [
 const marqueeItems = [
   "Fibra de vidro",
   "Acabamento impecável",
-  "Blindagem",
   "Banho de gel",
   "Resultado natural",
   "Esmaltação em gel",
@@ -175,7 +174,7 @@ export default async function Home() {
           </h1>
           <Reveal delay={1} y={16}>
             <p className="mt-5 max-w-lg text-base leading-7 text-white/90 [text-shadow:0_1px_16px_rgba(0,0,0,0.7)] md:mt-6 md:text-lg">
-              Fibra de vidro, blindagem e gel, com cutilagem precisa e um
+              Fibra de vidro e gel, com cutilagem precisa e um
               atendimento por vez, sem pressa.
             </p>
           </Reveal>
@@ -267,7 +266,7 @@ export default async function Home() {
             </h2>
             <Reveal delay={0.15}>
               <p className="mt-5 max-w-md text-base leading-7 text-white/70">
-                Manicure, pedicure, alongamento em fibra de vidro, blindagem e
+                Manicure, pedicure, alongamento em fibra de vidro e banho de
                 gel, de R$ {Math.min(...prices)} a R$ {Math.max(...prices)}. Os
                 valores são fixos: não mudam por tamanho, comprimento ou
                 decoração.

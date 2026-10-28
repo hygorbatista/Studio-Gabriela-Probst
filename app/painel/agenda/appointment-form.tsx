@@ -1,28 +1,20 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { Check } from 'lucide-react'
-import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { effectivePrice, formatDuration, formatPrice, promoActive } from '@/lib/format'
+import { effectivePrice, formatDuration, formatPrice } from '@/lib/format'
 import type { BusyItem } from '@/lib/free-slots'
 import { createAppointment, type AppointmentFormState } from './actions'
 import { FormCard } from '../form-card'
 import { ClientPicker } from './client-picker'
 import { DayTimePicker } from './day-time-picker'
+import { ServiceChecklist, type ServiceOption } from './service-checklist'
 
-type Option = { id: string; name: string }
-type ClientOption = Option & { phone: string | null }
-type ServiceOption = Option & {
-  price: number
-  promo_price: number | null
-  promo_until: string | null
-  duration_minutes: number
-  duration_up_to: boolean
-}
-export type Habits = Record<string, { serviceId?: string; hour?: number }>
+type ClientOption = { id: string; name: string; phone: string | null }
+// Serviços de costume (a combinação mais frequente, ex.: mãos e pés) e a hora.
+export type Habits = Record<string, { serviceIds?: string[]; hour?: number }>
 
 const money = (value: number) => value.toFixed(2).replace('.', ',')
 
@@ -63,17 +55,15 @@ export function AppointmentForm({
   const errors = state?.errors ?? {}
 
   const startClient = values?.client_id ?? initialClientId ?? null
-  const usualOf = (id: string | null) => {
-    const usual = id ? habits[id]?.serviceId : undefined
-    return usual && services.some((s) => s.id === usual) ? usual : undefined
-  }
+  // Só os serviços de costume que continuam ativos.
+  const usualOf = (id: string | null) =>
+    (id ? habits[id]?.serviceIds : undefined)?.filter((s) => services.some((x) => x.id === s)) ?? []
   const [clientId, setClientId] = useState(startClient)
   // Um ou mais serviços, na ordem em que foram escolhidos ("Manicure + Pedicure").
   const [serviceIds, setServiceIds] = useState<string[]>(() => {
     if (values?.service_ids) return values.service_ids.split(',').filter(Boolean)
     if (initialServiceIds?.length) return initialServiceIds
-    const usual = usualOf(startClient)
-    return usual ? [usual] : []
+    return usualOf(startClient)
   })
   // Depois que ela mexe nos serviços, trocar a cliente não muda mais.
   const [serviceTouched, setServiceTouched] = useState(
@@ -97,7 +87,7 @@ export function AppointmentForm({
   const onClientChange = (id: string | null) => {
     setClientId(id)
     const usual = usualOf(id)
-    if (!serviceTouched && usual) setServiceIds([usual])
+    if (!serviceTouched && usual.length) setServiceIds(usual)
   }
 
   return (
@@ -117,55 +107,13 @@ export function AppointmentForm({
           <fieldset data-invalid={!!errors.service_ids}>
             <legend className="mb-1 text-sm font-semibold">Serviços</legend>
             <p className="mb-3 text-sm text-muted-foreground">Marque um ou mais (ex.: mãos e pés).</p>
-            <div className="flex flex-col gap-2">
-              {services.map((s) => {
-                const on = serviceIds.includes(s.id)
-                const promo = promoActive(s, today)
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => toggleService(s.id)}
-                    aria-pressed={on}
-                    className={cn(
-                      'flex min-h-12 items-center gap-3 border px-4 py-2 text-left text-base',
-                      on ? 'border-primary bg-primary-soft' : 'border-input bg-surface hover:border-foreground'
-                    )}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        'grid size-5 shrink-0 place-items-center border',
-                        on ? 'border-primary bg-primary text-white' : 'border-input'
-                      )}
-                    >
-                      {on && <Check className="size-3.5" />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">
-                        {s.name}
-                        {habit?.serviceId === s.id && (
-                          <span className="ml-2 text-sm font-normal text-muted-foreground">de costume</span>
-                        )}
-                      </span>
-                      <span className="block text-sm text-muted-foreground">
-                        {formatDuration(s.duration_minutes, s.duration_up_to)}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-right text-sm">
-                      {promo ? (
-                        <>
-                          <span className="block font-semibold text-primary">{formatPrice(s.promo_price!)}</span>
-                          <span className="block text-muted-foreground line-through">{formatPrice(s.price)}</span>
-                        </>
-                      ) : (
-                        <span className="font-semibold">{formatPrice(s.price)}</span>
-                      )}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+            <ServiceChecklist
+              services={services}
+              selected={serviceIds}
+              onToggle={toggleService}
+              today={today}
+              usualId={habit?.serviceIds?.length === 1 ? habit.serviceIds[0] : undefined}
+            />
             {chosen.length > 1 && (
               <p className="mt-3 text-base">
                 Total: <strong>{formatDuration(duration)}</strong>
