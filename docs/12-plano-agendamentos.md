@@ -54,7 +54,7 @@ Fontes no fim do documento.
 Pedidos do Hygor depois das primeiras semanas:
 
 - **Vários serviços num atendimento** (mãos e pés): no Agendar, ela marca um ou mais. A duração é a soma; o nome aparece como "Manicure + Pedicure". Cada serviço fica em `appointment_services`, e o "serviços mais feitos" do Resumo conta cada um.
-- **Preço promocional:** no cadastro do serviço, "preço promocional" e "válida até". Enquanto vale, o Agendar já sugere esse preço; o valor do agendamento também é editável para casos pontuais.
+- **Preço promocional:** no cadastro do serviço, "preço promocional" e "válida até". Enquanto vale, o Agendar mostra a etiqueta "Promoção" no serviço e, no final, a opção **"Aplicar promoção"**, desmarcada: ela decide a cada agendamento (2026-10-28; antes a promoção entrava sozinha). O valor do agendamento também é editável para casos pontuais.
 - **O intervalo de 15 min nunca trava:** o conflito considera só o atendimento em si. Horário sem o intervalo aparece com um ponto laranja ("colado") e um aviso, mas dá para marcar. Atender duas clientes ao mesmo tempo continua bloqueado (decisão do Hygor).
 - **Dia cheio = 3 atendimentos.**
 - **Tabela de serviços nova:** Aplicação até 3 h (promoção por R$ 100 até 31/10), Manutenção 2 h, Banho de gel 2 h por R$ 100, Esmaltação em gel 1h30, Manicure e Pedicure 40 min. A Blindagem saiu.
