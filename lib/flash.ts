@@ -8,6 +8,7 @@ export const flashMessages = {
   cancelado: 'Atendimento cancelado',
   falta: 'Falta registrada',
   reaberto: 'Atendimento reaberto',
+  editado: 'Atendimento atualizado',
   bloqueado: 'Horário bloqueado',
   desbloqueado: 'Horário desbloqueado',
   'cliente-salva': 'Cliente salva',

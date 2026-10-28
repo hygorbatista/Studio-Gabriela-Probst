@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { connection } from 'next/server'
-import { addDays, isValidDay, todayISO } from '@/lib/agenda'
+import { addDays, isValidDay, todayISO, TIME_RE } from '@/lib/agenda'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { AppointmentForm } from '../appointment-form'
@@ -56,7 +56,7 @@ async function NewAppointment({
       initialServiceIds={
         typeof s === 'string' ? s.split(',').filter((id) => services.some((x) => x.id === id)) : undefined
       }
-      initialTime={typeof h === 'string' && /^\d{2}:\d{2}$/.test(h) ? h : undefined}
+      initialTime={typeof h === 'string' && TIME_RE.test(h) ? h : undefined}
     />
   )
 }

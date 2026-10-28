@@ -18,7 +18,7 @@ export const siteUrl =
 export const seoTitle = `${site.name} | Manicure e Nail Designer em São José - SC`;
 
 export const seoDescription =
-  "Fibra de vidro, blindagem, banho de gel, esmaltação em gel, manicure e pedicure com acabamento impecável e resultado natural. Serraria, São José - SC.";
+  "Fibra de vidro, banho de gel, esmaltação em gel, manicure e pedicure com acabamento impecável e resultado natural. Serraria, São José - SC.";
 
 const absolute = (path: string) => new URL(path, siteUrl).toString();
 

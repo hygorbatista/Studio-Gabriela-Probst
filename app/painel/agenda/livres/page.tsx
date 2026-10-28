@@ -41,7 +41,7 @@ async function Board({ searchParams }: Pick<PageProps<'/painel/agenda/livres'>, 
       now={new Date().toISOString()}
       buffer={buffer}
       days={DAYS}
-      initialServiceId={typeof s === 'string' ? s : undefined}
+      initialServiceIds={typeof s === 'string' ? s.split(',').filter((id) => services.some((x) => x.id === id)) : undefined}
     />
   )
 }

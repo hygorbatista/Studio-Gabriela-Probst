@@ -17,7 +17,8 @@ export const FULL_DAY_MINUTES = 8 * 60
 
 // Atendimento que ocupa a agenda: o atendimento (até ends_at) e o intervalo
 // depois dele (até blocked_until).
-export type Busy = { starts_at: string; ends_at: string; blocked_until: string }
+// kind 'block' (folga, médico): o intervalo de limpeza não se aplica a ele.
+export type Busy = { starts_at: string; ends_at: string; blocked_until: string; kind?: 'appointment' | 'block' }
 
 // Horário sugerido. "tight": cabe, mas sem o intervalo de folga com o vizinho.
 export type Slot = { time: string; tight: boolean }
@@ -100,6 +101,8 @@ export function freeSlots({
   const from = toMinutes(SUGGEST_FROM)
   const until = toMinutes(SUGGEST_UNTIL)
   const taken = intervals(day, busy)
+  // "Colado" só entre atendimentos: bloqueio não precisa de intervalo de limpeza.
+  const clients = intervals(day, busy.filter((b) => b.kind !== 'block'))
   const earliest = earliestMinute(day, now)
 
   const candidates = new Set<number>()
@@ -113,7 +116,7 @@ export function freeSlots({
     .sort((a, b) => a - b)
     .filter((t) => t >= earliest)
     .filter((t) => taken.every((iv) => !overlaps(t, duration, iv)))
-    .map((t) => ({ time: toTime(t), tight: taken.some((iv) => tooCloseTo(t, duration, buffer, iv)) }))
+    .map((t) => ({ time: toTime(t), tight: clients.some((iv) => tooCloseTo(t, duration, buffer, iv)) }))
 }
 
 // Um horário escolhido à mão: o que encavala (o banco recusa) e o que só fica
@@ -135,7 +138,7 @@ export function checkTime<T extends Busy>({
   const span = (b: T) => intervals(day, [b])[0]
   return {
     conflict: busy.find((b) => overlaps(t, duration, span(b))),
-    close: busy.find((b) => tooCloseTo(t, duration, buffer, span(b))),
+    close: busy.find((b) => b.kind !== 'block' && tooCloseTo(t, duration, buffer, span(b))),
   }
 }
 

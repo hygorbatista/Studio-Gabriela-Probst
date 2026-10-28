@@ -1,12 +1,26 @@
-// Datas da agenda no horário de Brasília. O Brasil não tem horário de verão
-// desde 2019, então o fuso é sempre UTC-3.
+// Datas da agenda no horário de Brasília. Hoje o fuso é UTC-3 (sem horário de
+// verão desde 2019), mas o deslocamento é calculado pela base de fusos do
+// sistema: se o horário de verão voltar, as datas continuam certas.
 const OFFSET = '-03:00'
 const tz = 'America/Sao_Paulo'
+
+const offsetFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'longOffset' })
+
+// Deslocamento de Brasília num dia e hora: "-03:00" (ou "-02:00" no verão).
+function offsetAt(day: string, time: string) {
+  const instant = new Date(`${day}T${time}:00${OFFSET}`)
+  const name = offsetFmt.formatToParts(instant).find((p) => p.type === 'timeZoneName')?.value
+  const offset = name?.replace('GMT', '')
+  return offset && /^[+-]\d{2}:\d{2}$/.test(offset) ? offset : OFFSET
+}
 
 // Dia de hoje em Brasília, "AAAA-MM-DD".
 export function todayISO(now = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now)
 }
+
+// "HH:MM" de verdade: recusa "25:99" (antes passava e o banco recusava com erro genérico).
+export const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/
 
 export function isValidDay(day: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(day) && !Number.isNaN(Date.parse(`${day}T00:00:00${OFFSET}`))
@@ -21,14 +35,14 @@ export function addDays(day: string, amount: number) {
 // Início e fim do dia em Brasília, para filtrar starts_at.
 export function dayRange(day: string) {
   return {
-    start: `${day}T00:00:00${OFFSET}`,
-    end: `${addDays(day, 1)}T00:00:00${OFFSET}`,
+    start: toTimestamp(day, '00:00'),
+    end: toTimestamp(addDays(day, 1), '00:00'),
   }
 }
 
 // "2026-10-12" + "14:30" → "2026-10-12T14:30:00-03:00"
 export function toTimestamp(day: string, time: string) {
-  return `${day}T${time}:00${OFFSET}`
+  return `${day}T${time}:00${offsetAt(day, time)}`
 }
 
 const titleFmt = new Intl.DateTimeFormat('pt-BR', {
@@ -86,8 +100,8 @@ export function addMonths(month: string, amount: number) {
 // Início e fim do mês em Brasília.
 export function monthRange(month: string) {
   return {
-    start: `${month}-01T00:00:00${OFFSET}`,
-    end: `${addMonths(month, 1)}-01T00:00:00${OFFSET}`,
+    start: toTimestamp(`${month}-01`, '00:00'),
+    end: toTimestamp(`${addMonths(month, 1)}-01`, '00:00'),
   }
 }
 

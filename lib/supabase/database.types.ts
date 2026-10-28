@@ -363,6 +363,30 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      revise_recurring_expense: {
+        Args: {
+          p_amount: number
+          p_category: string
+          p_current: string
+          p_description: string
+          p_id: string
+          p_previous: string
+        }
+        Returns: undefined
+      }
+      update_appointment: {
+        Args: {
+          p_client_id: string
+          p_id: string
+          p_method: string
+          p_notes: string
+          p_price: number
+          p_service_ids: string[]
+          p_starts_at: string
+          p_time_known: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

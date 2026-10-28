@@ -23,7 +23,7 @@ export function FreeBoard({
   now,
   buffer,
   days,
-  initialServiceId,
+  initialServiceIds,
 }: {
   services: Service[]
   busy: BusyItem[]
@@ -31,12 +31,12 @@ export function FreeBoard({
   now: string
   buffer: number
   days: number
-  initialServiceId?: string
+  initialServiceIds?: string[]
 }) {
   // Um ou mais serviços (ex.: mãos e pés): a duração é a soma.
   const [serviceIds, setServiceIds] = useState<string[]>(() => {
-    const first = initialServiceId ?? services[0]?.id
-    return first ? [first] : []
+    if (initialServiceIds?.length) return initialServiceIds
+    return services[0] ? [services[0].id] : []
   })
   const [picked, setPicked] = useState<SlotChoice[]>([])
   const [copied, setCopied] = useState<'ok' | 'fail' | null>(null)

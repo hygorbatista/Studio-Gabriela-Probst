@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { connection } from 'next/server'
-import { isValidDay, todayISO } from '@/lib/agenda'
+import { isValidDay, todayISO, TIME_RE } from '@/lib/agenda'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { FormSkeleton } from '../../skeletons'
@@ -27,6 +27,6 @@ async function Block({ searchParams }: Pick<PageProps<'/painel/agenda/bloquear'>
   const { d, h } = await searchParams
   await connection()
   const day = typeof d === 'string' && isValidDay(d) ? d : todayISO()
-  const time = typeof h === 'string' && /^\d{2}:\d{2}$/.test(h) ? h : undefined
+  const time = typeof h === 'string' && TIME_RE.test(h) ? h : undefined
   return <BlockForm day={day} time={time} />
 }
