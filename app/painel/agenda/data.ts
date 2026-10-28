@@ -4,6 +4,7 @@ import { addDays, dayOf, dayRange } from '@/lib/agenda'
 import { clientHabits } from '@/lib/client-stats'
 import { dueClients } from '@/lib/return-due'
 import { busyMinutes, dayLoad, type BusyItem, type Load } from '@/lib/free-slots'
+import { serviceLabel } from '@/lib/format'
 
 // Atendimentos de um dia (horário de Brasília), em ordem de horário.
 export async function getDayAppointments(day: string) {
@@ -12,7 +13,7 @@ export async function getDayAppointments(day: string) {
   const { data, error } = await supabase
     .from('appointments')
     .select(
-      'id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, price_charged, clients(name), services(name)'
+      'id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, price_charged, services_label, clients(name), services(name)'
     )
     .gte('starts_at', start)
     .lt('starts_at', end)
@@ -56,7 +57,7 @@ export async function getFormOptions() {
     supabase.from('clients').select('id, name, phone').order('name'),
     supabase
       .from('services')
-      .select('id, name, price, duration_minutes, duration_up_to')
+      .select('id, name, price, promo_price, promo_until, duration_minutes, duration_up_to')
       .eq('active', true)
       .order('sort_order'),
   ])
@@ -75,7 +76,9 @@ export async function searchAgenda(term: string) {
 
   let query = supabase
     .from('clients')
-    .select('id, name, phone, appointments(id, starts_at, time_known, status, confirmed_at, services(name))')
+    .select(
+      'id, name, phone, appointments(id, starts_at, time_known, status, confirmed_at, services_label, services(name))'
+    )
     .order('name')
     .order('starts_at', { referencedTable: 'appointments' })
     .limit(20)
@@ -109,7 +112,7 @@ export async function getToConfirm(day: string) {
   const { start, end } = dayRange(day)
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, starts_at, confirmed_at, clients(name, phone), services(name)')
+    .select('id, starts_at, confirmed_at, services_label, clients(name, phone), services(name)')
     .eq('status', 'scheduled')
     .gte('starts_at', start)
     .lt('starts_at', end)
@@ -132,7 +135,9 @@ export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
   const [appointments, blocks] = await Promise.all([
     supabase
       .from('appointments')
-      .select('id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, clients(name), services(name)')
+      .select(
+        'id, starts_at, ends_at, blocked_until, time_known, status, confirmed_at, services_label, clients(name), services(name)'
+      )
       .in('status', ['scheduled', 'completed'])
       .gte('starts_at', range.start)
       .lt('starts_at', range.end),
@@ -150,7 +155,7 @@ export async function getBusy(from: string, to: string): Promise<BusyItem[]> {
     status: a.status,
     confirmed: !!a.confirmed_at,
     client: a.clients?.name ?? null,
-    service: a.services?.name ?? null,
+    service: serviceLabel(a),
   }))
   return [...items, ...blocks].sort((a, b) => a.starts_at.localeCompare(b.starts_at))
 }
@@ -199,10 +204,13 @@ export function summarizeDays(items: BusyItem[]) {
   const days = new Map<string, DaySummary>()
   for (const [day, list] of byDay) {
     const minutes = busyMinutes(day, list.filter((a) => a.time_known))
+    const count = list.filter((a) => a.kind === 'appointment').length
+    // Cheio: 3 atendimentos, ou um bloqueio longo (folga).
+    const blockMinutes = busyMinutes(day, list.filter((a) => a.kind === 'block'))
     days.set(day, {
-      count: list.filter((a) => a.kind === 'appointment').length,
+      count,
       minutes,
-      load: dayLoad(minutes),
+      load: dayLoad(count, blockMinutes),
       blocked: list.some((a) => a.kind === 'block'),
     })
   }

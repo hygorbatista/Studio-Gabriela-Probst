@@ -9,8 +9,11 @@ import type { Service } from '@/lib/services'
 import { FormCard } from '../form-card'
 import { saveService, type ServiceFormState } from './actions'
 
-// De 15 min a 5 h, de 15 em 15 minutos.
-const durations = Array.from({ length: 20 }, (_, i) => (i + 1) * 15)
+// De 5 em 5 minutos até 1 h (manicure leva 40 min); depois, de 15 em 15 até 5 h.
+const durations = [
+  ...Array.from({ length: 11 }, (_, i) => 10 + i * 5),
+  ...Array.from({ length: 16 }, (_, i) => 75 + i * 15),
+]
 
 const selectClass =
   'h-12 w-full border border-input bg-surface px-4 text-base outline-none focus-visible:border-primary aria-invalid:border-destructive'
@@ -95,7 +98,11 @@ export function ServiceForm({
               aria-invalid={!!errors.duration_minutes}
               className={selectClass}
             >
-              {durations.map((m) => (
+              {/* Uma duração antiga fora da lista continua aparecendo. */}
+              {(service && !durations.includes(service.duration_minutes)
+                ? [...durations, service.duration_minutes].sort((a, b) => a - b)
+                : durations
+              ).map((m) => (
                 <option key={m} value={m}>
                   {formatDuration(m)}
                 </option>
@@ -113,6 +120,44 @@ export function ServiceForm({
             />
             A duração é um máximo (&quot;até 2 h&quot;)
           </label>
+
+          {/* Promoção: preço diferente por um tempo, sem mexer no preço normal. */}
+          <fieldset className="flex flex-col gap-3 border-t border-border pt-5">
+            <legend className="sr-only">Promoção</legend>
+            <p className="text-sm font-semibold">Promoção (opcional)</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field data-invalid={!!errors.promo_price}>
+                <FieldLabel htmlFor="promo_price">Preço promocional (R$)</FieldLabel>
+                <Input
+                  id="promo_price"
+                  name="promo_price"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  defaultValue={value(
+                    'promo_price',
+                    service?.promo_price != null ? service.promo_price.toFixed(2).replace('.', ',') : undefined
+                  )}
+                  aria-invalid={!!errors.promo_price}
+                />
+                <FieldError>{errors.promo_price?.[0]}</FieldError>
+              </Field>
+              <Field data-invalid={!!errors.promo_until}>
+                <FieldLabel htmlFor="promo_until">Válida até</FieldLabel>
+                <Input
+                  id="promo_until"
+                  name="promo_until"
+                  type="date"
+                  defaultValue={value('promo_until', service?.promo_until ?? undefined)}
+                  aria-invalid={!!errors.promo_until}
+                />
+                <FieldError>{errors.promo_until?.[0]}</FieldError>
+              </Field>
+            </div>
+            <FieldDescription>
+              Enquanto valer, o Agendar já usa o preço promocional. Depois da data, volta sozinho para o
+              normal. Para tirar antes, apague os dois campos.
+            </FieldDescription>
+          </fieldset>
 
           <Field data-invalid={!!errors.return_days}>
             <FieldLabel htmlFor="return_days">Retorno em (dias)</FieldLabel>

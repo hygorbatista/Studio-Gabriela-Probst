@@ -11,7 +11,9 @@ export async function getMonthData(month: string) {
   const [payments, appointments, previousPayments, settings] = await Promise.all([
     supabase
       .from('payments')
-      .select('amount, method, appointments(clients(id, name), services(name))')
+      .select(
+        'amount, method, appointments(clients(id, name), services(name), appointment_services(price, services(name)))'
+      )
       .gte('paid_at', start)
       .lt('paid_at', end),
     supabase

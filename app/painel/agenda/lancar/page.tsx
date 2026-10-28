@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { connection } from 'next/server'
 import { formatDayTitle, isValidDay, todayISO } from '@/lib/agenda'
-import { formatPrice, noClient, noService } from '@/lib/format'
+import { formatPrice, noClient, noService, serviceLabel } from '@/lib/format'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
 import { FormSkeleton } from '../../skeletons'
@@ -67,7 +67,7 @@ async function Past({ searchParams }: Pick<PageProps<'/painel/agenda/lancar'>, '
                   className="flex min-h-14 items-center gap-3 py-2 text-base hover:bg-muted/50"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold">{a.services?.name ?? noService}</span>
+                    <span className="block font-semibold">{serviceLabel(a) ?? noService}</span>
                     <span className="block text-sm text-muted-foreground">
                       {a.clients?.name ?? noClient}
                     </span>

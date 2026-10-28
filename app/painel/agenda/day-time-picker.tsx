@@ -16,8 +16,8 @@ import {
 import { noClient, noService } from '@/lib/format'
 import {
   busyMinutes,
+  checkTime,
   dayLoad,
-  fits,
   freeSlots,
   period,
   type BusyItem,
@@ -59,10 +59,6 @@ export function DayTimePicker({
   favoriteHour?: number
   errors: { day?: string[]; time?: string[] }
 }) {
-  const [day, setDay] = useState(initialDay)
-  const [time, setTime] = useState(initialTime)
-  const [custom, setCustom] = useState(false)
-  const [otherDate, setOtherDate] = useState(false)
   const [loaded, setLoaded] = useState([{ ...range, items: busy }])
   const [loading, startLoading] = useTransition()
   const nowDate = new Date(now)
@@ -77,6 +73,15 @@ export function DayTimePicker({
     if (!items || !duration) return []
     return freeSlots({ day: d, busy: items.filter((a) => a.time_known), duration, buffer, now: nowDate })
   }
+
+  const [day, setDay] = useState(initialDay)
+  const [time, setTime] = useState(initialTime)
+  // Hora vinda de fora (semana, "Livre · 14:00") que não está entre as
+  // sugestões: abre direto em "Outro horário", com os avisos.
+  const [custom, setCustom] = useState(
+    () => !!initialTime && !slotsOf(initialDay).some((s) => s.time === initialTime)
+  )
+  const [otherDate, setOtherDate] = useState(false)
 
   const chooseDay = (d: string) => {
     setDay(d)
@@ -93,11 +98,11 @@ export function DayTimePicker({
   const occupying = dayItems?.filter((a) => a.time_known) ?? []
   const slots = slotsOf(day)
   // Escolhido na lista: só vale se ainda cabe (o serviço pode ter mudado).
-  const chosen = custom ? time : slots.includes(time) ? time : ''
-  const conflict =
-    custom && time && duration && !fits({ day, time, busy: occupying, duration, buffer })
-      ? occupying.find((a) => fits({ day, time, busy: [a], duration, buffer }) === false)
-      : undefined
+  const chosen = custom ? time : slots.some((s) => s.time === time) ? time : ''
+  // Encavala (o banco recusa) ou só fica colado (aviso; dá para marcar).
+  const check = chosen && duration ? checkTime({ day, time: chosen, busy: occupying, duration, buffer }) : null
+  const conflict = check?.conflict
+  const close = check?.close
 
   const chips = Array.from({ length: DAYS }, (_, i) => addDays(today, i))
   const nextWithSlot = duration ? chips.find((d) => d > day && slotsOf(d).length > 0) : undefined
@@ -117,9 +122,9 @@ export function DayTimePicker({
           <ul className="flex w-max gap-1.5">
             {chips.map((d, i) => {
               const items = itemsOf(d) ?? []
-              const load = dayLoad(busyMinutes(d, items.filter((a) => a.time_known)))
-              const noRoom = duration !== null && slotsOf(d).length === 0
               const count = items.filter((a) => a.kind === 'appointment').length
+              const load = dayLoad(count, busyMinutes(d, items.filter((a) => a.kind === 'block')))
+              const noRoom = duration !== null && slotsOf(d).length === 0
               const selected = d === day
               const label = i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : formatShortWeekday(d)
               return (
@@ -196,7 +201,7 @@ export function DayTimePicker({
                 ) : (
                   <>
                     Encavala com {conflict.client ?? noClient} ({formatTime(conflict.starts_at)} às{' '}
-                    {formatTime(conflict.ends_at)}, mais {buffer} min de intervalo).
+                    {formatTime(conflict.ends_at)}).
                   </>
                 )}
               </p>
@@ -237,20 +242,28 @@ export function DayTimePicker({
           </div>
         ) : (
           <>
-            {favoriteHour !== undefined && slots.some((s) => Number(s.slice(0, 2)) === favoriteHour) && (
-              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Star className="size-4 fill-primary text-primary" aria-hidden="true" />
-                Horário de costume da cliente
-              </p>
-            )}
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+              {favoriteHour !== undefined && slots.some((s) => Number(s.time.slice(0, 2)) === favoriteHour) && (
+                <p className="flex items-center gap-1.5">
+                  <Star className="size-4 fill-primary text-primary" aria-hidden="true" />
+                  Horário de costume da cliente
+                </p>
+              )}
+              {slots.some((s) => s.tight) && (
+                <p className="flex items-center gap-1.5">
+                  <span aria-hidden="true" className="size-2 rounded-full bg-amber-500" />
+                  Colado em outro atendimento, sem os {buffer} min de intervalo
+                </p>
+              )}
+            </div>
             {periods.map((p) => {
-              const list = slots.filter((s) => period(s) === p)
+              const list = slots.filter((s) => period(s.time) === p)
               if (list.length === 0) return null
               return (
                 <div key={p} className="flex flex-col gap-2">
                   <p className="text-sm text-muted-foreground">{p}</p>
                   <div className="grid grid-cols-4 gap-2">
-                    {list.map((s) => {
+                    {list.map(({ time: s, tight }) => {
                       const favorite = Number(s.slice(0, 2)) === favoriteHour
                       return (
                         <button
@@ -258,7 +271,7 @@ export function DayTimePicker({
                           type="button"
                           onClick={() => setTime(s)}
                           aria-pressed={chosen === s}
-                          aria-label={favorite ? `${s}, horário de costume` : s}
+                          aria-label={`${s}${favorite ? ', horário de costume' : ''}${tight ? ', colado em outro atendimento' : ''}`}
                           className={cn(
                             'relative h-12 border text-base font-semibold',
                             chosen === s
@@ -275,6 +288,12 @@ export function DayTimePicker({
                                 chosen === s ? 'fill-white text-white' : 'fill-primary text-primary'
                               )}
                               aria-hidden="true"
+                            />
+                          )}
+                          {tight && (
+                            <span
+                              aria-hidden="true"
+                              className="absolute top-1.5 left-1.5 size-2 rounded-full bg-amber-500"
                             />
                           )}
                         </button>
@@ -301,10 +320,17 @@ export function DayTimePicker({
           </button>
         )}
 
-        {chosen && duration && (
+        {chosen && duration && !conflict && (
           <p className="text-base text-muted-foreground">
-            Termina às <strong className="text-foreground">{addMinutesToTime(chosen, duration)}</strong>,
-            mais {buffer} min de intervalo.
+            Termina às <strong className="text-foreground">{addMinutesToTime(chosen, duration)}</strong>.
+          </p>
+        )}
+        {/* Só aviso: o intervalo nunca impede de marcar. */}
+        {close && !conflict && (
+          <p role="status" className="border-l-3 border-l-amber-500 bg-amber-50 px-3 py-2 text-base text-amber-900">
+            {close.kind === 'block' ? 'Fica colado num horário bloqueado' : `Fica colado no atendimento de ${close.client ?? noClient}`}{' '}
+            ({formatTime(close.starts_at)} às {formatTime(close.ends_at)}), sem os {buffer} min de intervalo. Dá para
+            marcar assim mesmo.
           </p>
         )}
         <FieldError>{errors.time?.[0]}</FieldError>

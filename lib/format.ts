@@ -32,6 +32,24 @@ export function formatDateTime(iso: string) {
 export const noClient = 'Cliente não informada'
 export const noService = 'Serviço não informado'
 
+// Nome dos serviços de um atendimento: "Manicure + Pedicure" quando tem mais
+// de um (services_label); nos antigos, o nome do serviço único.
+export function serviceLabel(a: { services_label?: string | null; services?: { name: string } | null }) {
+  return a.services_label ?? a.services?.name ?? null
+}
+
+type Priced = { price: number; promo_price: number | null; promo_until: string | null }
+
+// A promoção vale até promo_until, inclusive ("AAAA-MM-DD", horário de Brasília).
+export function promoActive(s: Priced, today: string) {
+  return s.promo_price !== null && s.promo_until !== null && s.promo_until >= today
+}
+
+// Preço do dia: o promocional enquanto vale, senão o normal.
+export function effectivePrice(s: Priced, today: string) {
+  return promoActive(s, today) ? s.promo_price! : s.price
+}
+
 const dateOnly = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo',
   day: '2-digit',

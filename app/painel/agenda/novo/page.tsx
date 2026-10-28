@@ -53,7 +53,9 @@ async function NewAppointment({
       buffer={buffer}
       defaultDay={day}
       initialClientId={typeof cliente === 'string' ? cliente : undefined}
-      initialServiceId={typeof s === 'string' && services.some((x) => x.id === s) ? s : undefined}
+      initialServiceIds={
+        typeof s === 'string' ? s.split(',').filter((id) => services.some((x) => x.id === id)) : undefined
+      }
       initialTime={typeof h === 'string' && /^\d{2}:\d{2}$/.test(h) ? h : undefined}
     />
   )

@@ -30,7 +30,7 @@ export async function getClient(id: string) {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('clients')
-    .select('*, appointments(id, starts_at, time_known, status, price_charged, services(name))')
+    .select('*, appointments(id, starts_at, time_known, status, price_charged, services_label, services(name))')
     .eq('id', id)
     .order('starts_at', { referencedTable: 'appointments', ascending: false })
     .maybeSingle()

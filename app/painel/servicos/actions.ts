@@ -9,7 +9,13 @@ import { parseMoney } from '@/lib/format'
 import { SERVICES_TAG } from '@/lib/services'
 import type { DeleteState } from '../delete-button'
 
-const serviceSchema = z.object({
+const optionalMoney = z.preprocess(
+  (v) => (v === '' || v === undefined ? null : parseMoney(v)),
+  z.number({ error: 'Informe o valor.' }).min(0, 'O valor não pode ser negativo.').max(10000).nullable()
+)
+
+const serviceSchema = z
+  .object({
   name: z.string().trim().min(1, 'Informe o nome.').max(80, 'Use até 80 caracteres.'),
   category: z.string().trim().min(1, 'Informe a categoria.').max(40, 'Use até 40 caracteres.'),
   price: z.preprocess(
@@ -32,7 +38,21 @@ const serviceSchema = z.object({
       .max(365, 'Use de 1 a 365 dias.')
       .nullable()
   ),
+  // Promoção: preço e data andam juntos (o banco também exige).
+  promo_price: optionalMoney,
+  promo_until: z.preprocess(
+    (v) => (v === '' || v === undefined ? null : v),
+    z.iso.date('Data inválida.').nullable()
+  ),
 })
+  .superRefine((v, ctx) => {
+    if (v.promo_price !== null && !v.promo_until) {
+      ctx.addIssue({ code: 'custom', path: ['promo_until'], message: 'Até quando vale a promoção?' })
+    }
+    if (v.promo_price === null && v.promo_until) {
+      ctx.addIssue({ code: 'custom', path: ['promo_price'], message: 'Informe o preço promocional.' })
+    }
+  })
 
 type Fields = keyof z.infer<typeof serviceSchema>
 

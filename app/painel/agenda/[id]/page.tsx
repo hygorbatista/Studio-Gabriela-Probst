@@ -6,7 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
 import { suggestReturn } from '@/lib/return-visit'
-import { formatPrice, noClient, noService, paymentMethodLabels } from '@/lib/format'
+import { formatPrice, noClient, noService, paymentMethodLabels, serviceLabel } from '@/lib/format'
 import { whatsappTo } from '@/lib/phone'
 import { ActionButton } from '../../action-button'
 import { BackLink } from '../../back-link'
@@ -46,9 +46,10 @@ async function Appointment({
   const client = a.clients
   const payment = a.payments
   const firstName = client?.name.split(' ')[0]
+  const label = serviceLabel(a)?.toLowerCase()
   const confirmation = rescheduled
-    ? `Olá, ${firstName}! Seu horário de ${a.services?.name} foi remarcado para ${when.slice(3)}. Até lá!`
-    : `Olá, ${firstName}! Confirmando seu horário de ${a.services?.name} ${when}. Até lá!`
+    ? `Olá, ${firstName}! Seu horário de ${label} foi remarcado para ${when.slice(3)}. Até lá!`
+    : `Olá, ${firstName}! Confirmando seu horário de ${label} ${when}. Até lá!`
 
   return (
     <>
@@ -56,7 +57,7 @@ async function Appointment({
 
       <div className="mb-10">
         {a.status === 'scheduled' && a.confirmed_at ? <ConfirmedBadge /> : <StatusBadge status={a.status} />}
-        <h1 className="mt-3 font-serif text-4xl">{a.services?.name ?? noService}</h1>
+        <h1 className="mt-3 font-serif text-4xl">{serviceLabel(a) ?? noService}</h1>
         <p className="mt-2 text-base">
           {formatDayTitle(day)} ·{' '}
           {a.time_known ? `${formatTime(a.starts_at)} às ${formatTime(a.ends_at)}` : 'sem horário'}
@@ -147,7 +148,7 @@ async function Appointment({
             clientId={client.id}
             firstName={firstName ?? ''}
             serviceId={a.services?.id}
-            serviceName={a.services?.name}
+            serviceName={serviceLabel(a) ?? undefined}
             returnDays={a.services?.return_days}
             day={day}
             time={a.time_known ? formatTime(a.starts_at) : null}

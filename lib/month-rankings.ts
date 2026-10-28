@@ -6,7 +6,24 @@ type Payment = {
   appointments: {
     clients: { id: string; name: string } | null
     services: { name: string } | null
+    // Atendimento com mais de um serviço (desde 2026-10-27).
+    appointment_services?: { price: number; services: { name: string } | null }[]
   } | null
+}
+
+// Os serviços de um pagamento, cada um com a sua parte do valor. Com vários
+// serviços, o valor pago é dividido na proporção dos preços do dia.
+function serviceShares(p: Payment) {
+  const items = (p.appointments?.appointment_services ?? []).filter((i) => i.services)
+  if (items.length === 0) {
+    const name = p.appointments?.services?.name
+    return name ? [{ name, amount: p.amount }] : []
+  }
+  const total = items.reduce((sum, i) => sum + i.price, 0)
+  return items.map((i) => ({
+    name: i.services!.name,
+    amount: total > 0 ? (p.amount * i.price) / total : p.amount / items.length,
+  }))
 }
 
 const TOP = 5
@@ -23,12 +40,11 @@ export function monthRankings(payments: Payment[]) {
       c.visits += 1
       clients.set(client.id, c)
     }
-    const service = p.appointments?.services
-    if (service) {
-      const s = services.get(service.name) ?? { name: service.name, total: 0, count: 0 }
-      s.total += p.amount
+    for (const share of serviceShares(p)) {
+      const s = services.get(share.name) ?? { name: share.name, total: 0, count: 0 }
+      s.total += share.amount
       s.count += 1
-      services.set(service.name, s)
+      services.set(share.name, s)
     }
   }
 

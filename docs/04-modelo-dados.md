@@ -29,6 +29,8 @@ erDiagram
         int duration_minutes
         boolean duration_up_to
         int return_days
+        numeric promo_price
+        date promo_until
         boolean active
         int sort_order
     }
@@ -100,7 +102,9 @@ erDiagram
 
 ## Regras de integridade
 
-- **Conflito de horário barrado no banco:** dois atendimentos `scheduled` ou `completed` não podem ocupar o mesmo período de `starts_at` a `blocked_until` (restrição de exclusão `appointments_no_overlap`, erro `23P01`). Cancelados, faltas e lançamentos sem horário (`time_known = false`) liberam o horário. A tela traduz o erro para uma mensagem amigável.
+- **Conflito de horário barrado no banco:** dois atendimentos `scheduled` ou `completed` não podem ocupar o mesmo período de `starts_at` a `ends_at` (restrição de exclusão `appointments_no_overlap`, erro `23P01`). Desde 2026-10-27 o intervalo (`blocked_until`) **não trava**: a tela só avisa quando o horário fica colado em outro. Cancelados, faltas e lançamentos sem horário (`time_known = false`) liberam o horário. A tela traduz o erro para uma mensagem amigável.
+- **Vários serviços num atendimento** (desde 2026-10-27): `appointment_services` guarda cada serviço (com o preço e a duração do dia); `appointments.service_id` continua sendo o primeiro, e `appointments.services_label` guarda o nome pronto ("Manicure + Pedicure"). A função `create_appointment` grava tudo numa transação, com a duração somada.
+- **Promoção:** `services.promo_price` vale até `promo_until` (inclusive). Os dois andam juntos.
 - **Bloqueios de horário** (desde 2026-10-27): `time_blocks` guarda folgas e compromissos (`reason` opcional; dia inteiro = da meia-noite à meia-noite seguinte). Tabela separada para não entrar em nenhuma conta de atendimentos. Dois gatilhos mantêm a regra nos dois sentidos, com o mesmo erro `23P01`: `appointments_not_blocked` recusa atendimento ativo (com o intervalo) que cai num bloqueio, e `time_blocks_free` recusa bloquear em cima de atendimento ativo.
 - Clientes e serviços com atendimentos não podem ser apagados (`on delete restrict`).
 - Telefone guardado só com dígitos e DDI (12 ou 13 dígitos).
