@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { effectivePrice, formatDuration, formatPrice } from '@/lib/format'
+import { effectivePrice, formatDuration, formatPrice, promoActive } from '@/lib/format'
 import type { BusyItem } from '@/lib/free-slots'
 import { createAppointment, type AppointmentFormState } from './actions'
 import { FormCard } from '../form-card'
@@ -71,7 +71,11 @@ export function AppointmentForm({
   )
   const chosen = serviceIds.map((id) => services.find((s) => s.id === id)).filter((s) => !!s)
   const duration = chosen.reduce((sum, s) => sum + s.duration_minutes, 0)
-  const suggested = chosen.reduce((sum, s) => sum + effectivePrice(s, today), 0)
+  // Promoção é escolha dela, no fim: sem marcar, vale o preço cheio.
+  const inPromo = chosen.filter((s) => promoActive(s, today))
+  const [usePromo, setUsePromo] = useState(values?.use_promo === 'on')
+  const applyPromo = usePromo && inPromo.length > 0
+  const suggested = chosen.reduce((sum, s) => sum + (applyPromo ? effectivePrice(s, today) : s.price), 0)
   const habit = clientId ? habits[clientId] : undefined
 
   // O valor acompanha os serviços até ela digitar outro (promoção pontual, desconto).
@@ -94,7 +98,7 @@ export function AppointmentForm({
     <form action={action}>
       <input type="hidden" name="service_ids" value={serviceIds.join(',')} />
       <FieldGroup>
-        {/* Três blocos: quem e o quê, quando, observações. */}
+        {/* Quem e o quê, quando, observações e, no fim, o valor (com a promoção, se ela quiser). */}
         <FormCard>
           <ClientPicker
             clients={clients}
@@ -121,37 +125,6 @@ export function AppointmentForm({
             )}
             <FieldError>{errors.service_ids?.[0]}</FieldError>
           </fieldset>
-
-          <Field data-invalid={!!errors.price}>
-            <FieldLabel htmlFor="price">Valor (R$)</FieldLabel>
-            <Input
-              id="price"
-              name="price"
-              inputMode="decimal"
-              placeholder="0,00"
-              value={shownPrice}
-              onChange={(e) => {
-                setPrice(e.target.value)
-                setPriceTouched(true)
-              }}
-              aria-invalid={!!errors.price}
-              className="max-w-40"
-            />
-            <FieldDescription>
-              {priceTouched && chosen.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setPriceTouched(false)}
-                  className="font-semibold text-primary underline underline-offset-4"
-                >
-                  Voltar para {formatPrice(suggested)}
-                </button>
-              ) : (
-                'Soma dos serviços, já com promoção. Dá para mudar (desconto, promoção do dia).'
-              )}
-            </FieldDescription>
-            <FieldError>{errors.price?.[0]}</FieldError>
-          </Field>
         </FormCard>
 
         <FormCard>
@@ -182,6 +155,63 @@ export function AppointmentForm({
             />
             <FieldDescription>Opcional.</FieldDescription>
             <FieldError>{errors.notes?.[0]}</FieldError>
+          </Field>
+        </FormCard>
+
+        {/* No fim: o valor, e a promoção só se ela quiser aplicar. */}
+        <FormCard>
+          {inPromo.length > 0 && (
+            <label className="flex min-h-12 cursor-pointer items-start gap-3 border border-primary/40 bg-primary-soft px-4 py-3 text-base">
+              <input
+                type="checkbox"
+                name="use_promo"
+                checked={usePromo}
+                onChange={(e) => setUsePromo(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-primary"
+              />
+              <span>
+                <span className="block font-semibold">Aplicar promoção</span>
+                {inPromo.map((s) => (
+                  <span key={s.id} className="block text-sm text-muted-foreground">
+                    {s.name}: {formatPrice(s.promo_price!)} em vez de {formatPrice(s.price)} (até{' '}
+                    {s.promo_until!.slice(8)}/{s.promo_until!.slice(5, 7)})
+                  </span>
+                ))}
+              </span>
+            </label>
+          )}
+
+          <Field data-invalid={!!errors.price}>
+            <FieldLabel htmlFor="price">Valor (R$)</FieldLabel>
+            <Input
+              id="price"
+              name="price"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={shownPrice}
+              onChange={(e) => {
+                setPrice(e.target.value)
+                setPriceTouched(true)
+              }}
+              aria-invalid={!!errors.price}
+              className="max-w-40"
+            />
+            <FieldDescription>
+              {priceTouched && chosen.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setPriceTouched(false)}
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  Voltar para {formatPrice(suggested)}
+                </button>
+              ) : (
+                applyPromo
+                  ? 'Soma dos serviços, com a promoção. Dá para mudar.'
+                  : 'Soma dos serviços, preço cheio. Dá para mudar (desconto).'
+              )}
+            </FieldDescription>
+            <FieldError>{errors.price?.[0]}</FieldError>
           </Field>
         </FormCard>
 

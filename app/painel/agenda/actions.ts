@@ -32,6 +32,8 @@ const appointmentSchema = z
         .min(0, 'O valor não pode ser negativo.')
         .max(10000, 'Valor alto demais.')
     ),
+    // "Aplicar promoção", marcado por ela no fim do Agendar. Sem marcar: preço cheio.
+    use_promo: z.preprocess((v) => v === 'on', z.boolean()),
     day: z.string().refine(isValidDay, 'Data inválida.'),
     time: z.string().regex(TIME_RE, 'Escolha o horário.'),
     notes: z.string().trim().max(500, 'Use até 500 caracteres.'),
@@ -108,6 +110,7 @@ export async function createAppointment(
     p_price: v.price,
     // O banco aceita null; o tipo gerado não sabe disso.
     p_notes: (v.notes || null) as string,
+    p_use_promo: v.use_promo,
   })
   if (error) {
     // Não deixa uma cliente "solta" se o agendamento falhou.

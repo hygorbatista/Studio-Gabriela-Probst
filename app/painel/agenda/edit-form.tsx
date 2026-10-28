@@ -5,7 +5,7 @@ import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { effectivePrice, formatDuration, formatPrice, paymentMethods } from '@/lib/format'
+import { formatDuration, formatPrice, paymentMethods } from '@/lib/format'
 import { FormCard } from '../form-card'
 import { updateAppointment, type EditFormState } from './actions'
 import { ClientPicker } from './client-picker'
@@ -56,7 +56,8 @@ export function EditForm({
   const [noTime, setNoTime] = useState(values ? !values.time : completed && !initial.time)
 
   const chosen = serviceIds.map((sid) => services.find((s) => s.id === sid)).filter((s) => !!s)
-  const priceOf = (s: ServiceOption) => keptPrices[s.id] ?? effectivePrice(s, today)
+  // Serviço que já estava: o preço de quando foi marcado; novo: o preço cheio.
+  const priceOf = (s: ServiceOption) => keptPrices[s.id] ?? s.price
   const sum = chosen.reduce((total, s) => total + priceOf(s), 0)
   const duration = chosen.reduce((total, s) => total + s.duration_minutes, 0)
   const checkedMethod = values?.method ?? initial.method ?? 'unknown'

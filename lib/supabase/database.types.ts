@@ -344,6 +344,7 @@ export type Database = {
           p_price: number
           p_service_ids: string[]
           p_starts_at: string
+          p_use_promo?: boolean
         }
         Returns: string
       }

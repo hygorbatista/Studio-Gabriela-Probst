@@ -17,7 +17,8 @@ export type ServiceOption = {
 }
 
 // Lista de serviços para marcar um ou mais (ex.: mãos e pés), com duração e
-// preço do dia. Usada no Agendar e no Editar.
+// preço cheio. A promoção aparece como aviso; aplicar é escolha dela, no fim do
+// Agendar. Usada no Agendar e no Editar.
 export function ServiceChecklist({
   services,
   selected,
@@ -73,16 +74,11 @@ export function ServiceChecklist({
                 {formatDuration(s.duration_minutes, s.duration_up_to)}
               </span>
             </span>
+            {/* Preço cheio; a promoção só avisa que existe. Ela escolhe aplicar no fim. */}
             <span className="shrink-0 text-right text-sm">
-              {kept !== undefined ? (
-                <span className="font-semibold">{formatPrice(kept)}</span>
-              ) : promo ? (
-                <>
-                  <span className="block font-semibold text-primary">{formatPrice(s.promo_price!)}</span>
-                  <span className="block text-muted-foreground line-through">{formatPrice(s.price)}</span>
-                </>
-              ) : (
-                <span className="font-semibold">{formatPrice(s.price)}</span>
+              <span className="block font-semibold">{formatPrice(kept ?? s.price)}</span>
+              {promo && (
+                <span className="block font-semibold text-primary">Promoção: {formatPrice(s.promo_price!)}</span>
               )}
             </span>
           </button>

@@ -154,8 +154,8 @@ export function ServiceForm({
               </Field>
             </div>
             <FieldDescription>
-              Enquanto valer, o Agendar já usa o preço promocional. Depois da data, volta sozinho para o
-              normal. Para tirar antes, apague os dois campos.
+              Enquanto valer, o Agendar oferece &quot;Aplicar promoção&quot; no final; sem marcar, vale o preço
+              cheio. Depois da data, a opção some sozinha. Para tirar antes, apague os dois campos.
             </FieldDescription>
           </fieldset>
 
