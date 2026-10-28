@@ -49,6 +49,16 @@ Apps de agenda para salões (Fresha, Booksy, Trinks, Mangomint) convergem em alg
 
 Fontes no fim do documento.
 
+## Ajustes depois do uso (2026-10-27)
+
+Pedidos do Hygor depois das primeiras semanas:
+
+- **Vários serviços num atendimento** (mãos e pés): no Agendar, ela marca um ou mais. A duração é a soma; o nome aparece como "Manicure + Pedicure". Cada serviço fica em `appointment_services`, e o "serviços mais feitos" do Resumo conta cada um.
+- **Preço promocional:** no cadastro do serviço, "preço promocional" e "válida até". Enquanto vale, o Agendar já sugere esse preço; o valor do agendamento também é editável para casos pontuais.
+- **O intervalo de 15 min nunca trava:** o conflito considera só o atendimento em si. Horário sem o intervalo aparece com um ponto laranja ("colado") e um aviso, mas dá para marcar. Atender duas clientes ao mesmo tempo continua bloqueado (decisão do Hygor).
+- **Dia cheio = 3 atendimentos.**
+- **Tabela de serviços nova:** Aplicação até 3 h (promoção por R$ 100 até 31/10), Manutenção 2 h, Banho de gel 2 h por R$ 100, Esmaltação em gel 1h30, Manicure e Pedicure 40 min. A Blindagem saiu.
+
 ## Etapas
 
 ### Etapa 1: agendar sem errar (a maior dor)
@@ -77,9 +87,9 @@ No topo da Agenda, uma escolha **Dia · Semana · Mês · Lista**, como no Googl
 | --- | --- |
 | Branco (vazio) | Nenhum atendimento |
 | Rosa claro (com espaço) | Tem atendimento, mas ainda cabe mais |
-| Bordô (cheio) | 8 h ou mais ocupadas, contando os intervalos |
+| Bordô (cheio) | 3 atendimentos (ela costuma atender até 3 por dia) ou uma folga longa (8 h ou mais bloqueadas) |
 
-Como ela não tem expediente fixo, "cheio" é uma referência (8 h), ajustável num lugar só.
+"Cheio" é uma referência, ajustável num lugar só (`MAX_PER_DAY` em `lib/free-slots.ts`). Era 8 h ocupadas até 2026-10-27.
 
 | Item | O que muda | Tamanho |
 | --- | --- | --- |
