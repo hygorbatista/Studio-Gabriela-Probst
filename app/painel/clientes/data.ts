@@ -1,6 +1,5 @@
 import 'server-only'
 import { requireUser } from '@/lib/auth'
-import { inactiveClients } from '@/lib/inactive-clients'
 
 // Busca por nome ou telefone. Sem termo, lista todas em ordem alfabética.
 export async function searchClients(term: string) {
@@ -37,18 +36,4 @@ export async function getClient(id: string) {
     .maybeSingle()
   if (error) throw error
   return data
-}
-
-// Clientes "sumidas", segundo o limite de dias das configurações.
-export async function getInactiveClients() {
-  const { supabase } = await requireUser()
-  const [clients, settings] = await Promise.all([
-    supabase.from('clients').select('id, name, phone, appointments(starts_at, status)'),
-    supabase.from('settings').select('inactive_days_threshold').eq('id', 1).single(),
-  ])
-  if (clients.error) throw clients.error
-  if (settings.error) throw settings.error
-
-  const threshold = settings.data.inactive_days_threshold
-  return { threshold, clients: inactiveClients(clients.data, threshold) }
 }

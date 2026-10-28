@@ -17,6 +17,7 @@ import { ConfirmedBadge } from '../confirmed-badge'
 import { deleteBlock } from '../actions'
 import { getConfirmCount, getDayAppointments, getDayBlocks, getWeekSummary } from '../data'
 import { ActionButton } from '../../action-button'
+import { ReturnLink } from '../return-link'
 import { loadClass, loadLabel } from '../load'
 import { EmptyState } from '../../empty-state'
 import { StatusBadge } from '../../status-badge'
@@ -163,6 +164,9 @@ export async function DayView({ day }: { day: string }) {
           <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
         </Link>
       )}
+
+      {/* Clientes com o retorno vencendo e nada marcado: encher a agenda. */}
+      <ReturnLink className="mb-6" />
 
       <PeriodNav
         title={formatDayTitle(day)}

@@ -10,7 +10,7 @@ import { Initials } from './initials'
 import { EmptyState } from '../empty-state'
 import { PageHeader } from '../page-header'
 import { searchClients } from './data'
-import { InactiveSection } from './inactive-section'
+import { ReturnLink } from '../agenda/return-link'
 import { SearchInput } from './search-input'
 import { ListSkeleton } from '../skeletons'
 
@@ -34,7 +34,7 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
         </Suspense>
       </form>
       <Suspense fallback={null}>
-        <InactiveSection />
+        <ReturnLink className="mb-8" />
       </Suspense>
       <Suspense fallback={<ListSkeleton />}>
         <ClientList searchParams={searchParams} />

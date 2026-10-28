@@ -117,7 +117,8 @@ erDiagram
 ## Decisões
 
 - **Intervalo entre atendimentos:** valor único em `settings`, 15 minutos, confirmado (2026-10-09).
-- **Cliente "sumida":** 45 dias sem atendimento, ajustável em `settings`.
+- **"Hora de voltar"** (desde 2026-10-27): a cliente entra na lista quando o retorno do serviço da última visita (`services.return_days`) chega em até 3 dias ou já passou, e ela não tem nada marcado. Serviço avulso (sem prazo) não entra; sem serviço registrado, vale 30 dias.
+- **Cliente "sumida":** dentro da "Hora de voltar", a que passou de 45 dias sem atendimento (ajustável em `settings`). Recebe um convite de tom diferente.
 
 ## Pendências
 
