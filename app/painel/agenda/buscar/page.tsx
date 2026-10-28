@@ -5,7 +5,7 @@ import { CalendarClock, Plus, Search } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { dayOf, formatDayTitle, formatTime } from '@/lib/agenda'
-import { noService } from '@/lib/format'
+import { noService, serviceLabel } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { BackLink } from '../../back-link'
 import { EmptyState } from '../../empty-state'
@@ -90,7 +90,7 @@ async function Results({ searchParams }: Pick<PageProps<'/painel/agenda/buscar'>
                             {a.time_known && `, às ${formatTime(a.starts_at)}`}
                           </span>
                           <span className="flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
-                            {a.services?.name ?? noService}
+                            {serviceLabel(a) ?? noService}
                             {a.confirmed_at && <ConfirmedBadge />}
                           </span>
                         </Link>
@@ -109,7 +109,7 @@ async function Results({ searchParams }: Pick<PageProps<'/painel/agenda/buscar'>
                 {last && (
                   <p className="mt-3 text-sm text-muted-foreground">
                     Última vez: {formatDayTitle(dayOf(last.starts_at)).toLowerCase()}
-                    {last.services?.name && `, ${last.services.name.toLowerCase()}`}
+                    {serviceLabel(last) && `, ${serviceLabel(last)!.toLowerCase()}`}
                   </p>
                 )}
 

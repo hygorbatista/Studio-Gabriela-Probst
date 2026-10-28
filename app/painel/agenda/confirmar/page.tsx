@@ -6,7 +6,7 @@ import { cn } from 'cn'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { addDays, dayOf, formatDayTitle, formatTime, isValidDay, todayISO } from '@/lib/agenda'
-import { noClient, noService } from '@/lib/format'
+import { noClient, noService, serviceLabel } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { reminderMessage } from '@/lib/reminder'
 import { BackLink } from '../../back-link'
@@ -89,7 +89,7 @@ async function ToConfirm({ searchParams }: Pick<PageProps<'/painel/agenda/confir
               const phone = a.clients?.phone
               const message = reminderMessage({
                 name: a.clients?.name ?? '',
-                service: a.services?.name ?? null,
+                service: serviceLabel(a),
                 day: dayOf(a.starts_at),
                 time,
                 today,
@@ -107,7 +107,7 @@ async function ToConfirm({ searchParams }: Pick<PageProps<'/painel/agenda/confir
                     <span className="min-w-0">
                       <span className="block text-base font-semibold">{a.clients?.name ?? noClient}</span>
                       <span className="block text-base text-muted-foreground">
-                        {a.services?.name ?? noService}
+                        {serviceLabel(a) ?? noService}
                       </span>
                     </span>
                   </Link>

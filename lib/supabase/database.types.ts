@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_services: {
+        Row: {
+          appointment_id: string
+          duration_minutes: number
+          position: number
+          price: number
+          service_id: string
+        }
+        Insert: {
+          appointment_id: string
+          duration_minutes: number
+          position: number
+          price: number
+          service_id: string
+        }
+        Update: {
+          appointment_id?: string
+          duration_minutes?: number
+          position?: number
+          price?: number
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_services_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           blocked_until: string
@@ -25,6 +64,7 @@ export type Database = {
           notes: string | null
           price_charged: number
           service_id: string | null
+          services_label: string | null
           starts_at: string
           status: string
           time_known: boolean
@@ -39,6 +79,7 @@ export type Database = {
           notes?: string | null
           price_charged: number
           service_id?: string | null
+          services_label?: string | null
           starts_at: string
           status?: string
           time_known?: boolean
@@ -53,6 +94,7 @@ export type Database = {
           notes?: string | null
           price_charged?: number
           service_id?: string | null
+          services_label?: string | null
           starts_at?: string
           status?: string
           time_known?: boolean
@@ -203,6 +245,8 @@ export type Database = {
           id: string
           name: string
           price: number
+          promo_price: number | null
+          promo_until: string | null
           return_days: number | null
           sort_order: number
         }
@@ -215,6 +259,8 @@ export type Database = {
           id?: string
           name: string
           price: number
+          promo_price?: number | null
+          promo_until?: string | null
           return_days?: number | null
           sort_order?: number
         }
@@ -227,6 +273,8 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          promo_price?: number | null
+          promo_until?: string | null
           return_days?: number | null
           sort_order?: number
         }
@@ -288,6 +336,16 @@ export type Database = {
       complete_appointment: {
         Args: { p_amount: number; p_appointment_id: string; p_method: string }
         Returns: undefined
+      }
+      create_appointment: {
+        Args: {
+          p_client_id: string
+          p_notes: string
+          p_price: number
+          p_service_ids: string[]
+          p_starts_at: string
+        }
+        Returns: string
       }
       record_past_appointment: {
         Args: {

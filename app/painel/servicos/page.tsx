@@ -2,7 +2,8 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { ChevronRight, Plus, Sparkles } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
-import { formatDuration, formatPrice } from '@/lib/format'
+import { todayISO } from '@/lib/agenda'
+import { formatDuration, formatPrice, promoActive } from '@/lib/format'
 import { groupByCategory } from '@/lib/services'
 import { EmptyState } from '../empty-state'
 import { PageHeader } from '../page-header'
@@ -33,6 +34,7 @@ export default function ServicosPage() {
 
 async function ServiceList() {
   const services = await listAllServices()
+  const today = todayISO()
 
   if (services.length === 0) {
     return (
@@ -69,6 +71,12 @@ async function ServiceList() {
                       {formatPrice(service.price)} ·{' '}
                       {formatDuration(service.duration_minutes, service.duration_up_to)}
                     </p>
+                    {promoActive(service, today) && (
+                      <p className="text-sm font-semibold text-primary">
+                        Promoção: {formatPrice(service.promo_price!)} até{' '}
+                        {service.promo_until!.slice(8)}/{service.promo_until!.slice(5, 7)}
+                      </p>
+                    )}
                   </div>
                   {!service.active && (
                     <span className="bg-muted px-2 py-1 text-sm font-semibold text-muted-foreground">

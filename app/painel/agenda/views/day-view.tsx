@@ -11,7 +11,7 @@ import {
   weekStart,
 } from '@/lib/agenda'
 import { agendaMoments, needsCompletion, type Moment } from '@/lib/agenda-now'
-import { formatPrice, noClient, noService } from '@/lib/format'
+import { formatPrice, noClient, noService, serviceLabel } from '@/lib/format'
 import { freeGaps } from '@/lib/free-slots'
 import { ConfirmedBadge } from '../confirmed-badge'
 import { deleteBlock } from '../actions'
@@ -289,7 +289,7 @@ export async function DayView({ day }: { day: string }) {
                     >
                       {a.clients?.name ?? noClient}
                     </Link>
-                    <p className="text-base text-muted-foreground">{a.services?.name ?? noService}</p>
+                    <p className="text-base text-muted-foreground">{serviceLabel(a) ?? noService}</p>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       {/* "Não concluído" já diz a situação; nos outros, o status vem antes. */}
                       {moment !== 'late' &&

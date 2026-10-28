@@ -8,12 +8,10 @@ import { withFlash } from '@/lib/flash'
 import { addDays, dayOf, isValidDay, toTimestamp, todayISO } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
-import type { TablesInsert } from '@/lib/supabase/database.types'
 import type { ActionState } from '../action-button'
 import { getBusy } from './data'
 
-const CONFLICT =
-  'Esse horário conflita com outro atendimento ou com um horário bloqueado (contando o intervalo de 15 minutos).'
+const CONFLICT = 'Esse horário encavala com outro atendimento ou com um horário bloqueado.'
 
 const idSchema = z.uuid()
 
@@ -22,7 +20,18 @@ const appointmentSchema = z
     client_id: z.string().min(1, 'Escolha a cliente.'),
     new_client_name: z.string().trim().max(80, 'Use até 80 caracteres.'),
     new_client_phone: z.string().trim(),
-    service_id: z.uuid('Escolha o serviço.'),
+    // "id1,id2": um ou mais serviços, na ordem escolhida.
+    service_ids: z
+      .string()
+      .transform((v) => [...new Set(v.split(',').filter(Boolean))])
+      .pipe(z.array(z.uuid()).min(1, 'Escolha pelo menos um serviço.').max(6, 'Escolha até 6 serviços.')),
+    price: z.preprocess(
+      parseMoney,
+      z
+        .number({ error: 'Informe o valor.' })
+        .min(0, 'O valor não pode ser negativo.')
+        .max(10000, 'Valor alto demais.')
+    ),
     day: z.string().refine(isValidDay, 'Data inválida.'),
     time: z.string().regex(/^\d{2}:\d{2}$/, 'Escolha o horário.'),
     notes: z.string().trim().max(500, 'Use até 500 caracteres.'),
@@ -65,6 +74,7 @@ export async function createAppointment(
     client_id: '',
     new_client_name: '',
     new_client_phone: '',
+    service_ids: '',
     notes: '',
     ...values,
   })
@@ -90,15 +100,15 @@ export async function createAppointment(
     createdClient = true
   }
 
-  // Término, intervalo e valor são preenchidos pelo gatilho do banco.
-  const appointment = {
-    client_id: clientId,
-    service_id: v.service_id,
-    starts_at: toTimestamp(v.day, v.time),
-    notes: v.notes || null,
-  } as TablesInsert<'appointments'>
-
-  const { error } = await supabase.from('appointments').insert(appointment)
+  // Uma transação no banco: o atendimento, a duração somada e cada serviço.
+  const { error } = await supabase.rpc('create_appointment', {
+    p_client_id: clientId,
+    p_starts_at: toTimestamp(v.day, v.time),
+    p_service_ids: v.service_ids,
+    p_price: v.price,
+    // O banco aceita null; o tipo gerado não sabe disso.
+    p_notes: (v.notes || null) as string,
+  })
   if (error) {
     // Não deixa uma cliente "solta" se o agendamento falhou.
     if (createdClient) await supabase.from('clients').delete().eq('id', clientId)

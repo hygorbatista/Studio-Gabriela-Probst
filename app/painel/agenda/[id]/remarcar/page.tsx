@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { notFound, redirect } from 'next/navigation'
 import { addDays, dayOf, formatDayTitle, formatTime, todayISO } from '@/lib/agenda'
-import { noClient, noService } from '@/lib/format'
+import { noClient, noService, serviceLabel } from '@/lib/format'
 import { BackLink } from '../../../back-link'
 import { PageHeader } from '../../../page-header'
 import { getAppointment, getBufferMinutes, getBusy } from '../../data'
@@ -36,7 +36,7 @@ async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarc
       <BackLink href={`/painel/agenda/${a.id}`} label="Atendimento" />
       <PageHeader title="Remarcar" />
       <p className="mb-8 text-base">
-        <strong>{a.clients?.name ?? noClient}</strong> · {a.services?.name ?? noService}
+        <strong>{a.clients?.name ?? noClient}</strong> · {serviceLabel(a) ?? noService}
         <br />
         <span className="text-muted-foreground">
           Está marcado para {formatDayTitle(day).toLowerCase()}
