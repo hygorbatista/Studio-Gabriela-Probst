@@ -333,6 +333,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      client_options: {
+        Args: { p_term?: string; p_offset?: number }
+        Returns: { id: string; name: string; phone: string | null }[]
+      }
+      client_statistics: {
+        Args: { p_client_id: string }
+        Returns: Json
+      }
       complete_appointment: {
         Args: { p_amount: number; p_appointment_id: string; p_method: string }
         Returns: undefined

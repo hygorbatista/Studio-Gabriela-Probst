@@ -28,11 +28,9 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
           </Link>
         }
       />
-      <form role="search" className="mb-6">
-        <Suspense fallback={<Input disabled placeholder="Buscar por nome ou telefone" />}>
-          <SearchInput />
-        </Suspense>
-      </form>
+      <Suspense fallback={<Input className="mb-6" disabled placeholder="Buscar por nome ou telefone" />}>
+        <SearchInput />
+      </Suspense>
       <Suspense fallback={null}>
         <ReturnLink className="mb-8" />
       </Suspense>
@@ -105,7 +103,7 @@ async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 
         )
       })}
     </ul>
-    <nav aria-label="Paginas de clientes" className="mt-5 flex items-center justify-between gap-3">
+    <nav aria-label="Páginas de clientes" className="mt-5 flex items-center justify-between gap-3">
       {page > 1 ? <Link href={pageHref(page - 1)} className={buttonVariants({ variant: 'outline' })}>Anterior</Link> : <span />}
       <span className="text-sm text-muted-foreground">Página {page}</span>
       {hasMore ? <Link href={pageHref(page + 1)} className={buttonVariants({ variant: 'outline' })}>Próxima</Link> : <span />}

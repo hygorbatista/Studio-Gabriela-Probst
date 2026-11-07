@@ -6,7 +6,7 @@ import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 // Atualiza ?q= enquanto digita (com uma pequena espera). Sem JavaScript,
-// o formulário GET em volta faz a busca ao apertar Enter.
+// o formulário GET faz a busca ao apertar Enter.
 export function SearchInput() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -16,8 +16,23 @@ export function SearchInput() {
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
+  const search = (value: string) => {
+    const q = value.trim()
+    const href = q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname
+    startTransition(() => router.replace(href, { scroll: false }))
+  }
+
   return (
-    <div className="relative">
+    <form
+      role="search"
+      aria-label="Clientes"
+      className="relative mb-6"
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearTimeout(timer.current)
+        search(String(new FormData(event.currentTarget).get('q') ?? ''))
+      }}
+    >
       <Search
         className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
@@ -34,12 +49,12 @@ export function SearchInput() {
         onChange={(e) => {
           const q = e.target.value
           clearTimeout(timer.current)
-          timer.current = setTimeout(() => {
-            startTransition(() => router.replace(q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname, { scroll: false }))
-          }, 250)
+          timer.current = setTimeout(() => search(q), 250)
         }}
       />
-      {pending && <span role="status" className="absolute right-3 top-0 flex h-12 items-center text-xs text-muted-foreground">Buscando...</span>}
-    </div>
+      <span role="status" className="pointer-events-none absolute right-3 top-0 flex h-12 items-center text-xs text-muted-foreground">
+        {pending ? 'Buscando...' : ''}
+      </span>
+    </form>
   )
 }

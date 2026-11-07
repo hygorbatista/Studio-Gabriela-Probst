@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -16,6 +16,8 @@ export function CompleteForm({ id, price }: { id: string; price: number }) {
     null
   )
   const errors = state?.errors ?? {}
+  const [amount, setAmount] = useState(price.toFixed(2).replace('.', ','))
+  const [method, setMethod] = useState('')
 
   return (
     // noValidate: sem forma de pagamento, o navegador bloqueava o envio e
@@ -29,7 +31,9 @@ export function CompleteForm({ id, price }: { id: string; price: number }) {
             id="amount"
             name="amount"
             inputMode="decimal"
-            defaultValue={price.toFixed(2).replace('.', ',')}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            enterKeyHint="next"
             aria-invalid={!!errors.amount}
             required
           />
@@ -49,7 +53,7 @@ export function CompleteForm({ id, price }: { id: string; price: number }) {
                   errors.method ? 'border-destructive' : 'border-input'
                 )}
               >
-                <input type="radio" name="method" value={value} className="sr-only" />
+                <input type="radio" name="method" value={value} checked={method === value} onChange={() => setMethod(value)} className="sr-only" />
                 {label}
               </label>
             ))}

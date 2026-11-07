@@ -74,14 +74,25 @@ async function ClientDetail({ params, searchParams }: Pick<PageProps<'/painel/cl
             </a>
           )}
         </div>
+        <nav aria-label="Seções da ficha" className="mt-3 flex flex-wrap gap-x-5">
+          <a href="#atendimentos" className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4">
+            Ver atendimentos
+          </a>
+          <a href="#dados-cliente" className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4">
+            Editar dados
+          </a>
+        </nav>
       </div>
 
       {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
       <Suspense fallback={<DetailSkeleton />}><ClientSummary client={client} /></Suspense>
 
-      <Suspense fallback={<ListSkeleton />}><ClientTimeline id={client.id} searchParams={searchParams} /></Suspense>
+      <section id="atendimentos" tabIndex={-1} className="scroll-mt-4">
+        <h2 className={`${sectionTitle} mb-4`}>Atendimentos</h2>
+        <Suspense fallback={<ListSkeleton />}><ClientTimeline id={client.id} searchParams={searchParams} /></Suspense>
+      </section>
 
-      <section>
+      <section id="dados-cliente" tabIndex={-1} className="scroll-mt-4">
         <h2 className={`${sectionTitle} mb-6`}>Dados</h2>
         <ClientForm client={client} />
       </section>
@@ -141,11 +152,10 @@ async function ClientTimeline({ id, searchParams }: { id: string; searchParams: 
   const { appointments, hasMore } = await getClientHistory(id, page)
   const pageHref = (number: number) => '/painel/clientes/' + id + '?p=' + number + '#atendimentos'
   return (
-      <section id="atendimentos">
-        <h2 className={`${sectionTitle} mb-4`}>Atendimentos</h2>
+      <>
         {appointments.length === 0 ? (
           <EmptyState icon={CalendarDays} title={page > 1 ? "Fim do histórico" : "Nenhum atendimento ainda"}>
-            Toque em Agendar para marcar o primeiro.
+            {page > 1 ? 'Volte à página anterior para ver os atendimentos.' : 'Toque em Agendar para marcar o primeiro.'}
           </EmptyState>
         ) : (
           // Linha do tempo: uma linha vertical com uma bolinha por atendimento.
@@ -177,10 +187,10 @@ async function ClientTimeline({ id, searchParams }: { id: string; searchParams: 
             ))}
           </ol>
         )}
-        <nav aria-label="Paginas de atendimentos" className="mt-5 flex justify-between gap-3">
+        {(page > 1 || hasMore) && <nav aria-label="Páginas de atendimentos" className="mt-5 flex justify-between gap-3">
           {page > 1 ? <Link href={pageHref(page - 1)} className={buttonVariants({ variant: 'outline' })}>Anterior</Link> : <span />}
           {hasMore && <Link href={pageHref(page + 1)} className={buttonVariants({ variant: 'outline' })}>Mais atendimentos</Link>}
-        </nav>
-      </section>
+        </nav>}
+      </>
   )
 }

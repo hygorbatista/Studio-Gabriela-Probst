@@ -1,5 +1,5 @@
 import 'server-only'
-import { clientStats } from '@/lib/client-stats'
+import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 
 // Busca por nome ou telefone. Sem termo, lista todas em ordem alfabética.
@@ -58,29 +58,15 @@ export async function getClientHistory(id: string, page: number) {
   return { appointments: data.slice(0, 20), hasMore: data.length > 20 }
 }
 
+const statsSchema = z.object({
+  visits: z.number(), totalSpent: z.number(), averageTicket: z.number(),
+  lastVisit: z.string().nullable(), nextVisit: z.string().nullable(),
+  favoriteService: z.string().nullable(), favoriteTime: z.string().nullable(),
+})
+
 export async function getClientStats(id: string) {
   const { supabase } = await requireUser()
-  async function completedVisits() {
-    const result = []
-    for (let offset = 0; ; offset += 500) {
-      const { data, error } = await supabase.from('appointments')
-        .select('starts_at, time_known, status, price_charged, services_label, services(name)')
-        .eq('client_id', id).eq('status', 'completed')
-        .order('starts_at', { ascending: false }).order('id', { ascending: false })
-        .range(offset, offset + 499)
-      if (error) throw error
-      result.push(...data)
-      if (data.length < 500) return result
-    }
-  }
-  const [completed, upcoming] = await Promise.all([
-    completedVisits(),
-    supabase.from('appointments').select('starts_at').eq('client_id', id).eq('status', 'scheduled')
-      .gte('starts_at', new Date().toISOString()).order('starts_at').limit(1),
-  ])
-  if (upcoming.error) throw upcoming.error
-  return clientStats([
-    ...completed,
-    ...upcoming.data.map((visit) => ({ ...visit, status: 'scheduled', price_charged: 0, services: null })),
-  ])
+  const { data, error } = await supabase.rpc('client_statistics', { p_client_id: id })
+  if (error) throw error
+  return statsSchema.parse(data)
 }

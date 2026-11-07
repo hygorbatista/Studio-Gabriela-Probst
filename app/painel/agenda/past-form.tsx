@@ -92,6 +92,7 @@ export function PastForm({
               id="amount"
               name="amount"
               inputMode="decimal"
+              enterKeyHint="next"
               placeholder="0,00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

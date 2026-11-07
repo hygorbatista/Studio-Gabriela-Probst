@@ -51,16 +51,25 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
   const { m } = await searchParams
   const current = monthISO()
   const month = typeof m === 'string' && isValidMonth(m) ? m : current
-  const e = await getMonthExpenses(month)
-  const category = (c: string) => expenseCategories[c as ExpenseCategory]
-
   return (
     <div className="flex flex-col gap-8">
       <div>
         <BackLink href={`/painel/resumo?m=${month}`} label="Resumo" />
         <MonthNav basePath="/painel/despesas" month={month} current={current} />
       </div>
+      <Suspense key={month} fallback={<DetailSkeleton />}>
+        <MonthExpensesContent month={month} />
+      </Suspense>
+    </div>
+  )
+}
 
+async function MonthExpensesContent({ month }: { month: string }) {
+  const e = await getMonthExpenses(month)
+  const category = (c: string) => expenseCategories[c as ExpenseCategory]
+
+  return (
+    <>
       <section className={card}>
         <h2 className={dataLabel}>Despesas do mês</h2>
         <p className="mt-2 font-serif text-4xl">{formatPrice(e.total)}</p>
@@ -134,6 +143,6 @@ async function Despesas({ searchParams }: Pick<PageProps<'/painel/despesas'>, 's
           </ul>
         )}
       </section>
-    </div>
+    </>
   )
 }

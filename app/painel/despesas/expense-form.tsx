@@ -72,6 +72,7 @@ export function ExpenseForm({
                 id="amount"
                 name="amount"
                 inputMode="decimal"
+              enterKeyHint="next"
                 placeholder="0,00"
                 defaultValue={value(
                   'amount',
@@ -111,6 +112,7 @@ export function ExpenseForm({
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? 'Salvando...' : 'Salvar'}
         </Button>
+        <span role="status" className="sr-only">{pending ? 'Salvando despesa...' : ''}</span>
       </FieldGroup>
     </form>
   )

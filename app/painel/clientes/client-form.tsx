@@ -36,6 +36,8 @@ export function ClientForm({ client }: { client?: Client }) {
             <Input
               id="name"
               name="name"
+              autoCapitalize="words"
+              enterKeyHint="next"
               autoComplete="off"
               defaultValue={value('name', client?.name)}
               aria-invalid={!!errors.name}
@@ -51,6 +53,7 @@ export function ClientForm({ client }: { client?: Client }) {
               name="phone"
               type="tel"
               inputMode="tel"
+              enterKeyHint="next"
               autoComplete="off"
               placeholder="(48) 99999-9999"
               defaultValue={value('phone', client?.phone ? formatPhone(client.phone) : null)}
@@ -97,6 +100,7 @@ export function ClientForm({ client }: { client?: Client }) {
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? 'Salvando...' : 'Salvar'}
         </Button>
+        <span role="status" className="sr-only">{pending ? 'Salvando cliente...' : ''}</span>
       </FieldGroup>
     </form>
   )

@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+import { NavigationMemory } from './navigation-memory'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { LogOut } from 'lucide-react'
@@ -21,6 +23,9 @@ export const viewport: Viewport = {
 export default function PainelLayout({ children }: LayoutProps<'/painel'>) {
   return (
     <div className="painel-theme flex flex-1 flex-col bg-background text-foreground">
+      <a href="#conteudo-painel" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-surface focus:p-3">
+        Ir para o conteúdo do painel
+      </a>
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between gap-3 px-5">
           {/* Monograma "G": o mesmo do ícone do site e do app. */}
@@ -46,10 +51,11 @@ export default function PainelLayout({ children }: LayoutProps<'/painel'>) {
       </header>
 
       {/* pb-24: espaço para a barra de navegação fixa. */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-5 pt-8 pb-24">
+      <main id="conteudo-painel" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-5 pt-8 pb-24">
         {children}
       </main>
 
+      <Suspense fallback={null}><NavigationMemory /></Suspense>
       <Flash />
       <PainelNav />
     </div>

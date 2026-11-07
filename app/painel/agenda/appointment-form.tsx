@@ -205,6 +205,7 @@ export function AppointmentForm({
               id="price"
               name="price"
               inputMode="decimal"
+              enterKeyHint="next"
               placeholder="0,00"
               value={shownPrice}
               onChange={(e) => {

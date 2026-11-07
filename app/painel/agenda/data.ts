@@ -69,10 +69,10 @@ export async function getServiceOptions() {
   return data
 }
 
-export async function getFormOptions() {
+export async function getFormOptions(clientId?: string) {
   const { supabase } = await requireUser()
   const [clients, services] = await Promise.all([
-    supabase.from('clients').select('id, name, phone').order('name'),
+    clientId ? supabase.from('clients').select('id, name, phone').eq('id', clientId) : Promise.resolve({ data: [], error: null }),
     getServiceOptions(),
   ])
   if (clients.error) throw clients.error
@@ -81,11 +81,11 @@ export async function getFormOptions() {
 
 // Para o Editar: clientes, serviços ativos e os desativados que já estão no
 // atendimento (para não sumirem ao salvar).
-export async function getEditOptions(currentServiceIds: string[]) {
+export async function getEditOptions(currentServiceIds: string[], clientId?: string) {
   const { supabase } = await requireUser()
   const ids = currentServiceIds.length ? currentServiceIds.join(',') : '00000000-0000-0000-0000-000000000000'
   const [clients, services] = await Promise.all([
-    supabase.from('clients').select('id, name, phone').order('name'),
+    clientId ? supabase.from('clients').select('id, name, phone').eq('id', clientId) : Promise.resolve({ data: [], error: null }),
     supabase
       .from('services')
       .select('id, name, price, promo_price, promo_until, duration_minutes, duration_up_to, active')
