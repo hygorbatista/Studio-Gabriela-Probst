@@ -15,8 +15,10 @@ function offsetAt(day: string, time: string) {
 }
 
 // Dia de hoje em Brasília, "AAAA-MM-DD".
+const dayFmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz })
+
 export function todayISO(now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now)
+  return dayFmt.format(now)
 }
 
 // "HH:MM" de verdade: recusa "25:99" (antes passava e o banco recusava com erro genérico).
@@ -137,4 +139,16 @@ const shortWeekday = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', weekday
 // "2026-10-12" → "seg"
 export function formatShortWeekday(day: string) {
   return shortWeekday.format(new Date(`${day}T12:00:00Z`)).replace('.', '')
+}
+
+// Reutiliza a conversao do fuso ao consultar varios dias da mesma agenda.
+export function groupByDay<T extends { starts_at: string }>(items: T[]) {
+  const days = new Map<string, T[]>()
+  for (const item of items) {
+    const day = dayOf(item.starts_at)
+    const list = days.get(day)
+    if (list) list.push(item)
+    else days.set(day, [item])
+  }
+  return days
 }

@@ -13,6 +13,7 @@ export function RescheduleForm({
   day,
   durationMinutes,
   busy,
+  extraWindow,
   range,
   today,
   now,
@@ -21,6 +22,7 @@ export function RescheduleForm({
   id: string
   day: string
   durationMinutes: number
+  extraWindow?: { from: string; to: string; items: BusyItem[] }
   busy: BusyItem[]
   range: { from: string; to: string }
   today: string
@@ -40,6 +42,7 @@ export function RescheduleForm({
           <DayTimePicker
             busy={busy}
             range={range}
+            extraWindow={extraWindow}
             today={today}
             now={now}
             buffer={buffer}

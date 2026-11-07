@@ -44,9 +44,17 @@ export default function ClientesPage({ searchParams }: PageProps<'/painel/client
 }
 
 async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 'searchParams'>) {
-  const { q } = await searchParams
+  const { q, p } = await searchParams
   const term = typeof q === 'string' ? q : ''
-  const clients = await searchClients(term)
+  const page = typeof p === 'string' && /^[1-9]\d{0,5}$/.test(p) ? Number(p) : 1
+  const { clients, hasMore } = await searchClients(term, page)
+  const pageHref = (number: number) => '/painel/clientes?' + new URLSearchParams({ ...(term ? { q: term } : {}), p: String(number) })
+
+  if (clients.length === 0 && page > 1) {
+    return <EmptyState icon={Users} title="Fim da lista" action={
+      <Link href={pageHref(page - 1)} className={buttonVariants({ variant: 'outline' })}>Voltar</Link>
+    }>Volte para a página anterior para ver as clientes.</EmptyState>
+  }
 
   if (clients.length === 0) {
     const action = (
@@ -71,6 +79,7 @@ async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 
   const now = new Date()
 
   return (
+    <>
     <ul className="divide-y divide-border bg-surface shadow-card">
       {clients.map((client) => {
         const context = clientContext(client.appointments, now)
@@ -96,5 +105,11 @@ async function ClientList({ searchParams }: Pick<PageProps<'/painel/clientes'>, 
         )
       })}
     </ul>
+    <nav aria-label="Paginas de clientes" className="mt-5 flex items-center justify-between gap-3">
+      {page > 1 ? <Link href={pageHref(page - 1)} className={buttonVariants({ variant: 'outline' })}>Anterior</Link> : <span />}
+      <span className="text-sm text-muted-foreground">Página {page}</span>
+      {hasMore ? <Link href={pageHref(page + 1)} className={buttonVariants({ variant: 'outline' })}>Próxima</Link> : <span />}
+    </nav>
+    </>
   )
 }

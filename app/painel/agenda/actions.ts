@@ -9,7 +9,7 @@ import { addDays, dayOf, isValidDay, TIME_RE, toTimestamp, todayISO } from '@/li
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
 import type { ActionState } from '../action-button'
-import { getBusy } from './data'
+import { getBusy, getClientHabits } from './data'
 
 const CONFLICT = 'Esse horário encavala com outro atendimento ou com um horário bloqueado.'
 
@@ -120,6 +120,11 @@ export async function createAppointment(
   }
 
   redirect(withFlash(`/painel?d=${v.day}`, 'agendado'))
+}
+
+export async function loadClientHabits(clientId: string) {
+  if (!idSchema.safeParse(clientId).success) return {}
+  return getClientHabits(clientId)
 }
 
 // Agenda de duas semanas a partir de um dia escolhido em "Outra data", fora

@@ -1,9 +1,9 @@
 'use client'
 
 import { Suspense } from 'react'
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, ChartColumn, Sparkles, Users } from 'lucide-react'
+import { CalendarDays, ChartColumn, LoaderCircle, Sparkles, Users } from 'lucide-react'
 import { cn } from 'cn'
 
 const items = [
@@ -57,11 +57,22 @@ function NavBar({ pathname }: { pathname: string }) {
               >
                 <Icon className="size-5" strokeWidth={active ? 2.25 : 1.5} aria-hidden="true" />
                 {label}
+                <NavigationPending />
               </Link>
             </li>
           )
         })}
       </ul>
     </nav>
+  )
+}
+
+function NavigationPending() {
+  const { pending } = useLinkStatus()
+  return (
+    <span className={cn('absolute right-2 top-2', pending ? 'opacity-100' : 'opacity-0')}>
+      <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+      {pending && <span role="status" className="sr-only">Carregando...</span>}
+    </span>
   )
 }

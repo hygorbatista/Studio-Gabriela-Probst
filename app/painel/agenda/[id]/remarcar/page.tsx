@@ -28,8 +28,12 @@ async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarc
   const day = dayOf(a.starts_at)
   const duration = Math.round((Date.parse(a.ends_at) - Date.parse(a.starts_at)) / 60000)
   const today = todayISO()
-  const to = addDays(day > today ? day : today, 60)
-  const [busy, buffer] = await Promise.all([getBusy(today, to), getBufferMinutes()])
+  const to = addDays(today, 13)
+  const selectedRange = day > to ? { from: day, to: addDays(day, 13) } : null
+  const [busy, buffer, selectedBusy] = await Promise.all([
+    getBusy(today, to), getBufferMinutes(),
+    selectedRange ? getBusy(selectedRange.from, selectedRange.to) : Promise.resolve([]),
+  ])
 
   return (
     <>
@@ -49,6 +53,7 @@ async function Reschedule({ params }: Pick<PageProps<'/painel/agenda/[id]/remarc
         durationMinutes={duration}
         busy={busy}
         range={{ from: today, to }}
+        extraWindow={selectedRange ? { ...selectedRange, items: selectedBusy } : undefined}
         today={today}
         now={new Date().toISOString()}
         buffer={buffer}

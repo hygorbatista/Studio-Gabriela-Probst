@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Search, UserPlus } from 'lucide-react'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -43,16 +43,14 @@ export function ClientPicker({
   }
   const [query, setQuery] = useState('')
 
+  const searchable = useMemo(() => clients.map((client) => ({ client, name: normalize(client.name) })), [clients])
   const term = normalize(query)
   const digits = query.replace(/\D/g, '')
-  const matches = clients
-    .filter(
-      (c) =>
-        !term ||
-        normalize(c.name).includes(term) ||
-        (digits.length >= 3 && c.phone?.includes(digits))
-    )
-    .slice(0, MAX_RESULTS)
+  const matches: Client[] = []
+  for (const { client, name } of searchable) {
+    if (!term || name.includes(term) || (digits.length >= 3 && client.phone?.includes(digits))) matches.push(client)
+    if (matches.length === MAX_RESULTS) break
+  }
 
   const optionClass =
     'flex min-h-12 w-full items-center gap-3 border-b border-border px-4 py-2 text-left text-base hover:bg-muted'

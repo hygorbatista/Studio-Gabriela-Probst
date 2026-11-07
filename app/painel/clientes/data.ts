@@ -1,8 +1,9 @@
 import 'server-only'
+import { clientStats } from '@/lib/client-stats'
 import { requireUser } from '@/lib/auth'
 
 // Busca por nome ou telefone. Sem termo, lista todas em ordem alfabética.
-export async function searchClients(term: string) {
+export async function searchClients(term: string, page = 1) {
   const { supabase } = await requireUser()
   // Vírgulas e parênteses têm significado no filtro do Supabase: saem do termo.
   const text = term.replace(/[,()*%\\]/g, ' ').trim()
@@ -11,9 +12,16 @@ export async function searchClients(term: string) {
   // Os atendimentos vêm junto para a linha "Próximo..." / "Última visita...".
   let query = supabase
     .from('clients')
-    .select('id, name, phone, appointments(starts_at, status)')
-    .order('name')
-    .limit(200)
+    .select('id, name, phone, upcoming:appointments(starts_at, status), last_visit:appointments(starts_at, status)')
+    .eq('upcoming.status', 'scheduled')
+    .gte('upcoming.starts_at', new Date().toISOString())
+    .order('starts_at', { referencedTable: 'upcoming' })
+    .limit(1, { referencedTable: 'upcoming' })
+    .eq('last_visit.status', 'completed')
+    .order('starts_at', { referencedTable: 'last_visit', ascending: false })
+    .limit(1, { referencedTable: 'last_visit' })
+    .order('name').order('id')
+    .range((page - 1) * 40, page * 40)
   if (digits.length >= 3) {
     query = query.or(`name.ilike.%${text}%,phone.ilike.%${digits}%`)
   } else if (text) {
@@ -22,7 +30,10 @@ export async function searchClients(term: string) {
 
   const { data, error } = await query
   if (error) throw error
-  return data
+  return {
+    clients: data.slice(0, 40).map((client) => ({ ...client, appointments: [...client.upcoming, ...client.last_visit] })),
+    hasMore: data.length > 40,
+  }
 }
 
 // Cliente com o histórico de atendimentos, do mais recente para o mais antigo.
@@ -30,10 +41,46 @@ export async function getClient(id: string) {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('clients')
-    .select('*, appointments(id, starts_at, time_known, status, price_charged, services_label, services(name))')
+    .select('*')
     .eq('id', id)
-    .order('starts_at', { referencedTable: 'appointments', ascending: false })
     .maybeSingle()
   if (error) throw error
   return data
+}
+
+export async function getClientHistory(id: string, page: number) {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase.from('appointments')
+    .select('id, starts_at, time_known, status, price_charged, services_label, services(name)')
+    .eq('client_id', id).order('starts_at', { ascending: false }).order('id', { ascending: false })
+    .range((page - 1) * 20, page * 20)
+  if (error) throw error
+  return { appointments: data.slice(0, 20), hasMore: data.length > 20 }
+}
+
+export async function getClientStats(id: string) {
+  const { supabase } = await requireUser()
+  async function completedVisits() {
+    const result = []
+    for (let offset = 0; ; offset += 500) {
+      const { data, error } = await supabase.from('appointments')
+        .select('starts_at, time_known, status, price_charged, services_label, services(name)')
+        .eq('client_id', id).eq('status', 'completed')
+        .order('starts_at', { ascending: false }).order('id', { ascending: false })
+        .range(offset, offset + 499)
+      if (error) throw error
+      result.push(...data)
+      if (data.length < 500) return result
+    }
+  }
+  const [completed, upcoming] = await Promise.all([
+    completedVisits(),
+    supabase.from('appointments').select('starts_at').eq('client_id', id).eq('status', 'scheduled')
+      .gte('starts_at', new Date().toISOString()).order('starts_at').limit(1),
+  ])
+  if (upcoming.error) throw upcoming.error
+  return clientStats([
+    ...completed,
+    ...upcoming.data.map((visit) => ({ ...visit, status: 'scheduled', price_charged: 0, services: null })),
+  ])
 }
