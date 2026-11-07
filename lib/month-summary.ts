@@ -34,6 +34,7 @@ export function monthSummary({
   let upcomingCount = 0
   let upcomingValue = 0
   let pendingCount = 0
+  let pendingValue = 0
   let firstPendingAt: string | undefined
   let firstPendingTime = Infinity
   const nowTime = now.getTime()
@@ -56,6 +57,7 @@ export function monthSummary({
           upcomingValue += appointment.price_charged
         } else if (time < nowTime) {
           pendingCount++
+          pendingValue += appointment.price_charged
           if (time < firstPendingTime) {
             firstPendingTime = time
             firstPendingAt = appointment.starts_at
@@ -93,6 +95,7 @@ export function monthSummary({
     upcomingCount,
     upcomingValue,
     pendingCount,
+    pendingValue,
     firstPendingAt,
     noShows,
     cancelled,

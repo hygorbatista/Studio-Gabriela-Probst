@@ -205,6 +205,36 @@ export type Database = {
           },
         ]
       }
+      recurring_expense_month_overrides: {
+        Row: {
+          recurring_expense_id: string
+          month: string
+          amount: number | null
+          description: string | null
+          category: string | null
+        }
+        Insert: {
+          recurring_expense_id: string
+          month: string
+          amount?: number | null
+          description?: string | null
+          category?: string | null
+        }
+        Update: {
+          recurring_expense_id?: string
+          month?: string
+          amount?: number | null
+          description?: string | null
+          category?: string | null
+        }
+        Relationships: [{
+          foreignKeyName: "recurring_expense_month_overrides_recurring_expense_id_fkey"
+          columns: ["recurring_expense_id"]
+          isOneToOne: false
+          referencedRelation: "recurring_expenses"
+          referencedColumns: ["id"]
+        }]
+      }
       recurring_expenses: {
         Row: {
           amount: number
@@ -333,6 +363,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      set_recurring_expense_month: {
+        Args: {
+          p_id: string
+          p_month: string
+          p_amount: number | null
+          p_description: string | null
+          p_category: string | null
+        }
+        Returns: undefined
+      }
       client_options: {
         Args: { p_term?: string; p_offset?: number }
         Returns: { id: string; name: string; phone: string | null }[]

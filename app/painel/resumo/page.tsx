@@ -82,6 +82,9 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
   return (
     <div className="flex flex-col gap-6">
       <MonthNav basePath="/painel/resumo" month={month} current={current} />
+      <Link href={`/painel/resumo/lancamentos?m=${month}`} className="inline-flex min-h-11 items-center self-start font-semibold text-primary underline underline-offset-4">
+        Histórico de lançamentos
+      </Link>
       <Suspense key={month} fallback={<DetailSkeleton />}>
         <MonthSummaryContent month={month} />
       </Suspense>
@@ -140,7 +143,7 @@ async function MonthSummaryContent({ month }: { month: string }) {
                 : 'atendimentos já passaram e não foram concluídos'}
               .
             </strong>{' '}
-            Enquanto não forem concluídos, não entram no faturamento. Toque para ver.
+            <strong>{formatPrice(s.pendingValue)} previstos</strong> fora do faturamento. Toque para revisar.
           </span>
         </Link>
       )}

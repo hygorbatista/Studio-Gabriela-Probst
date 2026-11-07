@@ -81,6 +81,34 @@ const recurringSchema = z.object({
   starts_month: z.string().refine(isValidMonth, 'Mês inválido.').optional(),
 })
 
+async function writeRecurringMonth(id: string, month: string, data: z.infer<typeof recurringSchema> | null) {
+  const { supabase } = await requireUser()
+  if (!idSchema.safeParse(id).success || !isValidMonth(month)) return 'Despesa ou mês inválido.'
+  const { error } = await supabase.rpc('set_recurring_expense_month', {
+    p_id: id,
+    p_month: monthStart(month),
+    p_amount: data?.amount ?? null,
+    p_description: data?.description ?? null,
+    p_category: data?.category ?? null,
+  })
+  return error ? 'Não foi possível atualizar a despesa deste mês.' : null
+}
+
+export async function saveRecurringMonth(id: string, month: string, _prev: ExpenseFormState, formData: FormData): Promise<ExpenseFormState> {
+  const values = formValues(formData)
+  const parsed = recurringSchema.safeParse(values)
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors, values }
+  const message = await writeRecurringMonth(id, month, parsed.data)
+  if (message) return { message, values }
+  redirect(withFlash(`/painel/resumo/lancamentos?m=${month}`, 'despesa-salva'))
+}
+
+export async function deleteRecurringMonth(id: string, month: string): Promise<ActionState> {
+  const message = await writeRecurringMonth(id, month, null)
+  if (message) return { message }
+  redirect(withFlash(`/painel/resumo/lancamentos?m=${month}`, 'despesa-excluida'))
+}
+
 export async function saveRecurringExpense(
   id: string | null,
   _prev: ExpenseFormState,

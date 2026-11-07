@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useId } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ export function ExpenseForm({
 }) {
   const [state, action, pending] = useActionState<ExpenseFormState, FormData>(saveAction, null)
   const errors = state?.errors ?? {}
+  const formId = useId()
   const value = (field: string, fallback?: string) => state?.values?.[field] ?? fallback ?? ''
 
   return (
@@ -34,9 +35,9 @@ export function ExpenseForm({
       <FieldGroup>
         <FormCard>
           <Field data-invalid={!!errors.description}>
-            <FieldLabel htmlFor="description">Descrição</FieldLabel>
+            <FieldLabel htmlFor={`${formId}-description`}>Descrição</FieldLabel>
             <Input
-              id="description"
+              id={`${formId}-description`}
               name="description"
               autoComplete="off"
               placeholder={dateField?.name === 'expense_date' ? 'Ex.: Esmaltes e lixas' : 'Ex.: Aluguel do studio'}
@@ -49,9 +50,9 @@ export function ExpenseForm({
 
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={!!errors.category}>
-              <FieldLabel htmlFor="category">Categoria</FieldLabel>
+              <FieldLabel htmlFor={`${formId}-category`}>Categoria</FieldLabel>
               <select
-                id="category"
+                id={`${formId}-category`}
                 name="category"
                 defaultValue={value('category', saved?.category ?? 'other')}
                 aria-invalid={!!errors.category}
@@ -67,9 +68,9 @@ export function ExpenseForm({
             </Field>
 
             <Field data-invalid={!!errors.amount}>
-              <FieldLabel htmlFor="amount">Valor (R$)</FieldLabel>
+              <FieldLabel htmlFor={`${formId}-amount`}>Valor (R$)</FieldLabel>
               <Input
-                id="amount"
+                id={`${formId}-amount`}
                 name="amount"
                 inputMode="decimal"
               enterKeyHint="next"
@@ -87,9 +88,9 @@ export function ExpenseForm({
 
           {dateField && (
             <Field data-invalid={!!errors[dateField.name]}>
-              <FieldLabel htmlFor={dateField.name}>{dateField.label}</FieldLabel>
+              <FieldLabel htmlFor={`${formId}-${dateField.name}`}>{dateField.label}</FieldLabel>
               <Input
-                id={dateField.name}
+                id={`${formId}-${dateField.name}`}
                 name={dateField.name}
                 type={dateField.name === 'expense_date' ? 'date' : 'month'}
                 defaultValue={value(dateField.name, dateField.value)}
