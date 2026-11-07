@@ -2,13 +2,12 @@ import 'server-only'
 import { requireUser } from '@/lib/auth'
 import { addMonths, monthRange } from '@/lib/agenda'
 
-// Pagamentos e atendimentos do mês, faturamento do mês anterior e as metas.
+// Pagamentos e atendimentos do mês, e metas.
 export async function getMonthData(month: string) {
   const { supabase } = await requireUser()
   const { start, end } = monthRange(month)
-  const previous = monthRange(addMonths(month, -1))
 
-  const [payments, appointments, previousPayments, settings] = await Promise.all([
+  const [payments, appointments, settings] = await Promise.all([
     supabase
       .from('payments')
       .select(
@@ -22,25 +21,30 @@ export async function getMonthData(month: string) {
       .gte('starts_at', start)
       .lt('starts_at', end),
     supabase
-      .from('payments')
-      .select('amount')
-      .gte('paid_at', previous.start)
-      .lt('paid_at', previous.end),
-    supabase
       .from('settings')
       .select('monthly_revenue_goal, monthly_appointments_goal')
       .eq('id', 1)
       .single(),
   ])
 
-  for (const result of [payments, appointments, previousPayments, settings]) {
+  for (const result of [payments, appointments, settings]) {
     if (result.error) throw result.error
   }
 
   return {
     payments: payments.data!,
     appointments: appointments.data!,
-    previousRevenue: previousPayments.data!.reduce((sum, p) => sum + p.amount, 0),
     goals: settings.data!,
   }
+}
+
+export async function getPreviousRevenue(month: string) {
+  const { supabase } = await requireUser()
+  const { start, end } = monthRange(addMonths(month, -1))
+  const { data, error } = await supabase.from('payments')
+    .select('amount')
+    .gte('paid_at', start)
+    .lt('paid_at', end)
+  if (error) throw error
+  return data.reduce((sum, payment) => sum + payment.amount, 0)
 }

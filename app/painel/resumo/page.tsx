@@ -6,9 +6,9 @@ import { addMonths, dayOf, formatMonthTitle, isValidMonth, monthISO } from '@/li
 import { formatPrice } from '@/lib/format'
 import { monthRankings } from '@/lib/month-rankings'
 import { monthSummary } from '@/lib/month-summary'
-import { getMonthExpenses } from '../despesas/data'
+import { getMonthExpenseTotal } from '../despesas/data'
 import { MonthNav } from '../month-nav'
-import { getMonthData } from './data'
+import { getMonthData, getPreviousRevenue } from './data'
 import { GoalsForm } from './goals-form'
 import { DetailSkeleton } from '../skeletons'
 import { card, dataLabel, sectionTitle } from '../styles'
@@ -79,18 +79,26 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
   const { m } = await searchParams
   const current = monthISO()
   const month = typeof m === 'string' && isValidMonth(m) ? m : current
-  const [data, expenses] = await Promise.all([getMonthData(month), getMonthExpenses(month)])
-  const s = monthSummary({ ...data, expenses: expenses.total })
+  return (
+    <div className="flex flex-col gap-6">
+      <MonthNav basePath="/painel/resumo" month={month} current={current} />
+      <Suspense key={month} fallback={<DetailSkeleton />}>
+        <MonthSummaryContent month={month} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function MonthSummaryContent({ month }: { month: string }) {
+  const [data, expenses] = await Promise.all([getMonthData(month), getMonthExpenseTotal(month)])
+  const s = monthSummary({ ...data, expenses })
   const { topClients, topServices } = monthRankings(data.payments)
-  const previousTitle = formatMonthTitle(addMonths(month, -1)).split(' ')[0].toLowerCase()
   // Maior forma de pagamento primeiro; a barra é proporcional à maior.
   const byMethod = [...s.byMethod].sort((a, b) => b.total - a.total)
   const maxMethod = byMethod[0]?.total ?? 0
 
   return (
-    <div className="flex flex-col gap-6">
-      <MonthNav basePath="/painel/resumo" month={month} current={current} />
-
+    <>
       {/* O número mais importante do mês, no bordô escuro da seção de contato do site. */}
       <section className="bg-primary-deep p-5 text-white shadow-card">
         <h2 className="text-sm text-white/75">Quanto sobrou no mês</h2>
@@ -148,24 +156,9 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
         ) : (
           <GoalReached>Meta de faturamento batida!</GoalReached>
         )}
-        {s.change !== null && (
-          <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-            <span
-              className={cn(
-                'inline-flex items-center font-semibold',
-                s.change >= 0 ? 'text-success' : 'text-foreground'
-              )}
-            >
-              {s.change >= 0 ? (
-                <ArrowUp className="size-4" aria-label="Subiu" />
-              ) : (
-                <ArrowDown className="size-4" aria-label="Caiu" />
-              )}
-              {percent(Math.abs(s.change))}
-            </span>
-            em relação a {previousTitle} ({formatPrice(s.previousRevenue)})
-          </p>
-        )}
+        <Suspense fallback={null}>
+          <RevenueComparison month={month} revenue={s.revenue} />
+        </Suspense>
       </section>
 
       <section className={card}>
@@ -276,6 +269,33 @@ async function Resumo({ searchParams }: Pick<PageProps<'/painel/resumo'>, 'searc
           <GoalsForm month={month} revenueGoal={s.revenueGoal} visitsGoal={s.visitsGoal} />
         </div>
       </details>
-    </div>
+    </>
+  )
+}
+
+async function RevenueComparison({ month, revenue }: { month: string; revenue: number }) {
+  const previousRevenue = await getPreviousRevenue(month)
+  if (previousRevenue <= 0) return null
+
+  const change = (revenue - previousRevenue) / previousRevenue
+  const previousTitle = formatMonthTitle(addMonths(month, -1)).split(' ')[0].toLowerCase()
+
+  return (
+    <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+      <span
+        className={cn(
+          'inline-flex items-center font-semibold',
+          change >= 0 ? 'text-success' : 'text-foreground'
+        )}
+      >
+        {change >= 0 ? (
+          <ArrowUp className="size-4" aria-label="Subiu" />
+        ) : (
+          <ArrowDown className="size-4" aria-label="Caiu" />
+        )}
+        {percent(Math.abs(change))}
+      </span>
+      em relação a {previousTitle} ({formatPrice(previousRevenue)})
+    </p>
   )
 }

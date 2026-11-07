@@ -10,36 +10,67 @@ type Goals = { monthly_revenue_goal: number; monthly_appointments_goal: number }
 export function monthSummary({
   payments,
   appointments,
-  previousRevenue,
   expenses = 0,
   goals,
   now = new Date(),
 }: {
   payments: Payment[]
   appointments: Appointment[]
-  previousRevenue: number
   // Total de despesas do mês (fixas + avulsas).
   expenses?: number
   goals: Goals
   now?: Date
 }) {
-  const revenue = payments.reduce((sum, p) => sum + p.amount, 0)
-  const completed = appointments.filter((a) => a.status === 'completed').length
-  // O que ainda está marcado daqui para frente no mês.
-  const upcoming = appointments.filter(
-    (a) => a.status === 'scheduled' && new Date(a.starts_at) >= now
-  )
-  // Já passaram e continuam "agendados": a Gabriela esqueceu de concluir.
-  // Sem concluir, o valor não entra no faturamento.
-  const pending = appointments.filter(
-    (a) => a.status === 'scheduled' && new Date(a.starts_at) < now
-  )
+  let revenue = 0
+  const totalsByMethod = new Map<string, number>()
+  for (const { amount, method } of payments) {
+    revenue += amount
+    totalsByMethod.set(method, (totalsByMethod.get(method) ?? 0) + amount)
+  }
+
+  let completed = 0
+  let noShows = 0
+  let cancelled = 0
+  let upcomingCount = 0
+  let upcomingValue = 0
+  let pendingCount = 0
+  let firstPendingAt: string | undefined
+  let firstPendingTime = Infinity
+  const nowTime = now.getTime()
+
+  for (const appointment of appointments) {
+    switch (appointment.status) {
+      case 'completed':
+        completed++
+        break
+      case 'no_show':
+        noShows++
+        break
+      case 'cancelled':
+        cancelled++
+        break
+      case 'scheduled': {
+        const time = Date.parse(appointment.starts_at)
+        if (time >= nowTime) {
+          upcomingCount++
+          upcomingValue += appointment.price_charged
+        } else if (time < nowTime) {
+          pendingCount++
+          if (time < firstPendingTime) {
+            firstPendingTime = time
+            firstPendingAt = appointment.starts_at
+          }
+        }
+        break
+      }
+    }
+  }
 
   const byMethod = Object.keys(paymentMethodLabels)
     .map((method) => ({
       method,
       label: paymentMethodLabels[method],
-      total: payments.filter((p) => p.method === method).reduce((sum, p) => sum + p.amount, 0),
+      total: totalsByMethod.get(method) ?? 0,
     }))
     .filter((m) => m.total > 0)
 
@@ -59,16 +90,12 @@ export function monthSummary({
     visitsProgress: visitsGoal > 0 ? completed / visitsGoal : 0,
     visitsMissing: Math.max(visitsGoal - completed, 0),
     averageTicket: completed > 0 ? revenue / completed : 0,
-    upcomingCount: upcoming.length,
-    upcomingValue: upcoming.reduce((sum, a) => sum + a.price_charged, 0),
-    pendingCount: pending.length,
-    // Horário do mais antigo, para levar direto à agenda daquele dia.
-    firstPendingAt: pending.map((a) => a.starts_at).sort()[0],
-    noShows: appointments.filter((a) => a.status === 'no_show').length,
-    cancelled: appointments.filter((a) => a.status === 'cancelled').length,
+    upcomingCount,
+    upcomingValue,
+    pendingCount,
+    firstPendingAt,
+    noShows,
+    cancelled,
     byMethod,
-    previousRevenue,
-    // null quando o mês anterior não teve faturamento (não dá para comparar).
-    change: previousRevenue > 0 ? (revenue - previousRevenue) / previousRevenue : null,
   }
 }

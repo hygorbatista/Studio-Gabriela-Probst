@@ -152,23 +152,36 @@ test('client detail and timeline are bounded independently of summary statistics
   assert.equal(requests[1].searchParams.get('limit'), '21')
 })
 
-test('client statistics retain all completed visits across API pages', async () => {
-  const next = new Date(Date.now() + 86400000).toISOString()
-  const completed = {
-    starts_at: '2026-10-01T12:00:00Z', time_known: true, status: 'completed',
-    price_charged: 50, services_label: 'Gel', services: { name: 'Gel' },
+test('client statistics load the complete summary in one RPC', async () => {
+  const summary = {
+    visits: 501, totalSpent: 25050, averageTicket: 50,
+    lastVisit: '2026-10-01T12:00:00Z', nextVisit: '2026-11-08T12:00:00Z',
+    favoriteService: 'Gel', favoriteTime: 'Quintas, por volta das 9h',
   }
   const { data, requests } = api('app/painel/clientes/data.ts', (url) => {
-    const q = url.searchParams
-    if (q.get('status') === 'eq.scheduled') return [{ starts_at: next }]
-    return Array.from({ length: q.get('offset') === '0' ? 500 : 1 }, () => ({ ...completed }))
+    assert.equal(url.pathname, '/rest/v1/rpc/client_statistics')
+    return summary
   })
-  const result = await data.getClientStats('client')
-  assert.equal(result.visits, 501)
-  assert.equal(result.totalSpent, 25050)
-  assert.equal(result.averageTicket, 50)
-  assert.equal(result.nextVisit, next)
-  assert.equal(result.favoriteService, 'Gel')
-  assert.equal(requests.length, 3)
-  assert.ok(requests.some((url) => url.searchParams.get('offset') === '500'))
+  assert.deepEqual(await data.getClientStats('client'), summary)
+  assert.equal(requests.length, 1)
+})
+
+test('monthly expense total uses the same date filters as the list and reads only amounts', async () => {
+  const { data, requests } = api('app/painel/despesas/data.ts', (url) =>
+    url.pathname.endsWith('/recurring_expenses') ? [{ amount: 100 }] : [{ amount: 25 }, { amount: 50 }])
+
+  assert.equal(await data.getMonthExpenseTotal('2026-12'), 175)
+  assert.equal((await data.getMonthExpenses('2026-12')).total, 175)
+  assert.equal(requests.length, 4)
+  const recurring = requests.filter((url) => url.pathname.endsWith('/recurring_expenses'))
+  const oneOff = requests.filter((url) => url.pathname.endsWith('/expenses'))
+  for (const url of recurring) {
+    assert.equal(url.searchParams.get('starts_on'), 'lte.2026-12-01')
+    assert.equal(url.searchParams.get('or'), '(ends_on.is.null,ends_on.gte.2026-12-01)')
+  }
+  for (const url of oneOff) {
+    assert.deepEqual(url.searchParams.getAll('expense_date'), ['gte.2026-12-01', 'lt.2027-01-01'])
+  }
+  assert.equal(recurring[0].searchParams.get('select'), 'amount')
+  assert.equal(oneOff[0].searchParams.get('select'), 'amount')
 })

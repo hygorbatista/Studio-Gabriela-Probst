@@ -14,7 +14,7 @@ export default function BloquearPage({ searchParams }: PageProps<'/painel/agenda
       <BackLink href="/painel" label="Agenda" />
       <PageHeader title="Bloquear horário" />
       <p className="mb-6 text-base text-muted-foreground">
-        Folga, médico, almoço: o horário bloqueado some dos horários livres e ninguém é agendado nele.
+        Use para sinalizar folgas, consultas ou pausas. O horário sai das sugestões, mas ainda pode ser agendado.
       </p>
       <Suspense fallback={<FormSkeleton fields={4} />}>
         <Block searchParams={searchParams} />

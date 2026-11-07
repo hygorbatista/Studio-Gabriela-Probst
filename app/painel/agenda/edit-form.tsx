@@ -103,6 +103,7 @@ export function EditForm({
               id="price"
               name="price"
               inputMode="decimal"
+              enterKeyHint="next"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               aria-invalid={!!errors.price}

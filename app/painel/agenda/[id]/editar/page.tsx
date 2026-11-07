@@ -28,7 +28,7 @@ async function Edit({ params }: Pick<PageProps<'/painel/agenda/[id]/editar'>, 'p
     : a.service_id
       ? [{ service_id: a.service_id, price: a.price_charged }]
       : []
-  const { clients, services } = await getEditOptions(items.map((i) => i.service_id))
+  const { clients, services } = await getEditOptions(items.map((i) => i.service_id), a.client_id ?? undefined)
 
   return (
     <>

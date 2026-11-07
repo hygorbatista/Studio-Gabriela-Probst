@@ -41,7 +41,7 @@ async function NewAppointment({
   const clientId = parsedClientId.success ? parsedClientId.data : undefined
 
   const [{ clients, services }, busy, buffer, habits, selectedBusy] = await Promise.all([
-    getFormOptions(),
+    getFormOptions(clientId),
     getBusy(from, to),
     getBufferMinutes(),
     clientId ? getClientHabits(clientId) : Promise.resolve({}),
