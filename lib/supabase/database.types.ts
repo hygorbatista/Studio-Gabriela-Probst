@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      notification_preferences: {
+        Row: { user_id: string; upcoming: boolean; lead_minutes: number; pending: boolean; birthdays: boolean; goals: boolean; confirmations: boolean }
+        Insert: { user_id?: string; upcoming?: boolean; lead_minutes?: number; pending?: boolean; birthdays?: boolean; goals?: boolean; confirmations?: boolean }
+        Update: { upcoming?: boolean; lead_minutes?: number; pending?: boolean; birthdays?: boolean; goals?: boolean; confirmations?: boolean }
+        Relationships: []
+      }
+      notification_devices: {
+        Row: { id: string; user_id: string; created_at: string; endpoint: string; p256dh: string; auth: string }
+        Insert: { user_id?: string; endpoint: string; p256dh: string; auth: string }
+        Update: { p256dh?: string; auth?: string }
+        Relationships: []
+      }
+      notification_deliveries: {
+        Row: { device_id: string; event_key: string; lease_until: string; sent_at: string | null }
+        Insert: { device_id: string; event_key: string; lease_until: string; sent_at?: string | null }
+        Update: { sent_at?: string | null }
+        Relationships: []
+      }
       appointment_services: {
         Row: {
           appointment_id: string
@@ -363,6 +381,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      panel_birthdays_today: {
+        Args: never
+        Returns: { id: string; name: string }[]
+      }
+      claim_panel_notifications: {
+        Args: never
+        Returns: {
+          device_id: string
+          event_key: string
+          lease_until: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          title: string
+          body: string
+          path: string
+          expires_at: string
+        }[]
+      }
       set_recurring_expense_month: {
         Args: {
           p_id: string

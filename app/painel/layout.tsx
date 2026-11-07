@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { NavigationMemory } from './navigation-memory'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
-import { LogOut } from 'lucide-react'
+import { Bell, LogOut } from 'lucide-react'
 import { logout } from '../login/actions'
 import { Flash } from './flash'
 import { PainelNav } from './painel-nav'
@@ -29,24 +29,29 @@ export default function PainelLayout({ children }: LayoutProps<'/painel'>) {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between gap-3 px-5">
           {/* Monograma "G": o mesmo do ícone do site e do app. */}
-          <Link href="/painel" className="flex min-h-11 items-center gap-3">
+          <Link href="/painel" className="flex min-h-11 min-w-0 items-center gap-3">
             <span
               aria-hidden="true"
-              className="grid size-8 place-items-center bg-foreground font-serif text-xl leading-none text-white"
+              className="grid size-8 shrink-0 place-items-center bg-foreground font-serif text-xl leading-none text-white"
             >
               G
             </span>
-            <span className="font-serif text-xl">Gabriela Probst</span>
+            <span className="truncate font-serif text-xl">Gabriela Probst</span>
           </Link>
-          <form action={logout}>
-            <button
-              type="submit"
-              className="inline-flex h-11 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              Sair
-            </button>
-          </form>
+          <div className="flex shrink-0 items-center gap-1">
+            <Link href="/painel/notificacoes" aria-label="Notificações" className="inline-flex size-11 items-center justify-center text-muted-foreground hover:text-foreground">
+              <Bell className="size-5" aria-hidden="true" />
+            </Link>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="inline-flex h-11 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                Sair
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
