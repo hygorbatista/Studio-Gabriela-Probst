@@ -1,12 +1,12 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { effectivePrice, formatDuration, formatPrice, promoActive } from '@/lib/format'
 import type { BusyItem } from '@/lib/free-slots'
-import { createAppointment, type AppointmentFormState } from './actions'
+import { createAppointment, loadClientHabits, type AppointmentFormState } from './actions'
 import { FormCard } from '../form-card'
 import { ClientPicker } from './client-picker'
 import { DayTimePicker } from './day-time-picker'
@@ -23,6 +23,7 @@ export function AppointmentForm({
   services,
   habits,
   busy,
+  extraWindow,
   range,
   today,
   now,
@@ -35,6 +36,7 @@ export function AppointmentForm({
   clients: ClientOption[]
   services: ServiceOption[]
   habits: Habits
+  extraWindow?: { from: string; to: string; items: BusyItem[] }
   busy: BusyItem[]
   range: { from: string; to: string }
   today: string
@@ -54,10 +56,13 @@ export function AppointmentForm({
   const values = state?.values
   const errors = state?.errors ?? {}
 
+  const [knownHabits, setKnownHabits] = useState(habits)
+  const [loadingHabits, startHabits] = useTransition()
+  const selection = useRef(0)
   const startClient = values?.client_id ?? initialClientId ?? null
   // Só os serviços de costume que continuam ativos.
   const usualOf = (id: string | null) =>
-    (id ? habits[id]?.serviceIds : undefined)?.filter((s) => services.some((x) => x.id === s)) ?? []
+    (id ? knownHabits[id]?.serviceIds : undefined)?.filter((s) => services.some((x) => x.id === s)) ?? []
   const [clientId, setClientId] = useState(startClient)
   // Um ou mais serviços, na ordem em que foram escolhidos ("Manicure + Pedicure").
   const [serviceIds, setServiceIds] = useState<string[]>(() => {
@@ -66,9 +71,7 @@ export function AppointmentForm({
     return usualOf(startClient)
   })
   // Depois que ela mexe nos serviços, trocar a cliente não muda mais.
-  const [serviceTouched, setServiceTouched] = useState(
-    !!values?.service_ids || !!initialServiceIds?.length
-  )
+  const serviceTouched = useRef(!!values?.service_ids || !!initialServiceIds?.length)
   const chosen = serviceIds.map((id) => services.find((s) => s.id === id)).filter((s) => !!s)
   const duration = chosen.reduce((sum, s) => sum + s.duration_minutes, 0)
   // Promoção é escolha dela, no fim: sem marcar, vale o preço cheio.
@@ -76,7 +79,7 @@ export function AppointmentForm({
   const [usePromo, setUsePromo] = useState(values?.use_promo === 'on')
   const applyPromo = usePromo && inPromo.length > 0
   const suggested = chosen.reduce((sum, s) => sum + (applyPromo ? effectivePrice(s, today) : s.price), 0)
-  const habit = clientId ? habits[clientId] : undefined
+  const habit = clientId ? knownHabits[clientId] : undefined
 
   // O valor acompanha os serviços até ela digitar outro (promoção pontual, desconto).
   const [price, setPrice] = useState(values?.price ?? '')
@@ -84,14 +87,27 @@ export function AppointmentForm({
   const shownPrice = priceTouched ? price : chosen.length ? money(suggested) : ''
 
   const toggleService = (id: string) => {
-    setServiceTouched(true)
+    serviceTouched.current = true
     setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
   }
 
   const onClientChange = (id: string | null) => {
     setClientId(id)
+    const request = ++selection.current
     const usual = usualOf(id)
-    if (!serviceTouched && usual.length) setServiceIds(usual)
+    if (!serviceTouched.current && usual.length) setServiceIds(usual)
+    if (!id || id in knownHabits) return
+    startHabits(async () => {
+      try {
+        const result = await loadClientHabits(id)
+        setKnownHabits((current) => ({ ...current, [id]: {}, ...result }))
+        if (selection.current !== request || serviceTouched.current) return
+        const suggestions = result[id]?.serviceIds?.filter((s) => services.some((service) => service.id === s)) ?? []
+        if (suggestions.length) setServiceIds(suggestions)
+      } catch {
+        // Sugestoes opcionais: o formulario continua disponivel para preencher.
+      }
+    })
   }
 
   return (
@@ -108,6 +124,7 @@ export function AppointmentForm({
             onChange={onClientChange}
           />
 
+          {loadingHabits && <p role="status" className="text-sm text-muted-foreground">Buscando preferências da cliente...</p>}
           <fieldset data-invalid={!!errors.service_ids}>
             <legend className="mb-1 text-sm font-semibold">Serviços</legend>
             <p className="mb-3 text-sm text-muted-foreground">Marque um ou mais (ex.: mãos e pés).</p>
@@ -131,6 +148,7 @@ export function AppointmentForm({
           <DayTimePicker
             busy={busy}
             range={range}
+            extraWindow={extraWindow}
             today={today}
             now={now}
             buffer={buffer}

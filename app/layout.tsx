@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
-import { MotionProvider } from "@/components/motion";
-import { StructuredData } from "@/components/structured-data";
 import {
-  getLocalBusinessJsonLd,
   seoDescription,
   seoTitle,
   siteUrl,
@@ -47,15 +44,14 @@ export const viewport: Viewport = {
   themeColor: "#0b0b0c",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
       className={`${playfair.variable} ${jakarta.variable} h-full antialiased`}
     >
-      <body className="grain min-h-full flex flex-col">
-        <StructuredData data={await getLocalBusinessJsonLd()} />
-        <MotionProvider>{children}</MotionProvider>
+      <body className="min-h-full flex flex-col">
+        {children}
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import 'server-only'
+import { cache } from 'react'
 import { requireUser } from '@/lib/auth'
-import { addDays, dayOf, dayRange } from '@/lib/agenda'
+import { addDays, dayOf, dayRange, groupByDay } from '@/lib/agenda'
 import { clientHabits } from '@/lib/client-stats'
 import { dueClients } from '@/lib/return-due'
 import { busyMinutes, dayLoad, type BusyItem, type Load } from '@/lib/free-slots'
@@ -8,8 +9,13 @@ import { serviceLabel } from '@/lib/format'
 
 // Atendimentos de um dia (horário de Brasília), em ordem de horário.
 export async function getDayAppointments(day: string) {
+  return getAppointmentsRange(day, day)
+}
+
+async function getAppointmentsRange(from: string, to: string) {
   const { supabase } = await requireUser()
-  const { start, end } = dayRange(day)
+  const start = dayRange(from).start
+  const end = dayRange(to).end
   const { data, error } = await supabase
     .from('appointments')
     .select(
@@ -53,20 +59,24 @@ export async function getNextScheduled(clientId: string, after: string) {
   return data
 }
 
-// Clientes e serviços ativos para o formulário de agendamento.
+// Servicos ativos, sem carregar clientes nos fluxos que nao precisam delas.
+export async function getServiceOptions() {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase.from('services')
+    .select('id, name, price, promo_price, promo_until, duration_minutes, duration_up_to')
+    .eq('active', true).order('sort_order')
+  if (error) throw error
+  return data
+}
+
 export async function getFormOptions() {
   const { supabase } = await requireUser()
   const [clients, services] = await Promise.all([
     supabase.from('clients').select('id, name, phone').order('name'),
-    supabase
-      .from('services')
-      .select('id, name, price, promo_price, promo_until, duration_minutes, duration_up_to')
-      .eq('active', true)
-      .order('sort_order'),
+    getServiceOptions(),
   ])
   if (clients.error) throw clients.error
-  if (services.error) throw services.error
-  return { clients: clients.data, services: services.data }
+  return { clients: clients.data, services }
 }
 
 // Para o Editar: clientes, serviços ativos e os desativados que já estão no
@@ -98,10 +108,15 @@ export async function searchAgenda(term: string) {
   let query = supabase
     .from('clients')
     .select(
-      'id, name, phone, appointments(id, starts_at, time_known, status, confirmed_at, services_label, services(name))'
+      'id, name, phone, upcoming:appointments(id, starts_at, time_known, status, confirmed_at, services_label, services(name)), last_visit:appointments(id, starts_at, time_known, status, confirmed_at, services_label, services(name))'
     )
     .order('name')
-    .order('starts_at', { referencedTable: 'appointments' })
+    .eq('upcoming.status', 'scheduled')
+    .gte('upcoming.starts_at', new Date().toISOString())
+    .order('starts_at', { referencedTable: 'upcoming' })
+    .eq('last_visit.status', 'completed')
+    .order('starts_at', { referencedTable: 'last_visit', ascending: false })
+    .limit(1, { referencedTable: 'last_visit' })
     .limit(20)
   query =
     digits.length >= 3
@@ -110,29 +125,40 @@ export async function searchAgenda(term: string) {
 
   const { data, error } = await query
   if (error) throw error
-  return data
+  return data.map((client) => ({ ...client, appointments: [...client.last_visit, ...client.upcoming] }))
 }
 
 // "Hora de voltar": clientes com o retorno chegando ou vencido e nada marcado.
 // Só os atendimentos dos últimos 400 dias (abre a Agenda toda vez; não precisa
 // carregar o histórico inteiro). Quem não vem há mais que isso não aparece.
-export async function getReturnList() {
+export const getReturnList = cache(async () => {
   const { supabase } = await requireUser()
-  const since = new Date(Date.now() - 400 * 86400000).toISOString()
+  const now = new Date()
+  const since = new Date(now.getTime() - 400 * 86400000).toISOString()
   const [clients, settings] = await Promise.all([
-    supabase
-      .from('clients')
-      .select(
-        'id, name, phone, appointments(starts_at, status, services(id, name, return_days), appointment_services(position, services(id, name, return_days)))'
-      )
-      .gte('appointments.starts_at', since)
-      .in('appointments.status', ['scheduled', 'completed']),
+    supabase.from('clients').select(
+      'id, name, phone, last_visit:appointments!inner(starts_at, status, services(id, name, return_days), appointment_services(position, services(id, name, return_days))), upcoming:appointments(starts_at, status)'
+    )
+      .gte('last_visit.starts_at', since)
+      .in('last_visit.status', ['scheduled', 'completed'])
+      .order('starts_at', { referencedTable: 'last_visit', ascending: false })
+      .limit(1, { referencedTable: 'last_visit' })
+      .eq('upcoming.status', 'scheduled')
+      .gte('upcoming.starts_at', now.toISOString())
+      .order('starts_at', { referencedTable: 'upcoming' })
+      .limit(1, { referencedTable: 'upcoming' }),
     supabase.from('settings').select('inactive_days_threshold').eq('id', 1).single(),
   ])
   if (clients.error) throw clients.error
   if (settings.error) throw settings.error
-  return dueClients(clients.data, settings.data.inactive_days_threshold)
-}
+  return dueClients(clients.data.map((client) => ({
+    ...client,
+    appointments: [
+      ...client.last_visit,
+      ...client.upcoming.map((visit) => ({ ...visit, services: null, appointment_services: [] })),
+    ],
+  })), settings.data.inactive_days_threshold, now)
+})
 
 // Agendados de um dia, para confirmar com as clientes (lembrete da véspera).
 export async function getToConfirm(day: string) {
@@ -151,8 +177,12 @@ export async function getToConfirm(day: string) {
 
 // Quantos agendados há num dia e quantos faltam confirmar.
 export async function getConfirmCount(day: string) {
-  const list = await getToConfirm(day)
-  return { total: list.length, pending: list.filter((a) => !a.confirmed_at).length }
+  const { supabase } = await requireUser()
+  const { start, end } = dayRange(day)
+  const { data, error } = await supabase.from('appointments').select('confirmed_at')
+    .eq('status', 'scheduled').gte('starts_at', start).lt('starts_at', end)
+  if (error) throw error
+  return { total: data.length, pending: data.filter((a) => !a.confirmed_at).length }
 }
 
 // O que ocupa a agenda de "from" até "to", inclusive: atendimentos agendados e
@@ -224,11 +254,7 @@ export type DaySummary = { count: number; minutes: number; load: Load; blocked: 
 // "sem horário" contam como atendimento, mas não ocupam a agenda. Bloqueios
 // ocupam a agenda, mas não contam como atendimento.
 export function summarizeDays(items: BusyItem[]) {
-  const byDay = new Map<string, BusyItem[]>()
-  for (const a of items) {
-    const day = dayOf(a.starts_at)
-    byDay.set(day, [...(byDay.get(day) ?? []), a])
-  }
+  const byDay = groupByDay(items)
   const days = new Map<string, DaySummary>()
   for (const [day, list] of byDay) {
     const minutes = busyMinutes(day, list.filter((a) => a.time_known))
@@ -259,14 +285,35 @@ export async function getBufferMinutes() {
 }
 
 // Serviço e hora de costume de cada cliente, a partir do último ano.
-export async function getClientHabits() {
+export async function getClientHabits(clientId: string) {
   const { supabase } = await requireUser()
   const { data, error } = await supabase
     .from('appointments')
     .select('client_id, service_id, starts_at, time_known, appointment_services(service_id, position)')
     .eq('status', 'completed')
+    .eq('client_id', clientId)
     .gte('starts_at', new Date(Date.now() - 365 * 86400000).toISOString())
     .order('starts_at', { ascending: false })
   if (error) throw error
   return clientHabits(data)
+}
+
+// Uma base semanal para a lista do dia e os indicadores, preservando todos os status.
+export async function getDayAgenda(day: string, start: string) {
+  const end = addDays(start, 6)
+  const [appointments, blocks] = await Promise.all([
+    getAppointmentsRange(start, end),
+    getBlocks(dayRange(start).start, dayRange(end).end),
+  ])
+  const active: BusyItem[] = appointments
+    .filter((a) => a.status === 'scheduled' || a.status === 'completed')
+    .map((a) => ({
+      ...a, kind: 'appointment', confirmed: !!a.confirmed_at,
+      client: a.clients?.name ?? null, service: serviceLabel(a),
+    }))
+  return {
+    appointments: appointments.filter((a) => dayOf(a.starts_at) === day),
+    blocks: blocks.filter((b) => dayOf(b.starts_at) === day),
+    week: summarizeDays([...active, ...blocks]),
+  }
 }

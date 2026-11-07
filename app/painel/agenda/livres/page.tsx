@@ -3,7 +3,7 @@ import { connection } from 'next/server'
 import { addDays, todayISO } from '@/lib/agenda'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
-import { getBufferMinutes, getBusy, getFormOptions } from '../data'
+import { getBufferMinutes, getBusy, getServiceOptions } from '../data'
 import { FormSkeleton } from '../../skeletons'
 import { FreeBoard } from './free-board'
 
@@ -27,8 +27,8 @@ async function Board({ searchParams }: Pick<PageProps<'/painel/agenda/livres'>, 
   const { s } = await searchParams
   await connection()
   const today = todayISO()
-  const [{ services }, busy, buffer] = await Promise.all([
-    getFormOptions(),
+  const [services, busy, buffer] = await Promise.all([
+    getServiceOptions(),
     getBusy(today, addDays(today, DAYS - 1)),
     getBufferMinutes(),
   ])

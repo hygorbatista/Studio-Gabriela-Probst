@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { CalendarDays, Clock, Star } from 'lucide-react'
 import { cn } from 'cn'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import {
   addDays,
   addMinutesToTime,
-  dayOf,
+  groupByDay,
   formatDayTitle,
   formatShortWeekday,
   formatTime,
@@ -34,6 +34,7 @@ const periods = ['Manhã', 'Tarde', 'Noite'] as const
 // cabe. "Outro horário" aceita qualquer hora, porque o horário dela é flexível.
 export function DayTimePicker({
   busy,
+  extraWindow,
   range,
   today,
   now,
@@ -46,6 +47,7 @@ export function DayTimePicker({
   errors,
 }: {
   // Agenda já carregada pelo servidor, de range.from a range.to.
+  extraWindow?: { from: string; to: string; items: BusyItem[] }
   busy: BusyItem[]
   range: { from: string; to: string }
   today: string
@@ -60,20 +62,31 @@ export function DayTimePicker({
   favoriteHour?: number
   errors: { day?: string[]; time?: string[] }
 }) {
-  const [loaded, setLoaded] = useState([{ ...range, items: busy }])
-  const [loading, startLoading] = useTransition()
-  const nowDate = new Date(now)
-
+  const [loaded, setLoaded] = useState(() => [{ ...range, items: busy }, ...(extraWindow ? [extraWindow] : [])])
+  const [, startLoading] = useTransition()
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const indexed = useMemo(() => loaded.map((window) => ({
+    ...window,
+    days: groupByDay(window.items.filter((item) => item.id !== excludeId)),
+  })), [loaded, excludeId])
+  const availability = useMemo(() => {
+    const result = new Map<string, ReturnType<typeof freeSlots>>()
+    for (const window of indexed) {
+      for (let d = window.from; d <= window.to; d = addDays(d, 1)) {
+        if (result.has(d)) continue
+        const items = window.days.get(d) ?? []
+        result.set(d, duration ? freeSlots({
+          day: d, busy: items.filter((item) => item.time_known), duration, buffer, now: new Date(now),
+        }) : [])
+      }
+    }
+    return result
+  }, [indexed, duration, buffer, now])
   const itemsOf = (d: string) => {
-    const source = loaded.find((r) => d >= r.from && d <= r.to)
-    if (!source) return null
-    return source.items.filter((a) => a.id !== excludeId && dayOf(a.starts_at) === d)
+    const source = indexed.find((window) => d >= window.from && d <= window.to)
+    return source ? source.days.get(d) ?? [] : null
   }
-  const slotsOf = (d: string) => {
-    const items = itemsOf(d)
-    if (!items || !duration) return []
-    return freeSlots({ day: d, busy: items.filter((a) => a.time_known), duration, buffer, now: nowDate })
-  }
+  const slotsOf = (d: string) => availability.get(d) ?? []
 
   const [day, setDay] = useState(initialDay)
   const [time, setTime] = useState(initialTime)
@@ -86,11 +99,16 @@ export function DayTimePicker({
 
   const chooseDay = (d: string) => {
     setDay(d)
+    setLoadError(null)
     if (!custom) setTime('')
     if (!itemsOf(d)) {
       startLoading(async () => {
-        const items = await loadBusy(d)
-        setLoaded((l) => [...l, { from: d, to: addDays(d, DAYS - 1), items }])
+        try {
+          const items = await loadBusy(d)
+          setLoaded((l) => [...l, { from: d, to: addDays(d, DAYS - 1), items }])
+        } catch {
+          setLoadError(d)
+        }
       })
     }
   }
@@ -231,7 +249,14 @@ export function DayTimePicker({
           </div>
         ) : !duration ? (
           <p className="text-base text-muted-foreground">Escolha o serviço para ver os horários livres.</p>
-        ) : loading || !dayItems ? (
+        ) : loadError === day ? (
+          <div role="alert" className="flex flex-col gap-2 text-base text-destructive">
+            <p>Não foi possível carregar a agenda deste dia.</p>
+            <button type="button" onClick={() => chooseDay(day)} className="min-h-11 self-start font-semibold underline underline-offset-4">
+              Tentar novamente
+            </button>
+          </div>
+        ) : !dayItems ? (
           <p role="status" className="text-base text-muted-foreground">
             Carregando a agenda do dia...
           </p>

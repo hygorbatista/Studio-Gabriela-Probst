@@ -1,17 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Check, Copy, Plus, X } from 'lucide-react'
 import { cn } from 'cn'
 import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
-import { addDays, dayOf, formatDayTitle } from '@/lib/agenda'
+import { addDays, groupByDay, formatDayTitle } from '@/lib/agenda'
 import { formatDuration } from '@/lib/format'
 import { freeSlots, MAX_PER_DAY, type BusyItem } from '@/lib/free-slots'
 import { slotMessage, whatsappShare, type SlotChoice } from '@/lib/slot-message'
 
 type Service = { id: string; name: string; duration_minutes: number; duration_up_to: boolean }
+
+function totalDuration(services: Service[]) {
+  return services.reduce((sum, service) => sum + service.duration_minutes, 0)
+}
 
 // "Tem horário quinta?" (docs/12-plano-agendamentos.md, etapa 2): os horários
 // livres das próximas duas semanas para um serviço. Ela marca as opções e
@@ -41,9 +45,9 @@ export function FreeBoard({
   const [picked, setPicked] = useState<SlotChoice[]>([])
   const [copied, setCopied] = useState<'ok' | 'fail' | null>(null)
   const chosen = serviceIds.map((id) => services.find((s) => s.id === id)).filter((s) => !!s)
-  const duration = chosen.reduce((sum, s) => sum + s.duration_minutes, 0)
+  const duration = totalDuration(chosen)
   const serviceName = chosen.map((s) => s.name).join(' + ')
-  const nowDate = new Date(now)
+  const byDay = useMemo(() => groupByDay(busy), [busy])
 
   const toggleService = (id: string) => {
     setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
@@ -52,24 +56,27 @@ export function FreeBoard({
     setCopied(null)
   }
 
-  const list = Array.from({ length: days }, (_, i) => addDays(today, i)).map((day) => {
-    const dayItems = busy.filter((a) => dayOf(a.starts_at) === day)
-    return {
-      day,
-      count: dayItems.filter((a) => a.kind === 'appointment').length,
-      slots: duration
-        ? freeSlots({
-            day,
-            busy: dayItems.filter((a) => a.time_known),
-            duration,
-            buffer,
-            now: nowDate,
-            // De hora em hora (mais o encaixe depois de cada atendimento): menos botões.
-            step: 60,
-          })
-        : [],
-    }
-  })
+  const list = useMemo(() => {
+    const duration = totalDuration(services.filter((service) => serviceIds.includes(service.id)))
+    return Array.from({ length: days }, (_, i) => addDays(today, i)).map((day) => {
+      const dayItems = byDay.get(day) ?? []
+      return {
+        day,
+        count: dayItems.filter((a) => a.kind === 'appointment').length,
+        slots: duration
+          ? freeSlots({
+              day,
+              busy: dayItems.filter((a) => a.time_known),
+              duration,
+              buffer,
+              now: new Date(now),
+              // De hora em hora (mais o encaixe depois de cada atendimento): menos botões.
+              step: 60,
+            })
+          : [],
+      }
+    })
+  }, [byDay, days, today, services, serviceIds, buffer, now])
 
   const isPicked = (c: SlotChoice) => picked.some((p) => p.day === c.day && p.time === c.time)
   const toggle = (c: SlotChoice) => {

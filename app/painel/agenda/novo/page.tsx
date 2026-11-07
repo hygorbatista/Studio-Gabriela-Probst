@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { connection } from 'next/server'
+import { z } from 'zod'
 import { addDays, isValidDay, todayISO, TIME_RE } from '@/lib/agenda'
 import { BackLink } from '../../back-link'
 import { PageHeader } from '../../page-header'
@@ -10,7 +11,7 @@ import { FormSkeleton } from '../../skeletons'
 export const metadata = { title: 'Novo agendamento' }
 
 // Quantos dias de agenda vêm junto com a tela; além disso, "Outra data" busca na hora.
-const PRELOAD_DAYS = 60
+const PRELOAD_DAYS = 14
 
 export default function NovoAgendamentoPage({ searchParams }: PageProps<'/painel/agenda/novo'>) {
   return (
@@ -31,14 +32,20 @@ async function NewAppointment({
   await connection()
   const today = todayISO()
   const day = typeof d === 'string' && isValidDay(d) ? d : today
-  const from = day < today ? day : today
-  const to = addDays(day > today ? day : today, PRELOAD_DAYS)
+  const from = today
+  const to = addDays(today, PRELOAD_DAYS - 1)
+  const selectedRange = day < from || day > to
+    ? { from: day, to: addDays(day, PRELOAD_DAYS - 1) }
+    : null
+  const parsedClientId = z.uuid().safeParse(cliente)
+  const clientId = parsedClientId.success ? parsedClientId.data : undefined
 
-  const [{ clients, services }, busy, buffer, habits] = await Promise.all([
+  const [{ clients, services }, busy, buffer, habits, selectedBusy] = await Promise.all([
     getFormOptions(),
     getBusy(from, to),
     getBufferMinutes(),
-    getClientHabits(),
+    clientId ? getClientHabits(clientId) : Promise.resolve({}),
+    selectedRange ? getBusy(selectedRange.from, selectedRange.to) : Promise.resolve([]),
   ])
 
   return (
@@ -48,11 +55,12 @@ async function NewAppointment({
       habits={habits}
       busy={busy}
       range={{ from, to }}
+      extraWindow={selectedRange ? { ...selectedRange, items: selectedBusy } : undefined}
       today={today}
       now={new Date().toISOString()}
       buffer={buffer}
       defaultDay={day}
-      initialClientId={typeof cliente === 'string' ? cliente : undefined}
+      initialClientId={clientId}
       initialServiceIds={
         typeof s === 'string' ? s.split(',').filter((id) => services.some((x) => x.id === id)) : undefined
       }

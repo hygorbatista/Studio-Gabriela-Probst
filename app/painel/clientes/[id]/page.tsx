@@ -6,7 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { WhatsAppIcon } from '@/components/icons'
 import { cn } from 'cn'
 import { daysAgo, formatNextVisit } from '@/lib/client-list'
-import { clientStats, formatBirthday } from '@/lib/client-stats'
+import { formatBirthday } from '@/lib/client-stats'
 import { formatPrice, formatWhen, noService, serviceLabel, statusLabels } from '@/lib/format'
 import { formatPhone, whatsappTo } from '@/lib/phone'
 import { BackLink } from '../../back-link'
@@ -14,9 +14,9 @@ import { DeleteButton } from '../../delete-button'
 import { EmptyState } from '../../empty-state'
 import { deleteClient } from '../actions'
 import { ClientForm } from '../client-form'
-import { getClient } from '../data'
+import { getClient, getClientHistory, getClientStats } from '../data'
 import { Initials } from '../initials'
-import { DetailSkeleton } from '../../skeletons'
+import { DetailSkeleton, ListSkeleton } from '../../skeletons'
 import { card, dataLabel, sectionTitle } from '../../styles'
 
 export const metadata = { title: 'Cliente' }
@@ -29,37 +29,23 @@ const dotColors: Record<string, string> = {
   no_show: 'bg-destructive',
 }
 
-export default function ClientePage({ params }: PageProps<'/painel/clientes/[id]'>) {
+export default function ClientePage({ params, searchParams }: PageProps<'/painel/clientes/[id]'>) {
   return (
     <>
       <BackLink href="/painel/clientes" label="Clientes" />
       <Suspense fallback={<DetailSkeleton />}>
-        <ClientDetail params={params} />
+        <ClientDetail params={params} searchParams={searchParams} />
       </Suspense>
     </>
   )
 }
 
-async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>, 'params'>) {
+async function ClientDetail({ params, searchParams }: Pick<PageProps<'/painel/clientes/[id]'>, 'params' | 'searchParams'>) {
   const { id } = await params
   const client = /^[0-9a-f-]{36}$/i.test(id) ? await getClient(id) : null
   if (!client) notFound()
 
   const firstName = client.name.split(' ')[0]
-  const stats = clientStats(client.appointments)
-  // Os três números que ela olha primeiro.
-  const highlights = [
-    { label: 'Total gasto', value: formatPrice(stats.totalSpent) },
-    { label: 'Atendimentos', value: String(stats.visits) },
-    { label: 'Última visita', value: stats.lastVisit ? daysAgo(stats.lastVisit) : '—' },
-  ]
-  const details = [
-    { label: 'Próximo horário', value: stats.nextVisit ? formatNextVisit(stats.nextVisit) : '—' },
-    { label: 'Serviço favorito', value: stats.favoriteService ?? '—' },
-    { label: 'Horário favorito', value: stats.favoriteTime ?? '—' },
-    { label: 'Média por atendimento', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
-    { label: 'Aniversário', value: client.birth_date ? formatBirthday(client.birth_date) : '—' },
-  ]
 
   return (
     <div className="flex flex-col gap-10">
@@ -91,6 +77,43 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
       </div>
 
       {/* Calculado dos atendimentos concluídos: nada é digitado à mão. */}
+      <Suspense fallback={<DetailSkeleton />}><ClientSummary client={client} /></Suspense>
+
+      <Suspense fallback={<ListSkeleton />}><ClientTimeline id={client.id} searchParams={searchParams} /></Suspense>
+
+      <section>
+        <h2 className={`${sectionTitle} mb-6`}>Dados</h2>
+        <ClientForm client={client} />
+      </section>
+
+      <section className="border-t border-border pt-8">
+        <DeleteButton
+          action={deleteClient.bind(null, client.id)}
+          label="Excluir cliente"
+          name={client.name}
+        />
+      </section>
+    </div>
+  )
+}
+
+async function ClientSummary({ client }: { client: NonNullable<Awaited<ReturnType<typeof getClient>>> }) {
+  const stats = await getClientStats(client.id)
+  // Os três números que ela olha primeiro.
+  const highlights = [
+    { label: 'Total gasto', value: formatPrice(stats.totalSpent) },
+    { label: 'Atendimentos', value: String(stats.visits) },
+    { label: 'Última visita', value: stats.lastVisit ? daysAgo(stats.lastVisit) : '—' },
+  ]
+  const details = [
+    { label: 'Próximo horário', value: stats.nextVisit ? formatNextVisit(stats.nextVisit) : '—' },
+    { label: 'Serviço favorito', value: stats.favoriteService ?? '—' },
+    { label: 'Horário favorito', value: stats.favoriteTime ?? '—' },
+    { label: 'Média por atendimento', value: stats.visits ? formatPrice(stats.averageTicket) : '—' },
+    { label: 'Aniversário', value: client.birth_date ? formatBirthday(client.birth_date) : '—' },
+  ]
+
+  return (
       <section aria-label="Resumo" className={card}>
         <dl className="grid grid-cols-3 gap-3">
           {highlights.map((item) => (
@@ -109,17 +132,25 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
           ))}
         </dl>
       </section>
+  )
+}
 
-      <section>
+async function ClientTimeline({ id, searchParams }: { id: string; searchParams: PageProps<'/painel/clientes/[id]'>['searchParams'] }) {
+  const { p } = await searchParams
+  const page = typeof p === 'string' && /^[1-9]\d{0,5}$/.test(p) ? Number(p) : 1
+  const { appointments, hasMore } = await getClientHistory(id, page)
+  const pageHref = (number: number) => '/painel/clientes/' + id + '?p=' + number + '#atendimentos'
+  return (
+      <section id="atendimentos">
         <h2 className={`${sectionTitle} mb-4`}>Atendimentos</h2>
-        {client.appointments.length === 0 ? (
-          <EmptyState icon={CalendarDays} title="Nenhum atendimento ainda">
+        {appointments.length === 0 ? (
+          <EmptyState icon={CalendarDays} title={page > 1 ? "Fim do histórico" : "Nenhum atendimento ainda"}>
             Toque em Agendar para marcar o primeiro.
           </EmptyState>
         ) : (
           // Linha do tempo: uma linha vertical com uma bolinha por atendimento.
           <ol className="relative ml-1.5 border-l border-border">
-            {client.appointments.map((a) => (
+            {appointments.map((a) => (
               <li key={a.id} className="relative">
                 <span
                   aria-hidden="true"
@@ -146,20 +177,10 @@ async function ClientDetail({ params }: Pick<PageProps<'/painel/clientes/[id]'>,
             ))}
           </ol>
         )}
+        <nav aria-label="Paginas de atendimentos" className="mt-5 flex justify-between gap-3">
+          {page > 1 ? <Link href={pageHref(page - 1)} className={buttonVariants({ variant: 'outline' })}>Anterior</Link> : <span />}
+          {hasMore && <Link href={pageHref(page + 1)} className={buttonVariants({ variant: 'outline' })}>Mais atendimentos</Link>}
+        </nav>
       </section>
-
-      <section>
-        <h2 className={`${sectionTitle} mb-6`}>Dados</h2>
-        <ClientForm client={client} />
-      </section>
-
-      <section className="border-t border-border pt-8">
-        <DeleteButton
-          action={deleteClient.bind(null, client.id)}
-          label="Excluir cliente"
-          name={client.name}
-        />
-      </section>
-    </div>
   )
 }

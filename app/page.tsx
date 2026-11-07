@@ -5,9 +5,10 @@ import { InstagramIcon, MapPinIcon, WhatsAppIcon } from "@/components/icons";
 import { MobileMenu } from "@/components/mobile-menu";
 import { StructuredData } from "@/components/structured-data";
 import { formatDuration, formatPrice } from "@/lib/format";
-import { faqJsonLd } from "@/lib/seo";
+import { faqJsonLd, getLocalBusinessJsonLd } from "@/lib/seo";
 import { getActiveServices, groupByCategory } from "@/lib/services";
 import {
+  MotionProvider,
   ClipReveal,
   DrawLine,
   HeroFade,
@@ -131,7 +132,9 @@ export default async function Home() {
   const prices = services.map((service) => service.price);
 
   return (
-    <main className="flex flex-1 flex-col">
+    <MotionProvider>
+    <main className="grain flex flex-1 flex-col">
+      <StructuredData data={await getLocalBusinessJsonLd()} />
       <ScrollProgress />
       <StickyHeader>
         <HeaderBar compact />
@@ -604,5 +607,6 @@ export default async function Home() {
         <WhatsAppIcon className="size-7" />
       </a>
     </main>
+    </MotionProvider>
   );
 }

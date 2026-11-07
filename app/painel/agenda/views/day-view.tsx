@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { CalendarCheck, CalendarDays, Check, ChevronRight, History, Lock, Plus } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
@@ -15,7 +16,7 @@ import { formatPrice, noClient, noService, serviceLabel } from '@/lib/format'
 import { freeGaps } from '@/lib/free-slots'
 import { ConfirmedBadge } from '../confirmed-badge'
 import { deleteBlock } from '../actions'
-import { getConfirmCount, getDayAppointments, getDayBlocks, getWeekSummary } from '../data'
+import { getConfirmCount, getDayAgenda } from '../data'
 import { ActionButton } from '../../action-button'
 import { ReturnLink } from '../return-link'
 import { loadClass, loadLabel } from '../load'
@@ -42,16 +43,20 @@ const minutesOf = (iso: string) => {
 }
 const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
 
-export async function DayView({ day }: { day: string }) {
+export function DayView({ day }: { day: string }) {
+  return (
+    <>
+      <Suspense fallback={null}><ConfirmationNotice day={addDays(todayISO(), 1)} /></Suspense>
+      <Suspense fallback={null}><ReturnLink className="mb-6" /></Suspense>
+      <DaySchedule day={day} />
+    </>
+  )
+}
+
+async function DaySchedule({ day }: { day: string }) {
   const today = todayISO()
   const start = weekStart(day)
-  const tomorrow = addDays(today, 1)
-  const [appointments, blocks, week, toConfirm] = await Promise.all([
-    getDayAppointments(day),
-    getDayBlocks(day),
-    getWeekSummary(start),
-    getConfirmCount(tomorrow),
-  ])
+  const { appointments, blocks, week } = await getDayAgenda(day, start)
 
   const active = appointments.filter((a) => a.status === 'scheduled' || a.status === 'completed')
   const expected = active.reduce((sum, a) => sum + a.price_charged, 0)
@@ -139,35 +144,6 @@ export async function DayView({ day }: { day: string }) {
 
   return (
     <>
-      {/* Lembrete da véspera: só some quando todas de amanhã confirmaram. */}
-      {toConfirm.total > 0 && (
-        <Link
-          href="/painel/agenda/confirmar"
-          className={cn(
-            'mb-6 flex min-h-12 items-center gap-3 px-4 py-3 text-base',
-            toConfirm.pending > 0
-              ? 'bg-primary-soft text-primary hover:bg-primary-soft/70'
-              : 'border border-border bg-surface text-muted-foreground'
-          )}
-        >
-          <CalendarCheck className="size-5 shrink-0" aria-hidden="true" />
-          <span className="flex-1">
-            {toConfirm.pending > 0 ? (
-              <>
-                <strong className="font-semibold">Amanhã:</strong> {toConfirm.pending}{' '}
-                {toConfirm.pending === 1 ? 'atendimento para confirmar' : 'atendimentos para confirmar'}
-              </>
-            ) : (
-              `Amanhã: ${toConfirm.total === 1 ? 'o atendimento está confirmado' : `todos os ${toConfirm.total} confirmados`}`
-            )}
-          </span>
-          <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
-        </Link>
-      )}
-
-      {/* Clientes com o retorno vencendo e nada marcado: encher a agenda. */}
-      <ReturnLink className="mb-6" />
-
       <PeriodNav
         title={formatDayTitle(day)}
         prev={{ href: agendaHref('dia', addDays(day, -7)), label: 'Semana anterior' }}
@@ -360,4 +336,34 @@ function AppointmentItem({ before, children }: { before: React.ReactNode; childr
       <li>{children}</li>
     </>
   )
+}
+
+async function ConfirmationNotice({ day }: { day: string }) {
+  const toConfirm = await getConfirmCount(day)
+  return (<>
+      {toConfirm.total > 0 && (
+        <Link
+          href="/painel/agenda/confirmar"
+          className={cn(
+            'mb-6 flex min-h-12 items-center gap-3 px-4 py-3 text-base',
+            toConfirm.pending > 0
+              ? 'bg-primary-soft text-primary hover:bg-primary-soft/70'
+              : 'border border-border bg-surface text-muted-foreground'
+          )}
+        >
+          <CalendarCheck className="size-5 shrink-0" aria-hidden="true" />
+          <span className="flex-1">
+            {toConfirm.pending > 0 ? (
+              <>
+                <strong className="font-semibold">Amanhã:</strong> {toConfirm.pending}{' '}
+                {toConfirm.pending === 1 ? 'atendimento para confirmar' : 'atendimentos para confirmar'}
+              </>
+            ) : (
+              `Amanhã: ${toConfirm.total === 1 ? 'o atendimento está confirmado' : `todos os ${toConfirm.total} confirmados`}`
+            )}
+          </span>
+          <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
+        </Link>
+      )}
+  </>)
 }
