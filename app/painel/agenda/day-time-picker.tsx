@@ -116,9 +116,8 @@ export function DayTimePicker({
   const dayItems = itemsOf(day)
   const occupying = dayItems?.filter((a) => a.time_known) ?? []
   const slots = slotsOf(day)
-  // Escolhido na lista: só vale se ainda cabe (o serviço pode ter mudado).
-  const chosen = custom ? time : slots.some((s) => s.time === time) ? time : ''
-  // Encavala (o banco recusa) ou só fica colado (aviso; dá para marcar).
+  const chosen = time
+  // A seleção continua válida mesmo se a duração do serviço mudar.
   const check = chosen && duration ? checkTime({ day, time: chosen, busy: occupying, duration, buffer }) : null
   const conflict = check?.conflict
   const close = check?.close
@@ -152,16 +151,15 @@ export function DayTimePicker({
                     type="button"
                     onClick={() => chooseDay(d)}
                     aria-pressed={selected}
-                    aria-label={`${formatDayTitle(d)}: ${count} ${count === 1 ? 'atendimento' : 'atendimentos'}${noRoom ? ', sem vaga para esse serviço' : ''}`}
+                    aria-label={`${formatDayTitle(d)}: ${count} ${count === 1 ? 'atendimento' : 'atendimentos'}${noRoom ? ', sem sugestão livre para esse serviço' : ''}`}
                     className={cn(
                       'flex h-16 w-14 flex-col items-center justify-center gap-0.5 border',
                       loadClass[load],
-                      selected ? 'outline-2 outline-offset-2 outline-foreground' : 'border-border',
-                      noRoom && 'opacity-45'
+                      selected ? 'outline-2 outline-offset-2 outline-foreground' : 'border-border'
                     )}
                   >
                     <span className="text-xs font-semibold uppercase">{label}</span>
-                    <span className={cn('text-lg leading-none font-semibold', noRoom && 'line-through')}>
+                    <span className="text-lg leading-none font-semibold">
                       {Number(d.slice(8))}
                     </span>
                   </button>
@@ -210,32 +208,31 @@ export function DayTimePicker({
       <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold">Horário</p>
 
+        {!custom && (
+          <button
+            type="button"
+            onClick={() => {
+              setCustom(true)
+              setTime(chosen)
+            }}
+            className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary underline underline-offset-4"
+          >
+            <Clock className="size-4" aria-hidden="true" />
+            Digitar horário
+          </button>
+        )}
+
         {custom ? (
           <div className="flex flex-col gap-2">
             <Input
               type="time"
-              step={300}
+              step={60}
               value={time}
               onChange={(e) => setTime(e.target.value)}
               aria-label="Horário"
-              aria-invalid={!!errors.time || !!conflict}
+              aria-invalid={!!errors.time}
               className="max-w-40"
             />
-            {conflict && (
-              <p role="alert" className="text-base text-destructive">
-                {conflict.kind === 'block' ? (
-                  <>
-                    Cai num horário bloqueado{conflict.service ? ` (${conflict.service})` : ''}:{' '}
-                    {formatTime(conflict.starts_at)} às {formatTime(conflict.ends_at)}.
-                  </>
-                ) : (
-                  <>
-                    Encavala com {conflict.client ?? noClient} ({formatTime(conflict.starts_at)} às{' '}
-                    {formatTime(conflict.ends_at)}).
-                  </>
-                )}
-              </p>
-            )}
             <button
               type="button"
               onClick={() => {
@@ -343,33 +340,19 @@ export function DayTimePicker({
           </>
         )}
 
-        {!custom && (
-          <button
-            type="button"
-            onClick={() => {
-              setCustom(true)
-              setTime(chosen)
-            }}
-            className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary underline underline-offset-4"
-          >
-            <Clock className="size-4" aria-hidden="true" />
-            Outro horário
-          </button>
-        )}
-
-        {chosen && duration && !conflict && (
+        {chosen && duration && (
           <p className="text-base text-muted-foreground">
             Termina às <strong className="text-foreground">{addMinutesToTime(chosen, duration)}</strong>.
           </p>
         )}
-        {/* Só aviso: o intervalo nunca impede de marcar. */}
-        {close && !conflict && (
-          <p role="status" className="border-l-3 border-l-amber-500 bg-amber-50 px-3 py-2 text-base text-amber-900">
-            {close.kind === 'block' ? 'Fica colado num horário bloqueado' : `Fica colado no atendimento de ${close.client ?? noClient}`}{' '}
-            ({formatTime(close.starts_at)} às {formatTime(close.ends_at)}), sem os {buffer} min de intervalo. Dá para
-            marcar assim mesmo.
-          </p>
-        )}
+
+        <p role="status" className={cn((conflict || close) && 'border-l-3 border-l-amber-500 bg-amber-50 px-3 py-2 text-sm text-amber-900')}>
+          {conflict
+            ? `Sobrepõe ${conflict.kind === 'block' ? 'um horário reservado' : 'outro atendimento'}. Pode salvar.`
+            : close
+              ? `Agenda apertada: menos de ${buffer} min de intervalo.`
+              : ''}
+        </p>
         <FieldError>{errors.time?.[0]}</FieldError>
       </div>
 

@@ -11,8 +11,6 @@ import { normalizePhone } from '@/lib/phone'
 import type { ActionState } from '../action-button'
 import { getBusy, getClientHabits } from './data'
 
-const CONFLICT = 'Esse horário encavala com outro atendimento ou com um horário bloqueado.'
-
 const idSchema = z.uuid()
 
 const appointmentSchema = z
@@ -115,7 +113,6 @@ export async function createAppointment(
   if (error) {
     // Não deixa uma cliente "solta" se o agendamento falhou.
     if (createdClient) await supabase.from('clients').delete().eq('id', clientId)
-    if (error.code === '23P01') return { message: CONFLICT, values }
     return { message: 'Não foi possível agendar. Tente de novo.', values }
   }
 
@@ -218,9 +215,6 @@ export async function reopenAppointment(id: string): Promise<ActionState> {
   if (!idSchema.safeParse(id).success) return { message: 'Atendimento inválido.' }
 
   const { error } = await supabase.rpc('reopen_appointment', { p_appointment_id: id })
-  if (error?.code === '23P01') {
-    return { message: 'O horário já foi ocupado por outro atendimento. Remarque em outro horário.' }
-  }
   if (error) return { message: 'Não foi possível reabrir. Tente de novo.' }
 
   redirect(withFlash(`/painel/agenda/${id}`, 'reaberto'))
@@ -261,7 +255,6 @@ export async function rescheduleAppointment(
     .eq('status', 'scheduled')
     .select('id')
     .maybeSingle()
-  if (error?.code === '23P01') return { message: CONFLICT }
   if (error || !data) return { message: 'Não foi possível remarcar. Tente de novo.' }
 
   redirect(`/painel/agenda/${id}?remarcado=1`)
@@ -368,7 +361,6 @@ export async function updateAppointment(
   })
   if (error) {
     if (createdClient) await supabase.from('clients').delete().eq('id', clientId!)
-    if (error.code === '23P01') return { message: CONFLICT, values }
     return { message: 'Não foi possível salvar. Tente de novo.', values }
   }
 
@@ -427,14 +419,7 @@ export async function createBlock(_prev: BlockFormState, formData: FormData): Pr
     reason: v.reason || null,
   }))
 
-  // Um insert só: se um dos dias tiver atendimento, nenhum é bloqueado.
   const { error } = await supabase.from('time_blocks').insert(rows)
-  if (error?.code === '23P01') {
-    return {
-      message: 'Já tem atendimento nesse horário. Remarque ou cancele o atendimento antes de bloquear.',
-      values,
-    }
-  }
   if (error) return { message: 'Não foi possível bloquear. Tente de novo.', values }
 
   redirect(withFlash(`/painel?d=${v.day}`, 'bloqueado'))
@@ -554,12 +539,6 @@ export async function recordPastAppointment(
   })
   if (error) {
     if (createdClient) await supabase.from('clients').delete().eq('id', clientId!)
-    if (error.code === '23P01') {
-      return {
-        message: 'Já tem atendimento nesse horário. Escolha outro horário ou deixe em "Não lembro".',
-        values,
-      }
-    }
     return { message: 'Não foi possível lançar. Tente de novo.', values }
   }
 

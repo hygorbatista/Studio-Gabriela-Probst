@@ -1,9 +1,6 @@
 // Horários livres e ocupação do dia (docs/12-plano-agendamentos.md).
 // Ela não tem expediente fixo: a janela abaixo vale só para as sugestões, e
-// "Outro horário" aceita qualquer hora. A garantia final contra conflitos é a
-// restrição appointments_no_overlap do banco, com a mesma regra daqui: só o
-// atendimento em si trava. O intervalo depois dele (15 min) nunca trava; no
-// máximo marca o horário como "colado".
+// A lista sugere horários livres. A digitação manual permite sobreposições.
 import { todayISO, toTimestamp } from './agenda'
 
 // Janela das sugestões: começa a partir de 07:00 e termina até 21:00.
