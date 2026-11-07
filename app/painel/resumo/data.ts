@@ -48,3 +48,16 @@ export async function getPreviousRevenue(month: string) {
   if (error) throw error
   return data.reduce((sum, payment) => sum + payment.amount, 0)
 }
+
+export async function getMonthReceipts(month: string) {
+  const { supabase } = await requireUser()
+  const { start, end } = monthRange(month)
+  const { data, error } = await supabase.from('payments')
+    .select('id,appointment_id,amount,method,paid_at,appointments(clients(name))')
+    .gte('paid_at', start)
+    .lt('paid_at', end)
+    .order('paid_at', { ascending: false })
+    .order('id')
+  if (error) throw error
+  return data
+}

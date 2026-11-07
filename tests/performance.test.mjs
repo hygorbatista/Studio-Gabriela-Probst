@@ -166,13 +166,25 @@ test('client statistics load the complete summary in one RPC', async () => {
   assert.equal(requests.length, 1)
 })
 
-test('monthly expense total uses the same date filters as the list and reads only amounts', async () => {
-  const { data, requests } = api('app/painel/despesas/data.ts', (url) =>
-    url.pathname.endsWith('/recurring_expenses') ? [{ amount: 100 }] : [{ amount: 25 }, { amount: 50 }])
+test('monthly totals and history share recurring edits and exclusions for the selected month', async () => {
+  const { data, requests } = api('app/painel/despesas/data.ts', (url) => {
+    if (url.pathname.endsWith('/recurring_expenses')) {
+      return [{ id: 'rent', amount: 0 }, { id: 'paused', amount: 100 }, { id: 'base', amount: 25 }]
+    }
+    if (url.pathname.endsWith('/recurring_expense_month_overrides')) {
+      return url.searchParams.get('month') === 'eq.2026-12-01' ? [
+        { recurring_expense_id: 'rent', amount: 500, description: 'Aluguel', category: 'rent' },
+        { recurring_expense_id: 'paused', amount: null },
+      ] : []
+    }
+    return [{ amount: 25 }, { amount: 50 }]
+  })
 
-  assert.equal(await data.getMonthExpenseTotal('2026-12'), 175)
-  assert.equal((await data.getMonthExpenses('2026-12')).total, 175)
-  assert.equal(requests.length, 4)
+  assert.equal(await data.getMonthExpenseTotal('2026-12'), 600)
+  const list = await data.getMonthExpenses('2026-12')
+  assert.equal(list.total, 600)
+  assert.deepEqual(list.recurring.map(({ id, amount }) => [id, amount]), [['rent', 500], ['base', 25]])
+  assert.equal(requests.length, 6)
   const recurring = requests.filter((url) => url.pathname.endsWith('/recurring_expenses'))
   const oneOff = requests.filter((url) => url.pathname.endsWith('/expenses'))
   for (const url of recurring) {
@@ -182,6 +194,24 @@ test('monthly expense total uses the same date filters as the list and reads onl
   for (const url of oneOff) {
     assert.deepEqual(url.searchParams.getAll('expense_date'), ['gte.2026-12-01', 'lt.2027-01-01'])
   }
-  assert.equal(recurring[0].searchParams.get('select'), 'amount')
+  assert.equal(recurring[0].searchParams.get('select'), 'id,amount')
   assert.equal(oneOff[0].searchParams.get('select'), 'amount')
+  assert.equal(await data.getMonthExpenseTotal('2027-01'), 200)
+})
+
+test('pending appointments are visible by value and excluded from revenue', () => {
+  const { monthSummary } = loadSource('lib/month-summary.ts')
+  const summary = monthSummary({
+    payments: [{ amount: 50, method: 'pix' }],
+    appointments: [
+      { status: 'scheduled', price_charged: 100, starts_at: '2026-11-07T10:00:00Z' },
+      { status: 'scheduled', price_charged: 80, starts_at: '2026-11-08T12:00:00Z' },
+    ],
+    goals: { monthly_revenue_goal: 0, monthly_appointments_goal: 0 },
+    now,
+  })
+  assert.equal(summary.pendingCount, 1)
+  assert.equal(summary.pendingValue, 100)
+  assert.equal(summary.upcomingValue, 80)
+  assert.equal(summary.revenue, 50)
 })

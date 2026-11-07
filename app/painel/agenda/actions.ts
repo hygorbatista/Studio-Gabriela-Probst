@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { withFlash } from '@/lib/flash'
-import { addDays, dayOf, isValidDay, TIME_RE, toTimestamp, todayISO } from '@/lib/agenda'
+import { addDays, dayOf, isValidDay, isValidMonth, TIME_RE, toTimestamp, todayISO } from '@/lib/agenda'
 import { parseMoney, paymentMethods } from '@/lib/format'
 import { normalizePhone } from '@/lib/phone'
 import type { ActionState } from '../action-button'
@@ -210,13 +210,16 @@ export async function completeAppointment(
 }
 
 // Desfaz conclusão, falta ou cancelamento feitos por engano.
-export async function reopenAppointment(id: string): Promise<ActionState> {
+export async function reopenAppointment(id: string, historyMonth?: string): Promise<ActionState> {
   const { supabase } = await requireUser()
   if (!idSchema.safeParse(id).success) return { message: 'Atendimento inválido.' }
 
   const { error } = await supabase.rpc('reopen_appointment', { p_appointment_id: id })
   if (error) return { message: 'Não foi possível reabrir. Tente de novo.' }
 
+  if (historyMonth && isValidMonth(historyMonth)) {
+    redirect(withFlash(`/painel/resumo/lancamentos?m=${historyMonth}`, 'reaberto'))
+  }
   redirect(withFlash(`/painel/agenda/${id}`, 'reaberto'))
 }
 

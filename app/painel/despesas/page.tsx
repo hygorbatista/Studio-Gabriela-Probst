@@ -101,7 +101,7 @@ async function MonthExpensesContent({ month }: { month: string }) {
             {e.recurring.map((r) => (
               <Row
                 key={r.id}
-                href={`/painel/despesas/fixas/${r.id}`}
+                href={`/painel/despesas/fixas/${r.id}?m=${month}`}
                 title={r.description}
                 detail={category(r.category)}
                 amount={r.amount}
