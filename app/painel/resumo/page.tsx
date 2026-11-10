@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { ArrowDown, ArrowUp, Check, CircleAlert } from 'lucide-react'
 import { cn } from 'cn'
-import { addMonths, dayOf, formatMonthTitle, isValidMonth, monthISO } from '@/lib/agenda'
+import { addMonths, formatMonthTitle, isValidMonth, monthISO } from '@/lib/agenda'
 import { formatPrice } from '@/lib/format'
 import { monthRankings } from '@/lib/month-rankings'
 import { monthSummary } from '@/lib/month-summary'
@@ -131,7 +131,7 @@ async function MonthSummaryContent({ month }: { month: string }) {
 
       {s.pendingCount > 0 && s.firstPendingAt && (
         <Link
-          href={`/painel?d=${dayOf(s.firstPendingAt)}`}
+          href="/painel/notificacoes/revisar?tipo=pendencias"
           className="flex items-start gap-3 border border-destructive bg-surface p-4 text-base hover:bg-muted"
         >
           <CircleAlert className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" />
